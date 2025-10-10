@@ -1,36 +1,168 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Elanorra Living - Luxury Home Decor E-commerce Website
 
-## Getting Started
+A complete, modern e-commerce website for premium home decor and lifestyle products. Built with Next.js 15, TypeScript, and Tailwind CSS with full WooCommerce-like functionality.
 
-First, run the development server:
+## 🌟 Features
+
+### Core Functionality
+- **Modern React Architecture**: Built with Next.js 15 App Router and TypeScript
+- **Responsive Design**: Fully responsive across all devices (mobile, tablet, desktop)
+- **Smooth Animations**: Beautiful interactions powered by Framer Motion
+- **Shopping Cart**: Full cart functionality with persistent state using Zustand
+- **Product Catalog**: Browse products with filtering and sorting options
+- **Image Optimization**: Next.js Image component for optimal performance
+
+### Design & UX
+- **Hero Carousel**: Auto-playing image slider with manual controls
+- **Product Cards**: Interactive cards with hover effects and quick actions
+- **Navigation**: Multi-level dropdown navigation with search functionality
+- **Toast Notifications**: User feedback for cart actions and interactions
+- **Loading States**: Elegant loading animations and skeleton screens
+
+### E-commerce Features
+- **Product Management**: Categories, collections, and individual product pages
+- **Cart Management**: Add, remove, update quantities with real-time totals
+- **Wishlist**: Save favorite items (frontend implementation)
+- **Search**: Product search functionality
+- **Filtering**: Filter products by category and sort by various criteria
+
+## 🛠 Tech Stack
+
+- **Frontend**: Next.js 15, React 18, TypeScript
+- **Styling**: Tailwind CSS v4, Custom CSS
+- **Animations**: Framer Motion
+- **State Management**: Zustand
+- **Icons**: Heroicons
+- **Image Handling**: Next.js Image component with Unsplash placeholders
+- **Development**: ESLint, TypeScript compiler
+
+## 📦 Installation & Setup
+
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Run the development server**:
+   ```bash
+   npm run dev
+   ```
+
+3. **Open in browser**:
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 🚀 Available Scripts
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Development
+npm run dev          # Start development server with Turbopack
+
+# Production
+npm run build        # Build for production
+npm run start        # Start production server
+
+# Code Quality
+npm run lint         # Run ESLint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📁 Project Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── layout.tsx         # Root layout with header/footer
+│   ├── page.tsx           # Homepage
+│   ├── shop/              # Shop pages
+│   └── globals.css        # Global styles
+├── components/            # React components
+│   ├── layout/           # Layout components (Header, Footer, Cart)
+│   ├── sections/         # Page sections (Hero, Featured Products)
+│   └── ui/               # Reusable UI components
+├── lib/                  # Utilities and data
+│   ├── data/            # Mock data and constants
+│   ├── store/           # Zustand state management
+│   └── utils/           # Helper functions
+└── types/               # TypeScript type definitions
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🎨 Design System
 
-## Learn More
+### Colors
+- **Primary**: Rose (rose-500, rose-600, rose-700)
+- **Neutral**: Gray scale (gray-50 to gray-900)
+- **Background**: White (#ffffff)
+- **Text**: Gray-900 for headings, Gray-600 for body text
 
-To learn more about Next.js, take a look at the following resources:
+### Typography
+- **Font**: Instrument Sans (Google Fonts)
+- **Headings**: Bold weights (font-bold)
+- **Body**: Regular and medium weights
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛍 E-commerce Features Implementation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Product Data Structure
+```typescript
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  compareAtPrice?: number;
+  images: ProductImage[];
+  category: string;
+  collection?: string;
+  inStock: boolean;
+  featured: boolean;
+  bestseller: boolean;
+  newArrival: boolean;
+}
+```
 
-## Deploy on Vercel
+### Cart Management
+- Persistent cart state using Zustand and localStorage
+- Add/remove items with quantity management
+- Real-time price calculations
+- Cart sidebar with smooth animations
+
+### Navigation Structure
+- Home
+- Shop (with subcategories)
+  - Tableware (Dining, Cups & Mugs, etc.)
+  - Collections (Vasant, Anaar, Sundarbans, etc.)
+  - Stationery
+  - Gifting
+- Our Story
+- Services
+- Contact
+
+## 📱 Responsive Design
+
+- **Mobile First**: Designed for mobile devices first
+- **Breakpoints**: sm: 640px, md: 768px, lg: 1024px, xl: 1280px
+- **Touch Friendly**: Appropriate touch targets and gestures
+- **Cross-browser**: Compatible with modern browsers
+
+## 🚀 Deployment
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## 🎨 Original Inspiration
+
+This project is inspired by [Studio13](https://www.studio13.co.in/), a beautiful e-commerce site for bespoke gifting and tableware.
+
+## 📈 Future Enhancements
+
+- [ ] User authentication and accounts
+- [ ] Real payment integration
+- [ ] Product reviews and ratings
+- [ ] Advanced search with filters
+- [ ] Email newsletters
+- [ ] Order tracking
+- [ ] Admin dashboard
+
+---
+
+**Made with ❤️ using Next.js and modern web technologies**

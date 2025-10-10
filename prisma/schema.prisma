@@ -1,0 +1,292 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// NextAuth models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+// User model for authentication and customer data
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  firstName     String?
+  lastName      String?
+  phone         String?
+  isAdmin       Boolean   @default(false)
+  password      String?   // For credentials login
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // NextAuth relations
+  accounts Account[]
+  sessions Session[]
+  
+  // App relations
+  orders      Order[]
+  reviews     Review[]
+  addresses   Address[]
+  wishlist    WishlistItem[]
+
+  @@map("users")
+}
+
+// Product model
+model Product {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String
+  price       Float
+  compareAtPrice Float?
+  category    String
+  tags        String[]
+  inStock     Boolean   @default(true)
+  inventory   Int       @default(0)
+  weight      Float?
+  dimensions  Json?     // {length, width, height}
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  images      ProductImage[]
+  variants    ProductVariant[]
+  reviews     Review[]
+  orderItems  OrderItem[]
+  wishlist    WishlistItem[]
+  collections ProductCollection[]
+
+  @@map("products")
+}
+
+// Product images
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  src       String
+  alt       String
+  position  Int     @default(0)
+
+  // Relations
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+// Product variants (size, color, material)
+model ProductVariant {
+  id          String  @id @default(cuid())
+  productId   String
+  name        String  // e.g., "Size", "Color", "Material"
+  value       String  // e.g., "Large", "Red", "Cotton"
+  priceAdjustment Float @default(0)
+  inStock     Boolean @default(true)
+  inventory   Int     @default(0)
+
+  // Relations
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_variants")
+}
+
+// Collections
+model Collection {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  image       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  products    ProductCollection[]
+
+  @@map("collections")
+}
+
+// Many-to-many relation between products and collections
+model ProductCollection {
+  productId    String
+  collectionId String
+
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@id([productId, collectionId])
+  @@map("product_collections")
+}
+
+// Orders
+model Order {
+  id                String    @id @default(cuid())
+  orderNumber       String    @unique
+  userId            String?
+  email             String
+  financialStatus   String    @default("pending") // pending, paid, refunded
+  fulfillmentStatus String    @default("unfulfilled") // unfulfilled, partial, fulfilled
+  subtotal          Float
+  taxes             Float     @default(0)
+  shipping          Float     @default(0)
+  discount          Float     @default(0)
+  totalPrice        Float
+  currency          String    @default("INR")
+  paymentMethod     String?
+  paymentId         String?
+  couponCode        String?
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  user              User?     @relation(fields: [userId], references: [id])
+  items             OrderItem[]
+  shippingAddress   Address?  @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id])
+  billingAddress    Address?  @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
+  shippingAddressId String?
+  billingAddressId  String?
+
+  @@map("orders")
+}
+
+// Order items
+model OrderItem {
+  id         String  @id @default(cuid())
+  orderId    String
+  productId  String
+  quantity   Int
+  price      Float   // Price at time of purchase
+  variants   Json?   // Selected variants as JSON
+
+  // Relations
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product    Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+// Addresses
+model Address {
+  id         String  @id @default(cuid())
+  userId     String?
+  firstName  String
+  lastName   String
+  company    String?
+  address1   String
+  address2   String?
+  city       String
+  state      String
+  zipCode    String
+  country    String  @default("India")
+  phone      String?
+  isDefault  Boolean @default(false)
+
+  // Relations
+  user              User?   @relation(fields: [userId], references: [id])
+  shippingOrders    Order[] @relation("OrderShippingAddress")
+  billingOrders     Order[] @relation("OrderBillingAddress")
+
+  @@map("addresses")
+}
+
+// Reviews
+model Review {
+  id         String    @id @default(cuid())
+  productId  String
+  userId     String?
+  userName   String
+  rating     Int       // 1-5 stars
+  title      String
+  comment    String
+  helpful    Int       @default(0)
+  verified   Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  // Relations
+  product    Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user       User?     @relation(fields: [userId], references: [id])
+
+  @@map("reviews")
+}
+
+// Wishlist
+model WishlistItem {
+  id        String    @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime  @default(now())
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("wishlist_items")
+}
+
+// Coupons
+model Coupon {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  type        String    // percentage, fixed
+  value       Float     // discount amount or percentage
+  minAmount   Float?    // minimum order amount
+  maxDiscount Float?    // maximum discount for percentage type
+  usageLimit  Int?      // total usage limit
+  usageCount  Int       @default(0)
+  isActive    Boolean   @default(true)
+  validFrom   DateTime
+  validTo     DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("coupons")
+}

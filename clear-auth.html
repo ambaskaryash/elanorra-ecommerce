@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Auth Tokens - Studio13</title>
+</head>
+<body>
+    <h1>Clear Authentication Tokens</h1>
+    <p>This will clear all authentication cookies and local storage for Studio13.</p>
+    <button onclick="clearAuthTokens()">Clear All Auth Data</button>
+    <div id="status"></div>
+
+    <script>
+        function clearAuthTokens() {
+            // Clear all cookies
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            
+            // Clear localStorage
+            localStorage.clear();
+            
+            // Clear sessionStorage
+            sessionStorage.clear();
+            
+            document.getElementById('status').innerHTML = 
+                '<p style="color: green;">✅ All authentication data cleared! You can now close this tab and refresh your Studio13 app.</p>';
+                
+            // Redirect to main app after 2 seconds
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
