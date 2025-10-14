@@ -2,14 +2,17 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { blogAPI } from '@/lib/services/api';
 
+type RouteParamsPromise = Promise<{ slug: string }>;
+
 interface Props {
-  params: { slug: string };
+  params: RouteParamsPromise;
 }
 
 export default async function BlogPostPage({ params }: Props) {
+  const { slug } = await params;
   let postData: { post: any } | null = null;
   try {
-    postData = await blogAPI.getPostBySlug(params.slug);
+    postData = await blogAPI.getPostBySlug(slug);
   } catch {
     postData = null;
   }
