@@ -10,7 +10,8 @@ import {
   DevicePhoneMobileIcon,
   ShieldCheckIcon,
   TruckIcon,
-  CalendarIcon
+  CalendarIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { useCartStore } from '@/lib/store/cart-store';
 import { useOrderStore } from '@/lib/store/order-store';
@@ -102,7 +103,7 @@ const deliveryOptions = [
 ];
 
 export default function CheckoutPage() {
-  const { items, totalPrice, clearCart } = useCartStore();
+  const { items, subtotalPrice, taxAmount, shippingAmount, totalPrice, clearCart, updateShipping } = useCartStore();
   const { createOrder, isLoading: orderLoading } = useOrderStore();
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
@@ -138,6 +139,9 @@ export default function CheckoutPage() {
   const [selectedPayment, setSelectedPayment] = useState('card');
   const [selectedDelivery, setSelectedDelivery] = useState('standard');
   const [orderNotes, setOrderNotes] = useState('');
+  const [shippingQuote, setShippingQuote] = useState<{ amount: number; etaDays: number; zone: string } | null>(null);
+  const [isQuoteLoading, setIsQuoteLoading] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
 
   // Payment form states
   const [cardDetails, setCardDetails] = useState({
@@ -181,9 +185,37 @@ export default function CheckoutPage() {
   };
 
   const selectedDeliveryOption = deliveryOptions.find(option => option.id === selectedDelivery);
-  const deliveryPrice = selectedDeliveryOption?.price || 0;
-  const taxAmount = Math.round(totalPrice * 0.18); // 18% GST
-  const finalTotal = totalPrice + deliveryPrice + taxAmount;
+  // Shipping quote integration: fetch when pincode or delivery option changes
+  useEffect(() => {
+    const pincode = sameAsBilling ? billingAddress.pincode : shippingAddress.pincode;
+    if (/^[0-9]{6}$/.test(pincode)) {
+      setIsQuoteLoading(true);
+      setQuoteError(null);
+      fetch('/api/shipping/quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pincode, deliveryId: selectedDelivery })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setShippingQuote({ amount: data.amount, etaDays: data.etaDays, zone: data.zone });
+            updateShipping(data.amount);
+          } else {
+            setQuoteError(data.error || 'Failed to fetch shipping quote');
+            updateShipping(0);
+          }
+        })
+        .catch(() => {
+          setQuoteError('Failed to fetch shipping quote');
+          updateShipping(0);
+        })
+        .finally(() => setIsQuoteLoading(false));
+    } else {
+      setShippingQuote(null);
+      updateShipping(0);
+    }
+  }, [sameAsBilling, billingAddress.pincode, shippingAddress.pincode, selectedDelivery, updateShipping]);
 
   const handlePlaceOrder = async () => {
     if (items.length === 0) {
@@ -237,7 +269,7 @@ export default function CheckoutPage() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        amount: finalTotal,
+        amount: totalPrice,
         currency: 'INR',
         receipt: `order_${Date.now()}`,
         notes: {
@@ -350,10 +382,10 @@ export default function CheckoutPage() {
           zip: shippingAddress.pincode,
           isDefault: false,
         },
-        subtotalPrice: totalPrice,
+        subtotalPrice,
         totalTax: taxAmount,
-        totalShipping: deliveryPrice,
-        totalPrice: finalTotal,
+        totalShipping: shippingAmount,
+        totalPrice,
         currency: 'INR',
         paymentMethod: selectedPayment,
         paymentStatus: selectedPayment === 'cod' ? 'pending' : 'paid',
@@ -405,7 +437,7 @@ export default function CheckoutPage() {
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
             <div className="text-sm text-gray-500">
-              Order Total: <span className="font-bold text-gray-900">{formatPrice(finalTotal)}</span>
+              Order Total: <span className="font-bold text-gray-900">{formatPrice(totalPrice)}</span>
             </div>
           </div>
           
@@ -591,10 +623,21 @@ export default function CheckoutPage() {
                           <div className="flex justify-between items-center">
                             <span className="font-medium text-gray-900">{option.name}</span>
                             <span className="font-medium text-gray-900">
-                              {option.price === 0 ? 'Free' : formatPrice(option.price)}
+                              {selectedDelivery === option.id && shippingQuote
+                                ? (shippingQuote.amount === 0 ? 'Free' : formatPrice(shippingQuote.amount))
+                                : (option.price === 0 ? 'Free' : formatPrice(option.price))}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-500">{option.description}</p>
+                          <p className="text-sm text-gray-500">
+                            {option.description}
+                            {selectedDelivery === option.id && (
+                              <span className="ml-2">
+                                {isQuoteLoading && 'Fetching quote...'}
+                                {!isQuoteLoading && shippingQuote && `· Est. ${shippingQuote.etaDays} days (${shippingQuote.zone})`}
+                                {!isQuoteLoading && quoteError && `· ${quoteError}`}
+                              </span>
+                            )}
+                          </p>
                         </div>
                       </label>
                     ))}
@@ -772,7 +815,7 @@ export default function CheckoutPage() {
                     disabled={isProcessing}
                     className="flex-1 bg-rose-600 text-white py-3 rounded-md font-medium hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isProcessing ? 'Processing...' : `Place Order - ${formatPrice(finalTotal)}`}
+                    {isProcessing ? 'Processing...' : `Place Order - ${formatPrice(totalPrice)}`}
                   </button>
                 </div>
               </motion.div>
@@ -787,12 +830,12 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal ({items.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
-                  <span>{formatPrice(totalPrice)}</span>
+                  <span>{formatPrice(subtotalPrice)}</span>
                 </div>
                 
                 <div className="flex justify-between text-gray-600">
                   <span>Delivery</span>
-                  <span>{deliveryPrice === 0 ? 'Free' : formatPrice(deliveryPrice)}</span>
+                  <span>{shippingAmount === 0 ? 'Free' : formatPrice(shippingAmount)}</span>
                 </div>
                 
                 <div className="flex justify-between text-gray-600">
@@ -803,18 +846,38 @@ export default function CheckoutPage() {
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-lg font-semibold text-gray-900">
                     <span>Total</span>
-                    <span>{formatPrice(finalTotal)}</span>
+                    <span>{formatPrice(totalPrice)}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Security Badge */}
-              <div className="mt-6 p-4 bg-green-50 rounded-lg">
-                <div className="flex items-center">
-                  <ShieldCheckIcon className="h-6 w-6 text-green-600 mr-2" />
-                  <div>
-                    <p className="text-sm font-medium text-green-800">Secure Checkout</p>
-                    <p className="text-xs text-green-600">Your payment information is protected</p>
+              {/* Security & Trust Badges */}
+              <div className="mt-6 space-y-3">
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <div className="flex items-center">
+                    <ShieldCheckIcon className="h-6 w-6 text-green-600 mr-2" />
+                    <div>
+                      <p className="text-sm font-medium text-green-800">Secure Checkout</p>
+                      <p className="text-xs text-green-600">Your payment information is protected</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center gap-2 p-3 border rounded-md">
+                    <ShieldCheckIcon className="h-5 w-5 text-gray-600" />
+                    <span className="text-xs text-gray-700">SSL Encrypted</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-3 border rounded-md">
+                    <ArrowPathIcon className="h-5 w-5 text-gray-600" />
+                    <span className="text-xs text-gray-700">Easy Returns</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-3 border rounded-md">
+                    <BanknotesIcon className="h-5 w-5 text-gray-600" />
+                    <span className="text-xs text-gray-700">COD Available</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-3 border rounded-md">
+                    <DevicePhoneMobileIcon className="h-5 w-5 text-gray-600" />
+                    <span className="text-xs text-gray-700">UPI / Razorpay</span>
                   </div>
                 </div>
               </div>

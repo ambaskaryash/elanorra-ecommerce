@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { notFound } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import { motion, Variants, cubicBezier } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FunnelIcon } from '@heroicons/react/24/outline';
 import ProductCard from '@/components/ui/ProductCard';
-import { collections, products } from '@/lib/data/mock-data';
+import type { ApiProduct } from '@/lib/services/api';
 import { capitalizeFirst } from '@/lib/utils';
 
 interface Props {
@@ -24,7 +23,7 @@ const sortOptions = [
   { name: 'Best Selling', value: 'bestselling' },
 ];
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -34,65 +33,97 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.6,
-      ease: 'easeOut',
+      ease: cubicBezier(0.16, 1, 0.3, 1),
     },
   },
 };
 
 export default function CollectionPage({ params }: Props) {
   const [sortBy, setSortBy] = useState('featured');
-  
-  // Find the collection
-  const collection = collections.find(c => c.slug === params.slug);
-  
-  if (!collection) {
-    notFound();
-  }
+  const [collection, setCollection] = useState<{ id?: string; name: string; slug: string; description?: string; image?: string } | null>(null);
+  const [products, setProducts] = useState<ApiProduct[]>([]);
+  const [allCollections, setAllCollections] = useState<Array<{ id: string; name: string; slug: string; description?: string; image?: string }>>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Get products that belong to this collection
-  const collectionProducts = products.filter(product => 
-    product.collection === collection.name.toLowerCase() ||
-    product.collection === collection.slug
-  );
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [detailRes, listRes] = await Promise.all([
+          fetch(`/api/collections/${params.slug}`),
+          fetch('/api/collections'),
+        ]);
+
+        if (detailRes.ok) {
+          const detail = await detailRes.json();
+          setCollection({
+            id: detail.collection.id,
+            name: detail.collection.name,
+            slug: detail.collection.slug,
+            description: detail.collection.description,
+            image: detail.collection.image,
+          });
+          setProducts(detail.products || []);
+        } else {
+          setCollection(null);
+          setProducts([]);
+        }
+
+        if (listRes.ok) {
+          const list = await listRes.json();
+          setAllCollections((list.collections || []).map((c: any) => ({ id: c.id, name: c.name, slug: c.slug, description: c.description, image: c.image })));
+        }
+      } catch (err) {
+        console.error('Failed to fetch collection data', err);
+        setCollection(null);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [params.slug]);
 
   const sortedProducts = useMemo(() => {
-    const sorted = [...collectionProducts].sort((a, b) => {
-      switch (sortBy) {
-        case 'price-asc':
-          return a.price - b.price;
-        case 'price-desc':
-          return b.price - a.price;
-        case 'newest':
-          return a.newArrival ? -1 : b.newArrival ? 1 : 0;
-        case 'bestselling':
-          return a.bestseller ? -1 : b.bestseller ? 1 : 0;
-        case 'featured':
-        default:
-          return a.featured ? -1 : b.featured ? 1 : 0;
-      }
-    });
-    return sorted;
-  }, [collectionProducts, sortBy]);
+    const list = [...products];
+    switch (sortBy) {
+      case 'price-asc':
+        return list.sort((a, b) => a.price - b.price);
+      case 'price-desc':
+        return list.sort((a, b) => b.price - a.price);
+      case 'newest':
+        return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      case 'bestselling':
+        return list.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
+      case 'featured':
+      default:
+        return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+  }, [products, sortBy]);
 
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative h-[60vh] bg-gray-900 overflow-hidden">
         <div className="absolute inset-0">
-          <Image
-            src={collection.image}
-            alt={collection.name}
-            fill
-            className="object-cover opacity-70"
-            priority
-          />
+          {collection?.image ? (
+            <Image
+              src={collection.image}
+              alt={collection.name}
+              fill
+              className="object-cover opacity-70"
+              priority
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-700" />
+          )}
         </div>
         <div className="relative z-10 h-full flex items-center justify-center text-center text-white">
           <motion.div
@@ -107,13 +138,13 @@ export default function CollectionPage({ params }: Props) {
                 <li>/</li>
                 <li><Link href="/collections" className="hover:text-white">Collections</Link></li>
                 <li>/</li>
-                <li className="text-white font-medium">{collection.name}</li>
+                <li className="text-white font-medium">{collection?.name || 'Collection'}</li>
               </ol>
             </nav>
             
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">{collection.name} Collection</h1>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6">{collection?.name || 'Collection'} Collection</h1>
             <p className="text-xl md:text-2xl text-white/90 leading-relaxed max-w-2xl mx-auto">
-              {collection.description}
+              {collection?.description || 'Explore curated pieces from this collection.'}
             </p>
           </motion.div>
         </div>
@@ -130,7 +161,7 @@ export default function CollectionPage({ params }: Props) {
           >
             <h2 className="text-3xl font-bold text-gray-900 mb-6">About This Collection</h2>
             <p className="text-lg text-gray-600 leading-relaxed">
-              The {collection.name} collection represents {collection.description.toLowerCase()}{' '}
+              The {collection?.name || 'Collection'} collection represents {(collection?.description || 'timeless aesthetics and functional elegance').toLowerCase()}{' '}
               Each piece in this collection is carefully crafted to bring elegance and functionality 
               to your living space, creating an atmosphere that reflects your refined taste.
             </p>
@@ -145,7 +176,7 @@ export default function CollectionPage({ params }: Props) {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12">
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                {collection.name} Products
+                {collection?.name || 'Collection'} Products
               </h2>
               <p className="text-gray-600">
                 {sortedProducts.length} {sortedProducts.length === 1 ? 'product' : 'products'} available
@@ -172,7 +203,9 @@ export default function CollectionPage({ params }: Props) {
           </div>
 
           {/* Products Grid */}
-          {sortedProducts.length > 0 ? (
+          {loading ? (
+            <div className="text-center py-12 text-gray-500">Loading products...</div>
+          ) : sortedProducts.length > 0 ? (
             <motion.div
               variants={containerVariants}
               initial="hidden"
@@ -189,7 +222,7 @@ export default function CollectionPage({ params }: Props) {
           ) : (
             <div className="text-center py-12">
               <div className="text-gray-500 mb-4">
-                No products available in the {collection.name} collection yet.
+                No products available in the {collection?.name || 'collection'} collection yet.
               </div>
               <p className="text-gray-400 mb-6">
                 Check back soon as we're constantly adding new pieces to our collections.
@@ -219,8 +252,8 @@ export default function CollectionPage({ params }: Props) {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {collections
-                .filter(c => c.id !== collection.id)
+              {allCollections
+                .filter((c) => c.slug !== (collection?.slug || ''))
                 .slice(0, 3)
                 .map((relatedCollection) => (
                   <motion.div
@@ -231,13 +264,17 @@ export default function CollectionPage({ params }: Props) {
                   >
                     <Link href={`/collections/${relatedCollection.slug}`} className="block">
                       <div className="relative h-64 rounded-2xl overflow-hidden bg-gray-200 shadow-md group-hover:shadow-lg transition-shadow">
-                        <Image
-                          src={relatedCollection.image}
-                          alt={relatedCollection.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
+                        {relatedCollection.image ? (
+                          <Image
+                            src={relatedCollection.image}
+                            alt={relatedCollection.name}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200" />
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                         <div className="absolute bottom-4 left-4 right-4 text-white">
                           <h3 className="text-xl font-bold mb-1 group-hover:text-rose-200 transition-colors">

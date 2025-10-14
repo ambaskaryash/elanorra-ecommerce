@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -19,7 +19,7 @@ export default function LoginPage() {
   // Remove custom auth hook
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/account';
+  // We intentionally ignore custom redirect params to enforce role-based landing
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,9 +37,9 @@ export default function LoginPage() {
         
         // Get updated session
         const session = await getSession();
-        if (session) {
-          router.push(redirectTo);
-        }
+        const isAdmin = (session?.user as any)?.isAdmin === true;
+        const target = isAdmin ? '/admin' : '/';
+        router.replace(target);
       } else {
         toast.error(result?.error || 'Invalid email or password');
       }
@@ -58,6 +58,7 @@ export default function LoginPage() {
   };
 
   return (
+    <Suspense fallback={null}>
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -67,7 +68,7 @@ export default function LoginPage() {
       >
         <div className="text-center">
           <Link href="/" className="text-2xl font-bold text-gray-900 tracking-wide">
-            Elanorraa Living
+            ElanorraLiving
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Welcome back
@@ -84,7 +85,7 @@ export default function LoginPage() {
         transition={{ duration: 0.6, delay: 0.1 }}
         className="mt-8 sm:mx-auto sm:w-full sm:max-w-md"
       >
-        <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
+        <div className="glass py-8 px-4 shadow-lg sm:rounded-lg sm:px-10 border border-gray-200">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -204,5 +205,8 @@ export default function LoginPage() {
         </motion.div>
       </motion.div>
     </div>
+    </Suspense>
   );
 }
+
+export const dynamic = 'force-dynamic';

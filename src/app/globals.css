@@ -3,16 +3,57 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --muted: #f5f5f5;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --ring: #e11d48; /* brand ring (rose-600) */
+  --accent: #f43f5e; /* rose-500 */
+  --accent-2: #0ea5e9; /* sky-500 */
+  --shadow: 0 10px 25px rgba(0,0,0,0.06);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --radius-base: 0.5rem;
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(1200px 400px at 20% 0%, #fff5f7 0%, transparent 40%),
+    radial-gradient(1200px 400px at 80% 0%, #f0f9ff 0%, transparent 40%),
+    var(--background);
   color: var(--foreground);
+  transition: background-color 200ms ease, color 200ms ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dark {
+  --background: #0b0b0f;
+  --foreground: #f3f4f6;
+  --muted: #111827;
+  --card: #0f1115;
+  --border: #1f2937;
+  --ring: #fb7185; /* lighter accent for dark */
+  --accent: #fb7185;
+  --accent-2: #38bdf8;
+}
+
+/* Base focus styles */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Text selection */
+::selection {
+  background: var(--ring);
+  color: white;
 }
 
 /* Custom utilities for line clamping */
@@ -58,4 +99,41 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a1a1a1;
+}
+
+/* Utility: elegant card shadow & hover float */
+.shadow-elegant {
+  box-shadow: var(--shadow);
+}
+.hover-float {
+  transition: transform 300ms ease, box-shadow 300ms ease, border-color 300ms ease;
+}
+.hover-float:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+}
+
+/* Utility: glass backdrop for headers/navs */
+.glass {
+  background-color: rgba(255,255,255,0.75);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid rgba(229,231,235,0.6);
+}
+
+/* Utility: gradient heading */
+.heading-xl {
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  background-image: linear-gradient(90deg, #111827, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Links: subtle underline on hover */
+a {
+  transition: color 200ms ease;
+}
+a:hover {
+  color: #374151;
 }

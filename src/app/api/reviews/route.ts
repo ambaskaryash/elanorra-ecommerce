@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 // GET /api/reviews - Get reviews with optional filters
 export async function GET(request: NextRequest) {
@@ -104,6 +106,11 @@ const createReviewSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const validatedData = createReviewSchema.parse(body);
 
@@ -118,6 +125,10 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    // Ensure review is tied to the authenticated user
+    validatedData.userId = session.user.id;
+    validatedData.userName = validatedData.userName || `${session.user.firstName ?? ''} ${session.user.lastName ?? ''}`.trim();
 
     // Check if user already reviewed this product
     if (validatedData.userId) {

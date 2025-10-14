@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants, cubicBezier } from 'framer-motion';
 import Link from 'next/link';
 import ProductCard from '@/components/ui/ProductCard';
 import { ApiProduct } from '@/lib/services/api';
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -16,14 +16,14 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.6,
-      ease: 'easeOut',
+      ease: cubicBezier(0.16, 1, 0.3, 1),
     },
   },
 };
@@ -55,12 +55,10 @@ export default function FeaturedProducts() {
 
   if (loading) {
     return (
-      <section className="py-20 bg-stone-50">
+      <section className="py-20 bg-gradient-to-b from-white to-stone-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-light text-gray-900 mb-6 tracking-wide">
-              Featured Products
-            </h2>
+            <h2 className="text-4xl sm:text-5xl heading-xl mb-6 tracking-wide">Featured Products</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
               Handpicked favorites that showcase the best of our craftsmanship and design.
             </p>
@@ -82,10 +80,10 @@ export default function FeaturedProducts() {
 
   if (error) {
     return (
-      <section className="py-20 bg-stone-50">
+      <section className="py-20 bg-gradient-to-b from-white to-stone-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-4xl font-light text-gray-900 mb-6">Featured Products</h2>
+            <h2 className="text-4xl heading-xl mb-6">Featured Products</h2>
             <p className="text-red-600">Error loading products: {error}</p>
           </div>
         </div>
@@ -94,7 +92,7 @@ export default function FeaturedProducts() {
   }
 
   return (
-    <section className="py-20 bg-stone-50">
+    <section className="py-20 bg-gradient-to-b from-white to-stone-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -102,18 +100,16 @@ export default function FeaturedProducts() {
           viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
         >
-          {/* Section Header - Studio13 Style */}
+          {/* Section Header */}
           <motion.div variants={itemVariants} className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-light text-gray-900 mb-6 tracking-wide">
-              Featured Products
-            </h2>
+            <h2 className="text-4xl sm:text-5xl heading-xl mb-6 tracking-wide">Featured Products</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
               Handpicked favorites that showcase the best of our craftsmanship and design. 
               Each piece is created with love and attention to detail.
             </p>
           </motion.div>
 
-          {/* Products Grid - Studio13 Style */}
+          {/* Products Grid */}
           <motion.div 
             variants={containerVariants}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 lg:gap-10"
@@ -125,11 +121,11 @@ export default function FeaturedProducts() {
             ))}
           </motion.div>
 
-          {/* View All Products Link - Studio13 Style */}
+          {/* View All Products Link */}
           <motion.div variants={itemVariants} className="text-center mt-16">
             <Link
               href="/shop"
-              className="inline-flex items-center px-8 py-4 bg-transparent border border-gray-900 text-gray-900 font-light hover:bg-gray-900 hover:text-white transition-all duration-300 tracking-wider uppercase text-sm"
+              className="inline-flex items-center px-8 py-4 bg-transparent border border-rose-600 text-rose-700 font-light hover:bg-rose-600 hover:text-white transition-all duration-300 tracking-wider uppercase text-sm rounded-lg"
             >
               Shop All Products
               <svg

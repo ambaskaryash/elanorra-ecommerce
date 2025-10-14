@@ -10,14 +10,15 @@ import {
   ShoppingBagIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
-import { motion } from 'framer-motion';
+import { motion, type Variants, cubicBezier } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import type { Product } from '@/types';
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -27,17 +28,21 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.5,
-      ease: 'easeOut',
+      ease: cubicBezier(0.12, 0, 0.39, 1),
     },
   },
 };
+
+function isProductWithFlags(p: unknown): p is Product {
+  return typeof p === 'object' && p !== null && ('newArrival' in p || 'bestseller' in p);
+}
 
 export default function WishlistPage() {
   const { items: wishlistItems, removeFromWishlist, clearWishlist } = useWishlistStore();
@@ -89,23 +94,35 @@ export default function WishlistPage() {
   };
 
   const handleShare = async (product: any) => {
-    const shareUrl = `${window.location.origin}/products/${product.slug}`;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: product.name,
-          text: `Check out this amazing product: ${product.name}`,
-          url: shareUrl,
-        });
-      } catch (err) {
-        // User cancelled sharing
+    if (typeof window !== 'undefined') {
+      const shareUrl = `${window.location.origin}/products/${product.slug}`;
+      const nav = window.navigator as Navigator & {
+        share?: (data: { title?: string; text?: string; url?: string }) => Promise<void>;
+        clipboard?: Clipboard;
+      };
+      if (typeof nav.share === 'function') {
+        try {
+          await nav.share({
+            title: product.name,
+            text: `Check out this amazing product: ${product.name}`,
+            url: shareUrl,
+          });
+          return;
+        } catch {
+          // ignore share errors
+        }
       }
-    } else {
-      // Fallback to copying URL
-      navigator.clipboard.writeText(shareUrl);
-      toast.success('Product link copied to clipboard!');
+      if (nav.clipboard && typeof nav.clipboard.writeText === 'function') {
+        try {
+          await nav.clipboard.writeText(shareUrl);
+          toast.success('Product link copied to clipboard!');
+          return;
+        } catch {
+          // ignore clipboard errors
+        }
+      }
     }
+    toast.success('Sharing not supported in this environment.');
   };
 
   if (wishlistItems.length === 0) {
@@ -197,7 +214,7 @@ export default function WishlistPage() {
                 <Link href={`/products/${product.slug}`}>
                   <div className="relative aspect-square overflow-hidden bg-gray-100">
                     <Image
-                      src={product.images[0]?.src || '/placeholder-product.jpg'}
+                      src={product.images[0]?.src || '/images/placeholder.jpg'}
                       alt={product.name}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -206,12 +223,12 @@ export default function WishlistPage() {
                     
                     {/* Badges */}
                     <div className="absolute top-3 left-3 flex flex-col space-y-1">
-                      {product.newArrival && (
+                      {isProductWithFlags(product) && product.newArrival && (
                         <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium">
                           New
                         </span>
                       )}
-                      {product.bestseller && (
+                      {isProductWithFlags(product) && product.bestseller && (
                         <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-medium">
                           Bestseller
                         </span>

@@ -158,7 +158,7 @@ export const useReviewsStore = create<ReviewsState>()(
       },
     }),
     {
-      name: 'studio13-reviews-storage',
+      name: 'app-reviews-storage',
     }
   )
 );

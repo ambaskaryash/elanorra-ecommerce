@@ -4,7 +4,7 @@
 export const razorpayConfig = {
   key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_your_key_here',
   currency: 'INR',
-  name: 'Elanorraa Living',
+  name: 'Elanorra Living',
   description: 'Premium Home Decor & Lifestyle',
   image: '/logo.png', // Your company logo
   order_id: '',
@@ -14,7 +14,7 @@ export const razorpayConfig = {
     contact: '',
   },
   notes: {
-    address: 'Elanorraa Living Corporate Office',
+    address: 'Elanorra Living Corporate Office',
   },
   theme: {
     color: '#e11d48', // Rose-600 color

@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
-interface RouteParams {
-  slug: string;
-}
+type RouteParamsPromise = Promise<{ slug: string }>;
 
 // GET /api/products/[slug] - Get a single product by slug
 export async function GET(
   request: NextRequest,
-  { params }: { params: RouteParams }
+  { params }: { params: RouteParamsPromise }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
 
     const product = await prisma.product.findUnique({
       where: { slug },
@@ -92,10 +92,15 @@ const updateProductSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: RouteParams }
+  { params }: { params: RouteParamsPromise }
 ) {
   try {
-    const { slug } = params;
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || !session.user.isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { slug } = await params;
     const body = await request.json();
     const validatedData = updateProductSchema.parse(body);
 
@@ -142,10 +147,15 @@ export async function PUT(
 // DELETE /api/products/[slug] - Delete a product (Admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: RouteParams }
+  { params }: { params: RouteParamsPromise }
 ) {
   try {
-    const { slug } = params;
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || !session.user.isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { slug } = await params;
 
     // Check if product exists
     const existingProduct = await prisma.product.findUnique({

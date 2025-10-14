@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants, cubicBezier } from 'framer-motion';
 import { FunnelIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import ProductCard from '@/components/ui/ProductCard';
 import { ApiProduct } from '@/lib/services/api';
@@ -15,7 +15,7 @@ const sortOptions = [
   { name: 'Best Selling', value: 'bestselling' },
 ];
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -25,14 +25,14 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.6,
-      ease: 'easeOut',
+      ease: cubicBezier(0.16, 1, 0.3, 1),
     },
   },
 };

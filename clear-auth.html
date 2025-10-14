@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Clear Auth Tokens - Studio13</title>
+    <title>Clear Auth Tokens</title>
 </head>
 <body>
     <h1>Clear Authentication Tokens</h1>
-    <p>This will clear all authentication cookies and local storage for Studio13.</p>
+    <p>This will clear all authentication cookies and local storage for this site.</p>
     <button onclick="clearAuthTokens()">Clear All Auth Data</button>
     <div id="status"></div>
 
@@ -23,7 +23,7 @@
             sessionStorage.clear();
             
             document.getElementById('status').innerHTML = 
-                '<p style="color: green;">✅ All authentication data cleared! You can now close this tab and refresh your Studio13 app.</p>';
+                '<p style="color: green;">✅ All authentication data cleared! You can now close this tab and refresh the app.</p>';
                 
             // Redirect to main app after 2 seconds
             setTimeout(() => {

@@ -124,7 +124,7 @@ export const useOrderStore = create<OrderState>()(
       },
     }),
     {
-      name: 'studio13-orders-storage',
+      name: 'app-orders-storage',
       // Only persist orders, not loading state
       partialize: (state) => ({
         orders: state.orders,

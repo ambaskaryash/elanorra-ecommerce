@@ -2,11 +2,11 @@
 
 ## Overview
 
-The Studio13 e-commerce platform has been successfully updated with:
+The e-commerce platform has been successfully updated with:
 
 1. **Comprehensive Product Catalog** - Added 20 products across multiple collections
 2. **Razorpay Payment Gateway** - Replaced Stripe with Razorpay for Indian market
-3. **Enhanced Categories** - Updated with Studio13's actual product categories
+3. **Enhanced Categories** - Updated with expanded product categories
 
 ## Product Catalog Updates
 
@@ -134,7 +134,7 @@ For Razorpay integration issues:
 - [Integration Support](https://razorpay.com/support/)
 - [API Reference](https://razorpay.com/docs/api/)
 
-For Studio13 specific issues:
+For app-specific issues:
 - Check logs in `/api/razorpay/` endpoints
 - Verify environment variables
 - Test with different payment methods

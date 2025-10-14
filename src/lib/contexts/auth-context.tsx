@@ -32,8 +32,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkAuth = () => {
       try {
-        const storedUser = localStorage.getItem('Elanorraa_user');
-        const storedToken = localStorage.getItem('Elanorraa_token');
+        const storedUser = localStorage.getItem('Elanorra_user');
+        const storedToken = localStorage.getItem('Elanorra_token');
         
         if (storedUser && storedToken) {
           // In a real app, you'd validate the token with your backend
@@ -41,8 +41,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('Error checking auth:', error);
-        localStorage.removeItem('Elanorraa_user');
-        localStorage.removeItem('Elanorraa_token');
+        localStorage.removeItem('Elanorra_user');
+        localStorage.removeItem('Elanorra_token');
       } finally {
         setIsLoading(false);
       }
@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Mock validation - in real app, send to backend
-      if (email === 'demo@Elanorraaliving.com' && password === 'demo123') {
+      if (email === 'demo@Elanorraliving.com' && password === 'demo123') {
         const mockUser: User = {
           id: '1',
           email,
@@ -85,8 +85,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const mockToken = 'mock_jwt_token_' + Date.now();
         
-        localStorage.setItem('Elanorraa_user', JSON.stringify(mockUser));
-        localStorage.setItem('Elanorraa_token', mockToken);
+        localStorage.setItem('Elanorra_user', JSON.stringify(mockUser));
+        localStorage.setItem('Elanorra_token', mockToken);
         
         setUser(mockUser);
         return { success: true };
@@ -118,8 +118,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const mockToken = 'mock_jwt_token_' + Date.now();
       
-      localStorage.setItem('Elanorraa_user', JSON.stringify(mockUser));
-      localStorage.setItem('Elanorraa_token', mockToken);
+      localStorage.setItem('Elanorra_user', JSON.stringify(mockUser));
+      localStorage.setItem('Elanorra_token', mockToken);
       
       setUser(mockUser);
       return { success: true };
@@ -131,8 +131,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('Elanorraa_user');
-    localStorage.removeItem('Elanorraa_token');
+    localStorage.removeItem('Elanorra_user');
+    localStorage.removeItem('Elanorra_token');
     setUser(null);
   };
 
@@ -145,7 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       const updatedUser = { ...user, ...userData };
-      localStorage.setItem('Elanorraa_user', JSON.stringify(updatedUser));
+      localStorage.setItem('Elanorra_user', JSON.stringify(updatedUser));
       setUser(updatedUser);
       
       return { success: true };

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
@@ -24,6 +24,8 @@ export default function RegisterPage() {
   
   // Using custom registration API
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/account';
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -142,7 +144,7 @@ export default function RegisterPage() {
       >
         <div className="text-center">
           <Link href="/" className="text-2xl font-bold text-gray-900 tracking-wide">
-            Elanorraa Living
+            ElanorraLiving
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Create your account
@@ -159,7 +161,7 @@ export default function RegisterPage() {
         transition={{ duration: 0.6, delay: 0.1 }}
         className="mt-8 sm:mx-auto sm:w-full sm:max-w-md"
       >
-        <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
+        <div className="glass py-8 px-4 shadow-lg sm:rounded-lg sm:px-10 border border-gray-200">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 gap-4">
               <div>

@@ -149,9 +149,9 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-## 🎨 Original Inspiration
+## 🎨 Inspiration
 
-This project is inspired by [Studio13](https://www.studio13.co.in/), a beautiful e-commerce site for bespoke gifting and tableware.
+This project draws inspiration from modern lifestyle and tableware e-commerce experiences. All branding in this repository is intentionally generic to avoid referring to any specific company.
 
 ## 📈 Future Enhancements
 
