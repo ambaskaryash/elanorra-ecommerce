@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants, cubicBezier } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -15,14 +15,14 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.6,
-      ease: 'easeOut',
+      ease: cubicBezier(0.16, 1, 0.3, 1),
     },
   },
 };
@@ -48,6 +48,7 @@ export default function FeaturedCollections() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchCollections = async () => {
@@ -118,7 +119,7 @@ export default function FeaturedCollections() {
           viewport={{ once: true, amount: 0.3 }}
           variants={containerVariants}
         >
-          {/* Section Header - Studio13 Style */}
+          {/* Section Header */}
           <motion.div variants={itemVariants} className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-light text-gray-900 mb-6 tracking-wide">
               Collections
@@ -129,7 +130,7 @@ export default function FeaturedCollections() {
             </p>
           </motion.div>
 
-          {/* Collections Grid - Studio13 Style */}
+          {/* Collections Grid */}
           <motion.div 
             variants={containerVariants}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8"
@@ -139,18 +140,19 @@ export default function FeaturedCollections() {
                 key={collection.id}
                 variants={itemVariants}
                 whileHover={{ y: -5 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                transition={{ duration: 0.3, ease: cubicBezier(0.16, 1, 0.3, 1) }}
                 className="group"
               >
                 <Link href={`/collections/${collection.slug}`} className="block">
                   <div className="relative h-72 overflow-hidden bg-stone-100 group-hover:shadow-lg transition-shadow duration-300">
                     {/* Background Image */}
                     <Image
-                      src={collection.image}
+                      src={imageErrors[collection.id] ? '/images/placeholder.jpg' : (collection.image ?? '/images/placeholder.jpg')}
                       alt={collection.name}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      onError={() => setImageErrors(prev => ({ ...prev, [collection.id]: true }))}
                     />
                     
                     {/* Subtle Overlay */}
@@ -182,7 +184,7 @@ export default function FeaturedCollections() {
             ))}
           </motion.div>
 
-          {/* View All Collections Link - Studio13 Style */}
+          {/* View All Collections Link */}
           <motion.div variants={itemVariants} className="text-center mt-16">
             <Link
               href="/collections"

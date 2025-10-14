@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
-export default function Studio13About() {
+export default function AboutSection() {
   return (
     <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -93,7 +93,7 @@ export default function Studio13About() {
             {/* Description */}
             <div className="space-y-6 text-lg leading-relaxed text-gray-600">
               <p>
-                For over 15 years, Studio13 has been synonymous with exceptional craftsmanship and timeless design. 
+                For over 15 years, our brand has been synonymous with exceptional craftsmanship and timeless design. 
                 Born from a passion for transforming everyday objects into works of art, we create pieces that tell stories 
                 and make moments memorable.
               </p>

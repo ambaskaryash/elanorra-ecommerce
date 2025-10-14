@@ -225,7 +225,7 @@ export const useCartStore = create<CartState>()(
       }
     }),
     {
-      name: 'studio13-cart-storage',
+      name: 'app-cart-storage',
     }
   )
 );

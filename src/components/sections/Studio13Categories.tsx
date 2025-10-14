@@ -1,11 +1,11 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, Variants, cubicBezier } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { categories } from '@/lib/data/mock-data';
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -15,19 +15,19 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.6,
-      ease: 'easeOut',
+      ease: cubicBezier(0.16, 1, 0.3, 1),
     },
   },
 };
 
-export default function Studio13Categories() {
+export default function CategoriesSection() {
   return (
     <section className="py-24 bg-stone-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

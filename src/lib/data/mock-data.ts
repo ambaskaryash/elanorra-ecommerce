@@ -62,7 +62,7 @@ export const navigationItems: NavigationItem[] = [
     ],
   },
   { id: '3', name: 'Our Story', href: '/about' },
-  { id: '4', name: 'Services', href: '/services' },
+  { id: '4', name: 'Blog', href: '/blog' },
   { id: '5', name: 'Contact', href: '/contact' },
 ];
 

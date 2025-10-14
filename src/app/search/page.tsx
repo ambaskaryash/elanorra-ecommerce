@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { Suspense, useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, Variants, cubicBezier } from 'framer-motion';
 import Link from 'next/link';
 import { FunnelIcon } from '@heroicons/react/24/outline';
 import ProductCard from '@/components/ui/ProductCard';
-import { products, categories } from '@/lib/data/mock-data';
+import type { ApiProduct } from '@/lib/services/api';
 import { capitalizeFirst } from '@/lib/utils';
 
 const sortOptions = [
@@ -17,7 +17,7 @@ const sortOptions = [
   { name: 'Best Selling', value: 'bestselling' },
 ];
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -27,14 +27,14 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.6,
-      ease: 'easeOut',
+      ease: cubicBezier(0.16, 1, 0.3, 1),
     },
   },
 };
@@ -45,45 +45,79 @@ export default function SearchPage() {
   
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('relevance');
+  const [products, setProducts] = useState<ApiProduct[]>([]);
+  const [categories, setCategories] = useState<Array<{ id: string; name: string; count: number }>>([]);
+  const [loading, setLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
 
   // Calculate actual price range from products
   const actualPriceRange = useMemo(() => {
+    if (!products.length) return [0, 10000] as [number, number];
     const prices = products.map(p => p.price);
     return [Math.min(...prices), Math.max(...prices)] as [number, number];
-  }, []);
+  }, [products]);
 
   useEffect(() => {
     setPriceRange(actualPriceRange);
   }, [actualPriceRange]);
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (query.trim()) params.set('search', query.trim());
+        if (selectedCategory !== 'all') params.set('category', selectedCategory);
+
+        // Map sort options to API
+        if (sortBy === 'price-asc') {
+          params.set('sortBy', 'price');
+          params.set('sortOrder', 'asc');
+        } else if (sortBy === 'price-desc') {
+          params.set('sortBy', 'price');
+          params.set('sortOrder', 'desc');
+        } else if (sortBy === 'newest') {
+          params.set('sortBy', 'createdAt');
+          params.set('sortOrder', 'desc');
+        } else {
+          // relevance or bestselling: let API default, we’ll sort client-side
+        }
+
+        const res = await fetch(`/api/products?${params.toString()}`);
+        if (res.ok) {
+          const data = await res.json();
+          const apiProducts: ApiProduct[] = data.products || [];
+          setProducts(apiProducts);
+
+          // derive categories from fetched products
+          const map = new Map<string, number>();
+          apiProducts.forEach((p) => {
+            map.set(p.category, (map.get(p.category) || 0) + 1);
+          });
+          setCategories(Array.from(map.entries()).map(([name, count]) => ({ id: name, name: capitalizeFirst(name), count })));
+        } else {
+          setProducts([]);
+          setCategories([]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch products', err);
+        setProducts([]);
+        setCategories([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, [query, selectedCategory, sortBy]);
+
   const searchResults = useMemo(() => {
     let filtered = products;
 
-    // Text search
-    if (query.trim()) {
-      const searchTerm = query.toLowerCase().trim();
-      filtered = products.filter(product => 
-        product.name.toLowerCase().includes(searchTerm) ||
-        product.description.toLowerCase().includes(searchTerm) ||
-        product.category.toLowerCase().includes(searchTerm) ||
-        product.tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
-        (product.shortDescription && product.shortDescription.toLowerCase().includes(searchTerm))
-      );
-    }
+    // Client-side price filter
+    filtered = filtered.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
 
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(product => product.category === selectedCategory);
-    }
-
-    // Filter by price range
-    filtered = filtered.filter(product => 
-      product.price >= priceRange[0] && product.price <= priceRange[1]
-    );
-
-    // Sort products
+    // Client-side sort when needed
     const sorted = [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'price-asc':
@@ -91,26 +125,25 @@ export default function SearchPage() {
         case 'price-desc':
           return b.price - a.price;
         case 'newest':
-          return a.newArrival ? -1 : b.newArrival ? 1 : 0;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         case 'bestselling':
-          return a.bestseller ? -1 : b.bestseller ? 1 : 0;
+          return (b.reviewCount || 0) - (a.reviewCount || 0);
         case 'relevance':
         default:
-          // Simple relevance scoring based on name match
           if (query.trim()) {
             const searchTerm = query.toLowerCase().trim();
-            const aScore = a.name.toLowerCase().includes(searchTerm) ? 2 : 
-                          a.description.toLowerCase().includes(searchTerm) ? 1 : 0;
-            const bScore = b.name.toLowerCase().includes(searchTerm) ? 2 : 
-                          b.description.toLowerCase().includes(searchTerm) ? 1 : 0;
+            const aScore = a.name.toLowerCase().includes(searchTerm) ? 2 : a.description.toLowerCase().includes(searchTerm) ? 1 : 0;
+            const bScore = b.name.toLowerCase().includes(searchTerm) ? 2 : b.description.toLowerCase().includes(searchTerm) ? 1 : 0;
             return bScore - aScore;
           }
-          return a.featured ? -1 : b.featured ? 1 : 0;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
     });
 
     return sorted;
-  }, [query, selectedCategory, priceRange, sortBy]);
+  }, [products, priceRange, sortBy, query]);
+
+  // Removed legacy mock-data converter; products are fetched as ApiProduct directly
 
   const handlePriceRangeChange = (index: number, value: string) => {
     const numValue = parseInt(value) || 0;
@@ -128,6 +161,7 @@ export default function SearchPage() {
   };
 
   return (
+    <Suspense fallback={null}>
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="bg-gray-50 border-b">
@@ -292,7 +326,9 @@ export default function SearchPage() {
                 animate="visible"
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
               >
-                {searchResults.map((product) => (
+                {loading ? (
+                  <div className="col-span-full text-center text-gray-500 py-12">Loading products...</div>
+                ) : searchResults.map((product) => (
                   <motion.div key={product.id} variants={itemVariants}>
                     <ProductCard product={product} />
                   </motion.div>
@@ -330,5 +366,8 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+    </Suspense>
   );
 }
+
+export const dynamic = 'force-dynamic';

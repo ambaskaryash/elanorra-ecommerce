@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 // Schema for address validation
 const addressSchema = z.object({
@@ -22,15 +24,13 @@ const addressSchema = z.object({
 // GET /api/addresses - Get all addresses for a user
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const addresses = await prisma.address.findMany({
-      where: { userId },
+      where: { userId: session.user.id },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -47,8 +47,16 @@ export async function GET(request: NextRequest) {
 // POST /api/addresses - Create a new address
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const validatedData = addressSchema.parse(body);
+
+    // Force ownership to authenticated user
+    validatedData.userId = session.user.id;
 
     // If setting as default, unset previous defaults for this user
     if (validatedData.isDefaultShipping && validatedData.userId) {
@@ -87,6 +95,11 @@ export async function POST(request: NextRequest) {
 // PUT /api/addresses/[id] - Update an existing address
 export async function PUT(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -112,7 +125,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const address = await prisma.address.update({
-      where: { id },
+      where: { id, userId: session.user.id },
       data: validatedData,
     });
 
@@ -135,6 +148,11 @@ export async function PUT(request: NextRequest) {
 // DELETE /api/addresses/[id] - Delete an address
 export async function DELETE(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -143,7 +161,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await prisma.address.delete({
-      where: { id },
+      where: { id, userId: session.user.id },
     });
 
     return NextResponse.json({ message: 'Address deleted successfully' });

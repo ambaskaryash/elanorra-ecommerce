@@ -1,11 +1,20 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { motion, Variants, cubicBezier } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { collections } from '@/lib/data/mock-data';
 
-const containerVariants = {
+interface ApiCollectionPreview {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  image?: string;
+  featured?: boolean;
+}
+
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -15,19 +24,39 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.6,
-      ease: 'easeOut',
+      ease: cubicBezier(0.16, 1, 0.3, 1),
     },
   },
 };
 
 export default function CollectionsPage() {
+  const [collections, setCollections] = useState<ApiCollectionPreview[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCollections = async () => {
+      try {
+        const res = await fetch('/api/collections');
+        if (res.ok) {
+          const data = await res.json();
+          setCollections(data.collections || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch collections', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadCollections();
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -75,6 +104,12 @@ export default function CollectionsPage() {
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {loading && (
+                <div className="col-span-full text-center text-gray-500">Loading collections...</div>
+              )}
+              {!loading && collections.length === 0 && (
+                <div className="col-span-full text-center text-gray-500">No collections found</div>
+              )}
               {collections.map((collection, index) => (
                 <motion.div
                   key={collection.id}
@@ -86,13 +121,17 @@ export default function CollectionsPage() {
                   <Link href={`/collections/${collection.slug}`} className="block">
                     <div className="relative h-80 rounded-2xl overflow-hidden bg-gray-200 shadow-lg group-hover:shadow-2xl transition-all duration-300">
                       {/* Background Image */}
-                      <Image
-                        src={collection.image}
-                        alt={collection.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      />
+                      {collection.image ? (
+                        <Image
+                          src={collection.image}
+                          alt={collection.name}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200" />
+                      )}
                       
                       {/* Overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -104,7 +143,7 @@ export default function CollectionsPage() {
                             {collection.name}
                           </h3>
                           <p className="text-sm text-white/90 line-clamp-3 mb-4">
-                            {collection.description}
+                            {collection.description || 'Explore curated pieces from this collection.'}
                           </p>
                           <div className="flex items-center">
                             <span className="inline-flex items-center text-sm font-medium text-white group-hover:text-rose-200 transition-colors">

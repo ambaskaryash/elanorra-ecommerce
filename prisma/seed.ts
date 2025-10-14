@@ -13,10 +13,10 @@ async function main() {
   
   const users = await Promise.all([
     prisma.user.upsert({
-      where: { email: 'admin@studio13.co.in' },
+      where: { email: 'admin@example.com' },
       update: {},
       create: {
-        email: 'admin@studio13.co.in',
+        email: 'admin@example.com',
         firstName: 'Admin',
         lastName: 'User',
         phone: '+91 9876543210',
@@ -25,10 +25,10 @@ async function main() {
       },
     }),
     prisma.user.upsert({
-      where: { email: 'demo@studio13.co.in' },
+      where: { email: 'demo@example.com' },
       update: {},
       create: {
-        email: 'demo@studio13.co.in',
+        email: 'demo@example.com',
         firstName: 'Demo',
         lastName: 'User',
         phone: '+91 9876543211',
@@ -37,10 +37,10 @@ async function main() {
       },
     }),
     prisma.user.upsert({
-      where: { email: 'test@studio13.co.in' },
+      where: { email: 'test@example.com' },
       update: {},
       create: {
-        email: 'test@studio13.co.in',
+        email: 'test@example.com',
         firstName: 'Test',
         lastName: 'Customer',
         phone: '+91 9876543212',

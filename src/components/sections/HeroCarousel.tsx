@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, cubicBezier } from 'framer-motion';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import Image from 'next/image';
-// Studio13 Hero Slides Data
+// Hero Slides Data
 const heroSlides = [
   {
     id: '1',
@@ -13,7 +13,7 @@ const heroSlides = [
     subtitle: 'Exquisite ceramic tableware and bespoke gifting solutions',
     buttonText: 'Shop Tableware',
     buttonLink: '/shop?category=tableware',
-    image: 'https://images.unsplash.com/photo-1565362195302-61a3e2fce3f5?w=1600&h=900&fit=crop',
+    image: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=1600&h=900&fit=crop&crop=center',
   },
   {
     id: '2',
@@ -21,7 +21,7 @@ const heroSlides = [
     subtitle: 'From Anaar to Vasant - Discover stories in every piece',
     buttonText: 'Explore Collections',
     buttonLink: '/collections',
-    image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=1600&h=900&fit=crop',
+    image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=1600&h=900&fit=crop&crop=center',
   },
   {
     id: '3',
@@ -29,7 +29,7 @@ const heroSlides = [
     subtitle: 'Custom gifting solutions for your special moments',
     buttonText: 'Gift Sets',
     buttonLink: '/shop?category=gifting',
-    image: 'https://images.unsplash.com/photo-1493936593252-3090dc7e1de4?w=1600&h=900&fit=crop',
+    image: 'https://images.unsplash.com/photo-1607344645866-009c7d0f2e4b?w=1600&h=900&fit=crop&crop=center',
   },
   {
     id: '4',
@@ -37,13 +37,14 @@ const heroSlides = [
     subtitle: 'Beautiful designs that cater to the whole family',
     buttonText: 'Kids Collection',
     buttonLink: '/collections/kids-victoria',
-    image: 'https://images.unsplash.com/photo-1607734834271-d7c1b5c4e4d1?w=1600&h=900&fit=crop',
+    image: 'https://images.unsplash.com/photo-1585129777188-94600ff10dd6?w=1600&h=900&fit=crop&crop=center',
   },
 ];
 
 export default function HeroCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [erroredSlides, setErroredSlides] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     if (!isAutoPlaying) return;
@@ -81,18 +82,19 @@ export default function HeroCarousel() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: 'easeInOut' }}
+          transition={{ duration: 0.8, ease: cubicBezier(0.16, 1, 0.3, 1) }}
           className="absolute inset-0"
         >
           {/* Background Image */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-transparent z-10" />
           <Image
-            src={heroSlides[currentSlide].image}
+            src={erroredSlides[currentSlide] ? '/images/placeholder.jpg' : heroSlides[currentSlide].image}
             alt={heroSlides[currentSlide].title}
             fill
             className="object-cover opacity-90"
             priority
             sizes="100vw"
+            onError={() => setErroredSlides(prev => ({ ...prev, [currentSlide]: true }))}
           />
 
           {/* Content */}

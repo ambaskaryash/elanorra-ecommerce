@@ -9,14 +9,14 @@ async function main() {
   // Admin user
   const adminPassword = await bcrypt.hash('admin123', 12);
   await prisma.user.upsert({
-    where: { email: 'admin@studio13.co.in' },
+    where: { email: 'admin@example.com' },
     update: {},
     create: {
-      email: 'admin@studio13.co.in',
+      email: 'admin@example.com',
       password: adminPassword,
-      firstName: 'Studio13',
-      lastName: 'Admin',
-      name: 'Studio13 Admin',
+      firstName: 'Admin',
+      lastName: 'User',
+      name: 'Admin User',
       phone: '+91 9876543210',
       isAdmin: true,
     },
@@ -25,10 +25,10 @@ async function main() {
   // Test user
   const userPassword = await bcrypt.hash('test123', 12);
   await prisma.user.upsert({
-    where: { email: 'test@studio13.co.in' },
+    where: { email: 'test@example.com' },
     update: {},
     create: {
-      email: 'test@studio13.co.in',
+      email: 'test@example.com',
       password: userPassword,
       firstName: 'Test',
       lastName: 'User',
@@ -41,10 +41,10 @@ async function main() {
   // Demo customer user
   const demoPassword = await bcrypt.hash('demo123', 12);
   await prisma.user.upsert({
-    where: { email: 'demo@studio13.co.in' },
+    where: { email: 'demo@example.com' },
     update: {},
     create: {
-      email: 'demo@studio13.co.in',
+      email: 'demo@example.com',
       password: demoPassword,
       firstName: 'Demo',
       lastName: 'Customer',

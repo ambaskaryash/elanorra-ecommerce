@@ -56,7 +56,7 @@ export const useWishlistStore = create<WishlistState>()(
       },
     }),
     {
-      name: 'studio13-wishlist-storage',
+      name: 'app-wishlist-storage',
     }
   )
 );

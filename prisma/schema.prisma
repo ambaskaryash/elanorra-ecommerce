@@ -74,6 +74,7 @@ model User {
   reviews     Review[]
   addresses   Address[]
   wishlist    WishlistItem[]
+  blogPosts   BlogPost[]
 
   @@map("users")
 }
@@ -289,4 +290,24 @@ model Coupon {
   updatedAt   DateTime  @updatedAt
 
   @@map("coupons")
+}
+
+// Blog posts
+model BlogPost {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  excerpt     String?
+  content     String
+  coverImage  String?
+  tags        String[]
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  authorId    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  author      User?     @relation(fields: [authorId], references: [id])
+
+  @@map("blog_posts")
 }

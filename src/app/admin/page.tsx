@@ -1,8 +1,8 @@
 'use client';
 
 import ProductModal from '@/components/admin/ProductModal';
-import { useAuth } from '@/lib/contexts/auth-context';
-import { orderAPI, productAPI, reviewAPI, type ApiProduct } from '@/lib/services/api';
+import { useSession } from 'next-auth/react';
+import { orderAPI, productAPI, reviewAPI, blogAPI, type ApiProduct, type ApiBlogPost } from '@/lib/services/api';
 import { useOrderStore } from '@/lib/store/order-store';
 import { useReviewsStore } from '@/lib/store/reviews-store';
 import { formatPrice } from '@/lib/utils';
@@ -22,16 +22,16 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import RichTextEditor from '@/components/admin/RichTextEditor';
+import ImageUpload from '@/components/admin/ImageUpload';
 
-// Admin check based on isAdmin field and specific email addresses
+// Admin check based solely on isAdmin flag (remove brand-specific emails)
 const isAdmin = (user: any) => {
-  return user?.isAdmin === true || 
-         user?.email === 'admin@studio13.co.in' || 
-         user?.email === 'demo@studio13.co.in';
+  return user?.isAdmin === true;
 };
 
 export default function AdminDashboard() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { data: session, status } = useSession();
   const { orders } = useOrderStore();
   const { reviews } = useReviewsStore();
   const router = useRouter();
@@ -42,6 +42,17 @@ export default function AdminDashboard() {
   const [dbOrders, setDbOrders] = useState<any[]>([]);
   const [dbReviews, setDbReviews] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
+  const [blogPosts, setBlogPosts] = useState<ApiBlogPost[]>([]);
+  const [isSubmittingBlog, setIsSubmittingBlog] = useState(false);
+  const [blogForm, setBlogForm] = useState({
+    title: '',
+    slug: '',
+    excerpt: '',
+    content: '',
+    coverImage: '',
+    tags: '',
+    published: false,
+  });
   
   // Modal state
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -60,15 +71,17 @@ export default function AdminDashboard() {
   const loadData = async () => {
     setIsLoadingData(true);
     try {
-      const [productsRes, ordersRes, reviewsRes] = await Promise.all([
+      const [productsRes, ordersRes, reviewsRes, blogsRes] = await Promise.all([
         productAPI.getProducts({ limit: 100 }),
         orderAPI.getOrders({ limit: 100 }),
         reviewAPI.getReviews({ limit: 100 }),
+        blogAPI.getPosts({ limit: 100, published: undefined }),
       ]);
       
       setProducts(productsRes.products);
       setDbOrders(ordersRes.orders);
       setDbReviews(reviewsRes.reviews);
+      setBlogPosts(blogsRes.posts);
       
       // Calculate stats
       setStats({
@@ -87,12 +100,14 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || !isAdmin(user))) {
+    const user = session?.user as any;
+    if (status === 'loading') return;
+    if (status !== 'authenticated' || !isAdmin(user)) {
       router.push('/auth/login?redirect=/admin');
-    } else if (isAuthenticated && isAdmin(user)) {
-      loadData();
+      return;
     }
-  }, [isAuthenticated, isLoading, user, router]);
+    loadData();
+  }, [status, session, router]);
 
   // Product management functions
   const handleAddProduct = () => {
@@ -124,7 +139,69 @@ export default function AdminDashboard() {
     await loadData(); // Refresh data after product create/update
   };
 
-  if (isLoading || isLoadingData) {
+  // Blog management functions
+  const handleCreateBlog = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!blogForm.title.trim()) {
+      toast.error('Title is required');
+      return;
+    }
+    setIsSubmittingBlog(true);
+    try {
+      const generatedSlug = blogForm.title
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+      const payload = {
+        title: blogForm.title.trim(),
+        slug: (blogForm.slug || generatedSlug).trim(),
+        excerpt: blogForm.excerpt.trim() || undefined,
+        content: blogForm.content.trim(),
+        coverImage: blogForm.coverImage.trim() || undefined,
+        tags: blogForm.tags
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+        published: blogForm.published,
+      };
+      await blogAPI.createPost(payload);
+      toast.success('Blog post created');
+      setBlogForm({ title: '', slug: '', excerpt: '', content: '', coverImage: '', tags: '', published: false });
+      await loadData();
+    } catch (error: any) {
+      console.error('Error creating blog post:', error);
+      toast.error(error.message || 'Failed to create blog post');
+    } finally {
+      setIsSubmittingBlog(false);
+    }
+  };
+
+  const handleDeleteBlog = async (post: ApiBlogPost) => {
+    if (!confirm(`Delete blog post "${post.title}"?`)) return;
+    try {
+      await blogAPI.deletePost(post.id);
+      toast.success('Blog post deleted');
+      await loadData();
+    } catch (error: any) {
+      console.error('Error deleting blog post:', error);
+      toast.error(error.message || 'Failed to delete blog post');
+    }
+  };
+
+  const handleTogglePublish = async (post: ApiBlogPost) => {
+    try {
+      await blogAPI.updatePost(post.id, { published: !post.published });
+      toast.success(post.published ? 'Unpublished' : 'Published');
+      await loadData();
+    } catch (error: any) {
+      console.error('Error updating publish status:', error);
+      toast.error(error.message || 'Failed to update publish status');
+    }
+  };
+
+  if (status === 'loading' || isLoadingData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-600"></div>
@@ -132,7 +209,7 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!isAuthenticated || !isAdmin(user)) {
+  if (status !== 'authenticated' || !isAdmin(session?.user)) {
     return null;
   }
 
@@ -173,7 +250,7 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-gray-600">Welcome back, {user?.firstName}!</p>
+              <p className="text-gray-600">Welcome back, {(session?.user as any)?.firstName}!</p>
             </div>
             <div className="flex space-x-4">
               <button
@@ -195,15 +272,20 @@ export default function AdminDashboard() {
               { id: 'dashboard', name: 'Dashboard', icon: ChartBarIcon },
               { id: 'orders', name: 'Orders', icon: ShoppingBagIcon },
               { id: 'products', name: 'Products', icon: CurrencyRupeeIcon },
+              { id: 'blog', name: 'Blog', icon: PencilIcon },
               { id: 'reviews', name: 'Reviews', icon: UsersIcon },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 px-3 py-2 font-medium text-sm rounded-md transition-colors ${
+                className={`flex items-center space-x-2 px-3 py-2 font-medium text-sm rounded-full transition-all ${
                   activeTab === tab.id
-                    ? 'bg-rose-100 text-rose-700'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    ? (tab.id === 'blog'
+                        ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-sm ring-2 ring-rose-400'
+                        : 'bg-rose-100 text-rose-700')
+                    : (tab.id === 'blog'
+                        ? 'text-gray-700 border border-rose-200 hover:bg-rose-50 hover:text-rose-700'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100')
                 }`}
               >
                 <tab.icon className="h-5 w-5" />
@@ -454,7 +536,7 @@ export default function AdminDashboard() {
                         <div className="flex items-center">
                           <div className="h-12 w-12 rounded-lg bg-gray-200 mr-4">
                             <img
-                              src={product.images[0]?.src || '/placeholder-product.jpg'}
+                              src={product.images[0]?.src || '/images/placeholder.jpg'}
                               alt={product.name}
                               className="h-12 w-12 rounded-lg object-cover"
                             />
@@ -512,6 +594,148 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Blog Management */}
+        {activeTab === 'blog' && (
+          <div className="bg-white rounded-xl shadow border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Blog Management</h3>
+              <p className="text-sm text-gray-600">Create and manage blog posts.</p>
+            </div>
+            <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Create Blog Post */}
+              <form onSubmit={handleCreateBlog} className="space-y-6">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <h4 className="text-md font-semibold text-gray-900">Create New Post</h4>
+                  <p className="text-sm text-gray-600">Add content, cover image and publish.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Title</label>
+                  <input
+                    type="text"
+                    value={blogForm.title}
+                    onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Slug</label>
+                  <input
+                    type="text"
+                    value={blogForm.slug}
+                    onChange={(e) => setBlogForm({ ...blogForm, slug: e.target.value })}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    placeholder="auto-generated from title if left empty"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Example: elegant-pottery-making</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Excerpt</label>
+                  <textarea
+                    value={blogForm.excerpt}
+                    onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })}
+                    rows={3}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Content</label>
+                  <div className="mt-1">
+                    <RichTextEditor
+                      value={blogForm.content}
+                      onChange={(html) => setBlogForm({ ...blogForm, content: html })}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Cover Image</label>
+                  <div className="mt-1">
+                    <ImageUpload
+                      images={blogForm.coverImage ? [blogForm.coverImage] : []}
+                      maxImages={1}
+                      onImagesChange={(imgs) => setBlogForm({ ...blogForm, coverImage: imgs[0] || '' })}
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">Recommended size 1200x600. First image used as cover.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Tags (comma-separated)</label>
+                  <input
+                    type="text"
+                    value={blogForm.tags}
+                    onChange={(e) => setBlogForm({ ...blogForm, tags: e.target.value })}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    placeholder="e.g. pottery, design"
+                  />
+                </div>
+                <div className="flex items-center">
+                  <input
+                    id="published"
+                    type="checkbox"
+                    checked={blogForm.published}
+                    onChange={(e) => setBlogForm({ ...blogForm, published: e.target.checked })}
+                    className="h-4 w-4 text-rose-600 border-gray-300 rounded"
+                  />
+                  <label htmlFor="published" className="ml-2 block text-sm text-gray-700">
+                    Publish immediately
+                  </label>
+                </div>
+                <div>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingBlog}
+                    className="px-4 py-2 rounded-md bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow hover:from-rose-700 hover:to-pink-700 transition-colors disabled:opacity-50"
+                  >
+                    {isSubmittingBlog ? 'Creating...' : 'Create Post'}
+                  </button>
+                </div>
+              </form>
+
+              {/* Blog Posts List */}
+              <div>
+                <h4 className="text-md font-semibold text-gray-900 mb-4">Existing Posts</h4>
+                <div className="space-y-4">
+                  {blogPosts.length === 0 && (
+                    <p className="text-sm text-gray-500">No blog posts yet.</p>
+                  )}
+                  {blogPosts.map((post) => (
+                    <div key={post.id} className="border border-gray-200 rounded-lg p-4 flex items-start justify-between">
+                      <div className="mr-4">
+                        <p className="font-medium text-gray-900">{post.title}</p>
+                        <p className="text-sm text-gray-600">/{post.slug}</p>
+                        <p className="text-xs text-gray-500">
+                          {post.published ? 'Published' : 'Draft'}
+                          {post.publishedAt && ` · ${new Date(post.publishedAt).toLocaleDateString()}`}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleTogglePublish(post)}
+                          className={`px-3 py-1 text-xs rounded-md ${post.published ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}
+                        >
+                          {post.published ? 'Unpublish' : 'Publish'}
+                        </button>
+                        <button
+                          onClick={() => router.push(`/blog/${post.slug}`)}
+                          className="px-3 py-1 text-xs rounded-md bg-blue-100 text-blue-700"
+                        >
+                          View
+                        </button>
+                        <button
+                          onClick={() => handleDeleteBlog(post)}
+                          className="px-3 py-1 text-xs rounded-md bg-red-100 text-red-700"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}

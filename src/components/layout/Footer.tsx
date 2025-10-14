@@ -15,7 +15,7 @@ const footerLinks = {
   ],
   company: [
     { name: 'Our Story', href: '/about' },
-    { name: 'Services', href: '/services' },
+    { name: 'Blog', href: '/blog' },
     { name: 'Contact', href: '/contact' },
     { name: 'Careers', href: '/careers' },
     { name: 'Press', href: '/press' },
@@ -38,7 +38,7 @@ const footerLinks = {
 const socialLinks = [
   {
     name: 'Instagram',
-    href: 'https://instagram.com/studio13',
+    href: 'https://instagram.com/yourbrand',
     icon: (
       <svg fill="currentColor" viewBox="0 0 24 24" className="h-5 w-5">
         <path
@@ -51,7 +51,7 @@ const socialLinks = [
   },
   {
     name: 'Facebook',
-    href: 'https://facebook.com/studio13',
+    href: 'https://facebook.com/yourbrand',
     icon: (
       <svg fill="currentColor" viewBox="0 0 24 24" className="h-5 w-5">
         <path
@@ -64,7 +64,7 @@ const socialLinks = [
   },
   {
     name: 'Twitter',
-    href: 'https://twitter.com/studio13',
+    href: 'https://twitter.com/yourbrand',
     icon: (
       <svg fill="currentColor" viewBox="0 0 24 24" className="h-5 w-5">
         <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
@@ -80,7 +80,7 @@ export default function Footer() {
         {/* Newsletter Signup */}
         <div className="border-b border-gray-800 py-12">
           <div className="text-center max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold mb-4">Join the ElanorraaLiving Community</h3>
+            <h3 className="text-2xl font-bold mb-4">Join the ElanorraLiving Community</h3>
             <p className="text-gray-300 mb-6">
               Subscribe for exclusive offers, design inspiration, and the latest in luxury home living.
             </p>
@@ -103,7 +103,7 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <div className="mb-6">
               <Link href="/" className="text-2xl font-bold">
-                ElanorraaLiving
+                ElanorraLiving
               </Link>
               <p className="text-gray-300 mt-4 max-w-sm">
                 Transform your space with our curated collection of premium home decor and lifestyle products. 
@@ -215,7 +215,7 @@ export default function Footer() {
           {/* Copyright */}
           <div className="mt-6 pt-6 border-t border-gray-800 text-center">
             <p className="text-gray-400 text-sm">
-              © {new Date().getFullYear()} ElanorraaLiving. All rights reserved. Crafted with ❤ for luxury living.
+              © {new Date().getFullYear()} ElanorraLiving. All rights reserved. Crafted with ❤ for luxury living.
             </p>
           </div>
         </div>

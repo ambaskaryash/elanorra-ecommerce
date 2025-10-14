@@ -132,6 +132,22 @@ export interface ApiReview {
   };
 }
 
+export interface ApiBlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  content: string;
+  coverImage?: string;
+  tags: string[];
+  published: boolean;
+  publishedAt?: string | null;
+  author?: { id: string; firstName?: string; lastName?: string };
+  authorId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // API Error type
 export class ApiError extends Error {
   status: number;
@@ -147,8 +163,34 @@ async function apiFetch<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const baseURL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const url = `${baseURL}/api${endpoint}`;
+  const isBrowser = typeof window !== 'undefined';
+  // Build a robust base URL for server-side fetches to avoid relative URL errors
+  let baseURL = '';
+  if (!isBrowser) {
+    baseURL =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
+
+    // If envs are not set, derive from incoming request headers where possible
+    if (!baseURL) {
+      try {
+        const { headers } = await import('next/headers');
+        const hdrs = await headers();
+        const host = hdrs.get('host');
+        const proto = hdrs.get('x-forwarded-proto') || 'http';
+        if (host) baseURL = `${proto}://${host}`;
+      } catch {}
+    }
+
+    // Final fallback to localhost with a sensible dev port
+    if (!baseURL) {
+      const port = process.env.PORT || 3001;
+      baseURL = `http://localhost:${port}`;
+    }
+  }
+  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = `${baseURL}/api${normalizedEndpoint}`;
   
   const config: RequestInit = {
     headers: {
@@ -157,6 +199,11 @@ async function apiFetch<T>(
     },
     ...options,
   };
+
+  if (isBrowser) {
+    // Include cookies on client-side requests for authenticated endpoints
+    (config as any).credentials = 'include';
+  }
 
   try {
     const response = await fetch(url, config);
@@ -504,9 +551,107 @@ export const addressAPI = {
   },
 };
 
+// Blog API functions
+export const blogAPI = {
+  // Get blog posts with optional filters
+  getPosts: async (params?: {
+    search?: string;
+    published?: boolean;
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    posts: ApiBlogPost[];
+    pagination: { page: number; limit: number; total: number; pages: number };
+  }> => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+    const endpoint = `/blog${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    return apiFetch<{ posts: ApiBlogPost[]; pagination: { page: number; limit: number; total: number; pages: number } }>(endpoint);
+  },
+
+  // Get single post by slug (public)
+  getPostBySlug: async (slug: string): Promise<{ post: ApiBlogPost }> => {
+    return apiFetch<{ post: ApiBlogPost }>(`/blog/slug/${slug}`);
+  },
+
+  // Create new blog post (admin only)
+  createPost: async (postData: {
+    title: string;
+    slug: string;
+    excerpt?: string;
+    content: string;
+    coverImage?: string;
+    tags?: string[];
+    published?: boolean;
+  }): Promise<{ post: ApiBlogPost }> => {
+    return apiFetch<{ post: ApiBlogPost }>(`/blog`, {
+      method: 'POST',
+      body: JSON.stringify(postData),
+    });
+  },
+
+  // Update blog post (admin only)
+  updatePost: async (
+    id: string,
+    updates: Partial<{
+      title: string;
+      slug: string;
+      excerpt: string;
+      content: string;
+      coverImage: string;
+      tags: string[];
+      published: boolean;
+    }>
+  ): Promise<{ post: ApiBlogPost }> => {
+    return apiFetch<{ post: ApiBlogPost }>(`/blog/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  },
+
+  // Delete blog post (admin only)
+  deletePost: async (id: string): Promise<{ message: string }> => {
+    return apiFetch<{ message: string }>(`/blog/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// User API functions
+export const userAPI = {
+  getMe: async (): Promise<{ user: { id: string; email: string; firstName?: string; lastName?: string; phone?: string; image?: string; isAdmin?: boolean } }> => {
+    return apiFetch<{ user: { id: string; email: string; firstName?: string; lastName?: string; phone?: string; image?: string; isAdmin?: boolean } }>(`/users/me`);
+  },
+  updateMe: async (updates: Partial<{ firstName: string; lastName: string; phone: string; image: string; email: string }>): Promise<{ user: { id: string; email: string; firstName?: string; lastName?: string; phone?: string; image?: string; isAdmin?: boolean } }> => {
+    return apiFetch<{ user: { id: string; email: string; firstName?: string; lastName?: string; phone?: string; image?: string; isAdmin?: boolean } }>(`/users/me`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  },
+};
+
+// Auth API functions
+export const authAPI = {
+  changePassword: async (payload: { currentPassword: string; newPassword: string }): Promise<{ success: boolean; message?: string } | { error: string } > => {
+    return apiFetch(`/auth/change-password`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+};
+
 export const api = {
   products: productAPI,
   orders: orderAPI,
   reviews: reviewAPI,
   addresses: addressAPI,
+  blog: blogAPI,
+  users: userAPI,
+  auth: authAPI,
 };

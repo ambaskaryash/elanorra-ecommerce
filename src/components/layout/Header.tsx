@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, cubicBezier } from 'framer-motion';
 import { 
   MagnifyingGlassIcon, 
   ShoppingBagIcon, 
@@ -17,6 +17,7 @@ import { useCartStore } from '@/lib/store/cart-store';
 import { cn } from '@/lib/utils';
 import SearchBar from '@/components/ui/SearchBar';
 import { useSession, signOut } from 'next-auth/react';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 interface HeaderProps {
   className?: string;
@@ -27,12 +28,14 @@ export default function Header({ className }: HeaderProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isMiniCartOpen, setIsMiniCartOpen] = useState(false);
   const [collections, setCollections] = useState<any[]>([]);
-  const { totalItems, toggleCart } = useCartStore();
+  const { totalItems, items, subtotalPrice, totalPrice, toggleCart } = useCartStore();
   const { data: session, status } = useSession();
   const user = session?.user;
   const isAuthenticated = !!session;
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const miniCartRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch collections for navigation
   useEffect(() => {
@@ -51,58 +54,72 @@ export default function Header({ className }: HeaderProps) {
     fetchCollections();
   }, []);
 
+  // Close mini cart on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (miniCartRef.current && !miniCartRef.current.contains(event.target as Node)) {
+        setIsMiniCartOpen(false);
+      }
+    };
+    if (isMiniCartOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMiniCartOpen]);
+
   // Create navigation structure from database collections
   const navigationItems = [
-    { id: '1', name: 'Home', href: '/' },
     {
-      id: '2',
+      id: '1',
       name: 'Shop',
       href: '/shop',
       children: [
         {
-          id: '2-1',
+          id: '1-1',
           name: 'Tableware',
           href: '/shop?category=tableware',
           children: [
-            { id: '2-1-1', name: 'Dinner Sets', href: '/shop?category=tableware&subcategory=dinner-sets' },
-            { id: '2-1-2', name: 'Tea & Coffee', href: '/shop?category=tableware&subcategory=tea-coffee' },
-            { id: '2-1-3', name: 'Serving', href: '/shop?category=tableware&subcategory=serving' },
-            { id: '2-1-4', name: 'Kids Sets', href: '/shop?category=tableware&subcategory=kids-sets' },
+            { id: '1-1-1', name: 'Dinner Sets', href: '/shop?category=tableware&subcategory=dinner-sets' },
+            { id: '1-1-2', name: 'Tea & Coffee', href: '/shop?category=tableware&subcategory=tea-coffee' },
+            { id: '1-1-3', name: 'Serving', href: '/shop?category=tableware&subcategory=serving' },
+            { id: '1-1-4', name: 'Kids Sets', href: '/shop?category=tableware&subcategory=kids-sets' },
           ],
         },
         {
-          id: '2-2',
+          id: '1-2',
           name: 'Collections',
           href: '/collections',
           children: collections.slice(0, 8).map((collection, index) => ({
-            id: `2-2-${index + 1}`,
+            id: `1-2-${index + 1}`,
             name: collection.name,
             href: `/collections/${collection.slug}`,
           })),
         },
         {
-          id: '2-3',
+          id: '1-3',
           name: 'Stationery',
           href: '/shop?category=stationery',
           children: [
-            { id: '2-3-1', name: 'Notebooks', href: '/shop?category=stationery&subcategory=notebooks' },
-            { id: '2-3-2', name: 'Art Supplies', href: '/shop?category=stationery&subcategory=art-supplies' },
+            { id: '1-3-1', name: 'Notebooks', href: '/shop?category=stationery&subcategory=notebooks' },
+            { id: '1-3-2', name: 'Art Supplies', href: '/shop?category=stationery&subcategory=art-supplies' },
           ],
         },
         {
-          id: '2-4',
+          id: '1-4',
           name: 'Gifting',
           href: '/shop?category=gifting',
           children: [
-            { id: '2-4-1', name: 'Gift Hampers', href: '/shop?category=gifting&subcategory=hampers' },
-            { id: '2-4-2', name: 'Gift Cards', href: '/gift-cards' },
+            { id: '1-4-1', name: 'Gift Hampers', href: '/shop?category=gifting&subcategory=hampers' },
+            { id: '1-4-2', name: 'Gift Cards', href: '/gift-cards' },
           ],
         },
       ],
     },
-    { id: '3', name: 'Our Story', href: '/about' },
-    { id: '4', name: 'Services', href: '/services' },
-    { id: '5', name: 'Contact', href: '/contact' },
+    { id: '2', name: 'Our Story', href: '/about' },
+    { id: '3', name: 'Blog', href: '/blog' },
+    { id: '4', name: 'Contact', href: '/contact' },
   ];
 
   const handleDropdownToggle = (itemId: string) => {
@@ -139,10 +156,12 @@ export default function Header({ className }: HeaderProps) {
   }, []);
 
   return (
-    <header className={cn('bg-white border-b border-gray-200 sticky top-0 z-50', className)}>
+    <header className={cn('sticky top-0 z-50 glass', className)}>
       {/* Newsletter Banner */}
-      <div className="bg-rose-50 text-center py-2 text-sm text-gray-700">
-        <span>✨ Welcome to Elanorraa Living - Subscribe & Get 15% OFF Your First Order!</span>
+      <div className="bg-rose-50 text-center py-2 text-sm sm:text-base text-gray-700">
+        <span className="font-medium">✨ Welcome to ElanorraLiving</span>
+        <span className="mx-2 text-gray-500">•</span>
+        <span>Subscribe & get 15% off your first order</span>
       </div>
 
       {/* Main Header */}
@@ -158,10 +177,12 @@ export default function Header({ className }: HeaderProps) {
             </button>
           </div>
 
-          {/* Logo */}
+          {/* Brand Wordmark */}
           <div className="flex-shrink-0">
-            <Link href="/" className="text-2xl font-bold text-gray-900 tracking-wide">
-              Elanorraa Living
+            <Link href="/" className="flex items-center" aria-label="ElanorraLiving Home">
+              <span className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-900">
+                Elanorra<span className="font-bold">Living</span>
+              </span>
             </Link>
           </div>
 
@@ -188,7 +209,7 @@ export default function Header({ className }: HeaderProps) {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 10 }}
-                          transition={{ duration: 0.3, ease: 'easeOut' }}
+                          transition={{ duration: 0.3, ease: cubicBezier(0.16, 1, 0.3, 1) }}
                           className={`absolute left-0 mt-3 bg-white shadow-2xl border border-gray-100 z-50 ${
                             item.name === 'Shop' 
                               ? 'w-[95vw] max-w-4xl xl:max-w-6xl rounded-2xl' 
@@ -393,6 +414,9 @@ export default function Header({ className }: HeaderProps) {
               )}
             </div>
 
+            {/* Theme */}
+            <ThemeToggle className="hidden md:inline-flex" />
+
             {/* Account */}
             <div className="relative">
               {isAuthenticated ? (
@@ -463,10 +487,110 @@ export default function Header({ className }: HeaderProps) {
               )}
             </div>
 
-            {/* Cart */}
+            {/* Cart with Mini-Dropdown */}
+            <div className="relative hidden sm:block" ref={miniCartRef}>
+              <button
+                onClick={() => setIsMiniCartOpen((prev) => !prev)}
+                className="relative p-2 text-gray-700 hover:text-gray-900"
+                aria-haspopup="dialog"
+                aria-expanded={isMiniCartOpen}
+                aria-label="Open mini cart"
+              >
+                <ShoppingBagIcon className="h-6 w-6" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {isMiniCartOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={{ duration: 0.18, ease: cubicBezier(0.16, 1, 0.3, 1) }}
+                    className="absolute right-0 mt-2 w-[360px] bg-white/90 backdrop-blur-md border border-gray-200 rounded-xl shadow-2xl z-50"
+                  >
+                    <div className="p-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-gray-900">Your Cart</h4>
+                        {totalItems > 0 && (
+                          <span className="text-xs text-gray-500">{totalItems} item{totalItems > 1 ? 's' : ''}</span>
+                        )}
+                      </div>
+
+                      <div className="mt-3 divide-y divide-gray-100 max-h-64 overflow-auto">
+                        {items.length === 0 ? (
+                          <div className="py-8 text-center text-sm text-gray-500">Your cart is empty</div>
+                        ) : (
+                          items.slice(0, 4).map((item) => (
+                            <div key={item.productId} className="py-3 flex items-center gap-3">
+                              <div className="h-14 w-14 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
+                                <Image
+                                  src={item.product.images[0]?.src || '/images/placeholder.jpg'}
+                                  alt={item.product.name}
+                                  width={56}
+                                  height={56}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">{item.product.name}</p>
+                                <p className="text-xs text-gray-500">Qty {item.quantity}</p>
+                              </div>
+                              <div className="text-sm font-semibold text-gray-900">
+                                ₹{(item.product.price * item.quantity).toLocaleString('en-IN')}
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      {items.length > 4 && (
+                        <div className="mt-2 text-xs text-gray-500">+ {items.length - 4} more item{items.length - 4 > 1 ? 's' : ''}</div>
+                      )}
+
+                      <div className="mt-4 border-t border-gray-100 pt-3">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600">Subtotal</span>
+                          <span className="font-semibold text-gray-900">₹{subtotalPrice.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600">Estimated Total</span>
+                          <span className="font-semibold text-gray-900">₹{totalPrice.toLocaleString('en-IN')}</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => {
+                            setIsMiniCartOpen(false);
+                            toggleCart();
+                          }}
+                          className="px-3 py-2 text-sm font-medium border border-gray-300 rounded-md hover:bg-gray-50"
+                        >
+                          View Cart
+                        </button>
+                        <Link
+                          href="/checkout"
+                          onClick={() => setIsMiniCartOpen(false)}
+                          className="px-3 py-2 text-sm font-medium bg-rose-600 text-white rounded-md hover:bg-rose-700 text-center"
+                        >
+                          Checkout
+                        </Link>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Cart button for mobile (opens full cart) */}
             <button 
               onClick={toggleCart}
-              className="relative p-2 text-gray-700 hover:text-gray-900"
+              className="relative p-2 text-gray-700 hover:text-gray-900 sm:hidden"
             >
               <ShoppingBagIcon className="h-6 w-6" />
               {totalItems > 0 && (

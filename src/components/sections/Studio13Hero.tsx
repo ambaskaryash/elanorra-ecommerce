@@ -1,10 +1,10 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, cubicBezier } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 
-export default function Studio13Hero() {
+export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-stone-50 via-white to-rose-50">
       {/* Background Pattern */}
@@ -22,7 +22,7 @@ export default function Studio13Hero() {
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            transition={{ duration: 0.8, ease: cubicBezier(0.16, 1, 0.3, 1) }}
             className="text-center lg:text-left"
           >
             {/* Badge */}
@@ -110,7 +110,7 @@ export default function Studio13Hero() {
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
+            transition={{ duration: 0.8, ease: cubicBezier(0.16, 1, 0.3, 1), delay: 0.4 }}
             className="relative"
           >
             <div className="relative h-[600px] w-full">
@@ -118,7 +118,7 @@ export default function Studio13Hero() {
               <div className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl">
                 <Image
                   src="https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600&h=600&fit=crop&crop=center"
-                  alt="Studio13 Premium Tableware"
+                  alt="Premium Tableware"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"
