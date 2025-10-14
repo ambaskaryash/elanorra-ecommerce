@@ -173,11 +173,6 @@ export default function AccountPage() {
     }
   };
 
-  // Don't render if not authenticated (will redirect)
-  if (!isAuthenticated || !user) {
-    return null;
-  }
-
   // Handlers for Address Management
   const handleAddAddress = () => {
     setNewAddressData({ // Reset form
