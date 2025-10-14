@@ -125,46 +125,7 @@ export default function AccountPage() {
     }
   };
 
-<<<<<<< HEAD
   // Handlers for Address Management
-=======
-  useEffect(() => {
-    if (sessionUser) {
-      setEditableProfile({
-        firstName: (sessionUser as any).firstName || '',
-        lastName: (sessionUser as any).lastName || '',
-        email: sessionUser.email || '',
-        phone: (sessionUser as any).phone || '',
-      });
-    }
-  }, [sessionUser]);
-
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/login?redirect=/account');
-    }
-  }, [status, router]);
-
-  useEffect(() => {
-    if (status === 'authenticated' && sessionUser) {
-      if (activeSection === 'orders') fetchOrders();
-      if (activeSection === 'addresses') fetchAddresses();
-    }
-  }, [status, sessionUser, activeSection]);
-
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-600"></div>
-      </div>
-    );
-  }
-
-  if (status !== 'authenticated' || !sessionUser) {
-    return null;
-  }
-
->>>>>>> refs/remotes/origin/main
   const handleAddAddress = () => {
     setNewAddressData({
       firstName: '',
