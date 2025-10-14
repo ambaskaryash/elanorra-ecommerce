@@ -12,15 +12,13 @@ const extendedClient = optimizeApiKey
   ? baseClient.$extends(withOptimize({ apiKey: optimizeApiKey }))
   : baseClient;
 
-type ExtendedPrismaClient = typeof extendedClient;
-
 declare global {
   // eslint-disable-next-line no-var
-  var prisma: ExtendedPrismaClient | undefined;
+  var prisma: PrismaClient | undefined;
 }
 
 // Attach PrismaClient to the global object in development to prevent exhausting connections
-const prisma: ExtendedPrismaClient = globalThis.prisma ?? extendedClient;
+const prisma: PrismaClient = (globalThis.prisma as PrismaClient | undefined) ?? (extendedClient as unknown as PrismaClient);
 
 if (process.env.NODE_ENV !== 'production') (globalThis as any).prisma = prisma;
 
