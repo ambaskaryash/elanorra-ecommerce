@@ -1,31 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/contexts/auth-context';
+import {
+  createRazorpayOptions,
+  loadRazorpayScript,
+  RazorpayOrderData,
+  RazorpayResponse
+} from '@/lib/razorpay';
+import { useCartStore } from '@/lib/store/cart-store';
+import { useOrderStore } from '@/lib/store/order-store';
+import { formatPrice } from '@/lib/utils';
+import {
+  ArrowPathIcon,
+  BanknotesIcon,
+  CalendarIcon,
+  CreditCardIcon,
+  DevicePhoneMobileIcon,
+  ShieldCheckIcon,
+  TruckIcon
+} from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { 
-  CreditCardIcon,
-  BanknotesIcon,
-  DevicePhoneMobileIcon,
-  ShieldCheckIcon,
-  TruckIcon,
-  CalendarIcon,
-  ArrowPathIcon
-} from '@heroicons/react/24/outline';
-import { useCartStore } from '@/lib/store/cart-store';
-import { useOrderStore } from '@/lib/store/order-store';
-import { useAuth } from '@/lib/contexts/auth-context';
-import { formatPrice } from '@/lib/utils';
-import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
-import { 
-  loadRazorpayScript, 
-  createRazorpayOptions, 
-  formatAmountForRazorpay, 
-  RazorpayResponse, 
-  RazorpayOrderData 
-} from '@/lib/razorpay';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 interface Address {
   firstName: string;
@@ -42,7 +41,7 @@ interface Address {
 interface PaymentMethod {
   id: string;
   name: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   description: string;
   enabled: boolean;
 }
@@ -79,17 +78,17 @@ const paymentMethods: PaymentMethod[] = [
 ];
 
 const deliveryOptions = [
-  {
+{
     id: 'standard',
     name: 'Standard Delivery',
     description: '5-7 business days',
     price: 200,
-    icon: TruckIcon,
+icon: TruckIcon,
   },
   {
     id: 'express',
     name: 'Express Delivery',
-    description: '2-3 business days',
+description: '2-3 business days',
     price: 500,
     icon: TruckIcon,
   },
@@ -104,7 +103,7 @@ const deliveryOptions = [
 
 export default function CheckoutPage() {
   const { items, subtotalPrice, taxAmount, shippingAmount, totalPrice, clearCart, updateShipping } = useCartStore();
-  const { createOrder, isLoading: orderLoading } = useOrderStore();
+  const { createOrder } = useOrderStore();
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -135,13 +134,19 @@ export default function CheckoutPage() {
     phone: '',
   });
 
-  const [sameAsBilling, setSameAsBilling] = useState(true);
+  const [sameAsBilling] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState('card');
   const [selectedDelivery, setSelectedDelivery] = useState('standard');
   const [orderNotes, setOrderNotes] = useState('');
   const [shippingQuote, setShippingQuote] = useState<{ amount: number; etaDays: number; zone: string } | null>(null);
   const [isQuoteLoading, setIsQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
+
+  // Coupon states
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; value: number; type: string } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [isCouponLoading, setIsCouponLoading] = useState(false);
 
   // Payment form states
   const [cardDetails, setCardDetails] = useState({
@@ -184,7 +189,7 @@ export default function CheckoutPage() {
     setter(prev => ({ ...prev, [field]: value }));
   };
 
-  const selectedDeliveryOption = deliveryOptions.find(option => option.id === selectedDelivery);
+  // const selectedDeliveryOption = deliveryOptions.find(option => option.id === selectedDelivery); // Removed as it was unused
   // Shipping quote integration: fetch when pincode or delivery option changes
   useEffect(() => {
     const pincode = sameAsBilling ? billingAddress.pincode : shippingAddress.pincode;
@@ -216,6 +221,45 @@ export default function CheckoutPage() {
       updateShipping(0);
     }
   }, [sameAsBilling, billingAddress.pincode, shippingAddress.pincode, selectedDelivery, updateShipping]);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode) {
+      setCouponError('Please enter a coupon code.');
+      return;
+    }
+
+    setIsCouponLoading(true);
+    setCouponError(null);
+
+    try {
+      const response = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponCode }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to validate coupon');
+      }
+
+      if (data.minAmount && subtotalPrice < data.minAmount) {
+        throw new Error(`Minimum order amount of ${formatPrice(data.minAmount)} is required.`);
+      }
+
+      setAppliedCoupon({ code: data.code, value: data.value, type: data.type });
+      // TODO: applyDiscount(data);
+      toast.success('Coupon applied successfully!');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+      setCouponError(message);
+      toast.error(message);
+      setAppliedCoupon(null);
+    } finally {
+      setIsCouponLoading(false);
+    }
+  };
 
   const handlePlaceOrder = async () => {
     if (items.length === 0) {
@@ -328,7 +372,7 @@ export default function CheckoutPage() {
       
       if (verificationData.success) {
         // Create order in your system
-        await createOrderInSystem(response, orderData);
+        await createOrderInSystem(response);
       } else {
         toast.error('Payment verification failed');
       }
@@ -340,10 +384,12 @@ export default function CheckoutPage() {
 
   const processCODOrder = async () => {
     // Create order directly for COD
-    await createOrderInSystem(null, null);
+    await createOrderInSystem();
   };
 
-  const createOrderInSystem = async (paymentResponse?: RazorpayResponse | null, razorpayOrder?: RazorpayOrderData | null) => {
+  const createOrderInSystem = async (
+    paymentResponse?: RazorpayResponse | null
+  ) => {
     try {
       // Create order line items
       const lineItems = items.map(item => ({
@@ -643,7 +689,6 @@ export default function CheckoutPage() {
                     ))}
                   </div>
                 </div>
-
                 <button
                   onClick={() => setCurrentStep(2)}
                   className="w-full bg-rose-600 text-white py-3 rounded-md font-medium hover:bg-rose-700 transition-colors"
@@ -842,6 +887,13 @@ export default function CheckoutPage() {
                   <span>GST (18%)</span>
                   <span>{formatPrice(taxAmount)}</span>
                 </div>
+
+                {appliedCoupon && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount ({appliedCoupon.code})</span>
+                    <span>-{formatPrice(0)}</span> {/* Placeholder */}
+                  </div>
+                )}
                 
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-lg font-semibold text-gray-900">
@@ -849,6 +901,29 @@ export default function CheckoutPage() {
                     <span>{formatPrice(totalPrice)}</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Coupon Code Form */}
+              <div className="mt-6">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    placeholder="Enter coupon code"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-rose-500 focus:border-rose-500"
+                    disabled={isCouponLoading || !!appliedCoupon}
+                  />
+                  <button
+                    onClick={handleApplyCoupon}
+                    disabled={isCouponLoading || !couponCode || !!appliedCoupon}
+                    className="bg-gray-800 text-white px-4 py-2 rounded-md font-medium hover:bg-gray-900 transition-colors disabled:opacity-50"
+                  >
+                    {isCouponLoading ? '...' : 'Apply'}
+                  </button>
+                </div>
+                {couponError && <p className="text-sm text-red-600 mt-2">{couponError}</p>}
+                {appliedCoupon && <p className="text-sm text-green-600 mt-2">Coupon applied successfully!</p>}
               </div>
 
               {/* Security & Trust Badges */}

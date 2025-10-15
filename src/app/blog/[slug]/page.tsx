@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+import Script from 'next/script';
 import { blogAPI } from '@/lib/services/api';
 
 type RouteParamsPromise = Promise<{ slug: string }>;
@@ -8,23 +10,119 @@ interface Props {
   params: RouteParamsPromise;
 }
 
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  try {
+    const { slug } = await params;
+    const { post } = await blogAPI.getPostBySlug(slug);
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const url = `${baseUrl}/blog/${post.slug}`;
+    const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Blog';
+    const title = `${post.title} | ${siteName}`;
+    const description = post.excerpt || post.content.substring(0, 150) + '...' || post.title;
+    const imageUrl = post.coverImage || `${baseUrl}/images/placeholder.jpg`;
+
+    const blogPostSchema = {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": post.title,
+      "image": imageUrl,
+      "url": url,
+      "datePublished": post.createdAt, // Assuming post has createdAt field
+      "dateModified": post.updatedAt || post.createdAt, // Assuming post has updatedAt field
+      "author": {
+        "@type": "Person",
+        "name": post.author ? `${post.author.firstName} ${post.author.lastName}` : siteName, // Assuming post has author with firstName and lastName
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": siteName,
+        "logo": {
+          "@type": "ImageObject",
+          "url": `${baseUrl}/elanorra-logo.svg`, // Assuming logo path
+        }
+      },
+      "description": description,
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": url
+      }
+    };
+
+    return {
+      title,
+      description,
+      alternates: { canonical: url },
+      openGraph: {
+        type: 'article',
+        url,
+        title,
+        description,
+        images: [imageUrl],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: [imageUrl],
+      },
+    };
+  } catch {
+    return {};
+  }
+}
+
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  let postData: { post: any } | null = null;
-  try {
-    postData = await blogAPI.getPostBySlug(slug);
-  } catch {
-    postData = null;
-  }
+  const { post } = await blogAPI.getPostBySlug(slug);
 
-  if (!postData || !postData.post) {
+  if (!post) {
     notFound();
   }
 
-  const { post } = postData;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const url = `${baseUrl}/blog/${post.slug}`;
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Blog';
+  const description = post.excerpt || post.content.substring(0, 150) + '...' || post.title;
+  const imageUrl = post.coverImage || `${baseUrl}/images/placeholder.jpg`;
+
+  const blogPostSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.title,
+    "image": imageUrl,
+    "url": url,
+    "datePublished": post.createdAt, // Assuming post has createdAt field
+    "dateModified": post.updatedAt || post.createdAt, // Assuming post has updatedAt field
+    "author": {
+      "@type": "Person",
+      "name": post.author ? `${post.author.firstName} ${post.author.lastName}` : siteName, // Assuming post has author with firstName and lastName
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": siteName,
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${baseUrl}/elanorra-logo.svg`, // Assuming logo path
+      }
+    },
+    "description": description,
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": url
+    }
+  };
 
   return (
     <article className="min-h-screen bg-white">
+      <Script
+        id="blog-post-jsonld"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(blogPostSchema),
+        }}
+      />
       <section className="relative h-[50vh] bg-gray-900">
         <Image
           src={post.coverImage || '/images/placeholder.jpg'}

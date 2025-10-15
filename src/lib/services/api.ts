@@ -98,7 +98,7 @@ export interface ApiAddress {
   id: string;
   userId?: string;
   firstName: string;
-  lastName: string;
+lastName: string;
   company?: string;
   address1: string;
   address2?: string;
@@ -158,6 +158,10 @@ export class ApiError extends Error {
   }
 }
 
+// Simple in-memory cache for server-side requests
+const serverCache = new Map<string, { data: any; expiry: number }>();
+const CACHE_TTL = 60 * 1000; // 60 seconds
+
 // Generic API fetch wrapper
 async function apiFetch<T>(
   endpoint: string,
@@ -200,9 +204,22 @@ async function apiFetch<T>(
     ...options,
   };
 
+  // Generate cache key for GET requests
+  const cacheKey = `${url}-${JSON.stringify(config)}`;
+  const isGetRequest = !options.method || options.method.toUpperCase() === 'GET';
+
+  if (!isBrowser && isGetRequest) {
+    const cached = serverCache.get(cacheKey);
+    if (cached && cached.expiry > Date.now()) {
+      console.log(`Cache hit for ${url}`);
+      return cached.data;
+    }
+    console.log(`Cache miss for ${url}`);
+  }
+
   if (isBrowser) {
     // Include cookies on client-side requests for authenticated endpoints
-    (config as any).credentials = 'include';
+    (config as RequestInit).credentials = 'include';
   }
 
   try {
@@ -216,7 +233,13 @@ async function apiFetch<T>(
       );
     }
 
-    return await response.json();
+    const data = await response.json();
+
+    if (!isBrowser && isGetRequest) {
+      serverCache.set(cacheKey, { data, expiry: Date.now() + CACHE_TTL });
+    }
+
+    return data;
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
@@ -367,10 +390,10 @@ export const orderAPI = {
           searchParams.append(key, value.toString());
         }
       });
-    }
+}
     
     const endpoint = `/orders${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-    return apiFetch<{
+return apiFetch<{
       orders: ApiOrder[];
       pagination: {
         page: number;
@@ -389,7 +412,7 @@ export const orderAPI = {
       productId: string;
       quantity: number;
       price: number;
-      variants?: Record<string, any>;
+      variants?: Record<string, unknown>;
     }>;
     shippingAddress: {
       firstName: string;
@@ -646,6 +669,21 @@ export const authAPI = {
   },
 };
 
+export const returnAPI = {
+  getReturnRequests: async (): Promise<ApiReturnRequest[]> => {
+    return apiFetch('/returns');
+  },
+  getReturnRequest: async (returnId: string): Promise<ApiReturnRequest> => {
+    return apiFetch(`/returns/${returnId}`);
+  },
+  createReturnRequest: async (data: { orderId: string; reason: string; items: { orderItemId: string; quantity: number }[] }): Promise<ApiReturnRequest> => {
+    return apiFetch('/returns', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 export const api = {
   products: productAPI,
   orders: orderAPI,
@@ -654,4 +692,24 @@ export const api = {
   blog: blogAPI,
   users: userAPI,
   auth: authAPI,
+  returns: returnAPI,
+};
+
+export type ApiReturnRequest = {
+  id: string;
+  orderId: string;
+  order: ApiOrder;
+  reason: string;
+  status: string;
+  createdAt: string;
+  items: {
+    id: string;
+    orderItem: {
+      id: string;
+      product: {
+        name: string;
+      };
+    };
+    quantity: number;
+  }[];
 };

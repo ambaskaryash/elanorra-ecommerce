@@ -1,9 +1,13 @@
+'use client';
+
 import {
-    EnvelopeIcon,
-    MapPinIcon,
-    PhoneIcon
+  EnvelopeIcon,
+  MapPinIcon,
+  PhoneIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { useCallback, useState } from 'react';
+import toast from 'react-hot-toast';
 
 const footerLinks = {
   shop: [
@@ -74,6 +78,37 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(data.message);
+        setEmail('');
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error('Newsletter subscription failed:', error);
+      toast.error('Failed to subscribe. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [email]);
+
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -84,16 +119,23 @@ export default function Footer() {
             <p className="text-gray-300 mb-6">
               Subscribe for exclusive offers, design inspiration, and the latest in luxury home living.
             </p>
-            <div className="flex flex-col sm:flex-row max-w-md mx-auto gap-4">
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row max-w-md mx-auto gap-4">
               <input
                 type="email"
                 placeholder="Enter your email"
                 className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
               />
-              <button className="bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-md font-medium transition-colors">
-                Subscribe
+              <button
+                type="submit"
+                className="bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-md font-medium transition-colors"
+                disabled={loading}
+              >
+                {loading ? 'Subscribing...' : 'Subscribe'}
               </button>
-            </div>
+            </form>
           </div>
         </div>
 

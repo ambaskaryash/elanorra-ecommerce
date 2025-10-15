@@ -20,6 +20,8 @@ export interface Product {
     width: number;
     height: number;
   };
+  avgRating?: number; // Added for stored average rating
+  reviewCount?: number; // Added for stored count of reviews
   featured: boolean;
   bestseller: boolean;
   newArrival: boolean;
@@ -104,10 +106,12 @@ export interface Address {
   address2?: string;
   city: string;
   country: string;
-  province: string;
-  zip: string;
+  state: string;
+  zipCode: string;
   phone?: string;
-  isDefault: boolean;
+  isDefault?: boolean;
+  isDefaultShipping: boolean;
+  isDefaultBilling: boolean;
 }
 
 // Order types

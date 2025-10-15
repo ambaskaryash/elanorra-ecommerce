@@ -1,13 +1,14 @@
 'use client';
 
-import { Suspense, useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { motion, Variants, cubicBezier } from 'framer-motion';
-import Link from 'next/link';
-import { FunnelIcon } from '@heroicons/react/24/outline';
 import ProductCard from '@/components/ui/ProductCard';
 import type { ApiProduct } from '@/lib/services/api';
 import { capitalizeFirst } from '@/lib/utils';
+import { FunnelIcon } from '@heroicons/react/24/outline';
+import { cubicBezier, motion, Variants } from 'framer-motion';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useDebounce } from 'use-debounce';
 
 const sortOptions = [
   { name: 'Relevance', value: 'relevance' },
@@ -40,9 +41,16 @@ const itemVariants: Variants = {
 };
 
 export default function SearchPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
   
+  const [searchQuery, setSearchQuery] = useState(query);
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [didYouMean, setDidYouMean] = useState<string | null>(null);
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('relevance');
   const [products, setProducts] = useState<ApiProduct[]>([]);
@@ -61,6 +69,29 @@ export default function SearchPage() {
   useEffect(() => {
     setPriceRange(actualPriceRange);
   }, [actualPriceRange]);
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (debouncedSearchQuery.length > 1) {
+        try {
+          const res = await fetch(`/api/products/suggestions?q=${debouncedSearchQuery}`);
+          if (res.ok) {
+            const data = await res.json();
+            setSuggestions(data.suggestions || []);
+            setDidYouMean(data.didYouMean || null);
+            setIsSuggestionsOpen(true);
+          }
+        } catch (error) {
+          console.error('Failed to fetch suggestions', error);
+        }
+      } else {
+        setSuggestions([]);
+        setDidYouMean(null);
+        setIsSuggestionsOpen(false);
+      }
+    };
+    fetchSuggestions();
+  }, [debouncedSearchQuery]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -160,6 +191,18 @@ export default function SearchPage() {
     setPriceRange(newRange);
   };
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push(`/search?q=${searchQuery}`);
+    setIsSuggestionsOpen(false);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    router.push(`/search?q=${suggestion}`);
+    setIsSuggestionsOpen(false);
+  };
+
   return (
     <Suspense fallback={null}>
     <div className="min-h-screen bg-white">
@@ -179,11 +222,41 @@ export default function SearchPage() {
               </ol>
             </nav>
             
+            <form onSubmit={handleSearchSubmit} className="relative mb-4">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search for products..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-md text-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+              />
+              {isSuggestionsOpen && suggestions.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                  <ul>
+                    {suggestions.map((suggestion, index) => (
+                      <li
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                      >
+                        {suggestion}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </form>
+
             {query ? (
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-                  Search Results for "{query}"
+                  Search Results for &quot;{query}&quot;
                 </h1>
+                {didYouMean && didYouMean.toLowerCase() !== query.toLowerCase() && (
+                  <p className="text-md text-gray-600 mb-2">
+                    Did you mean: <Link href={`/search?q=${didYouMean}`} className="text-rose-600 hover:underline">{didYouMean}</Link>?
+                  </p>
+                )}
                 <p className="text-lg text-gray-600">
                   {searchResults.length} {searchResults.length === 1 ? 'product' : 'products'} found
                 </p>
@@ -341,7 +414,7 @@ export default function SearchPage() {
                 </div>
                 <div className="space-y-4">
                   <p className="text-gray-400">
-                    Try adjusting your search or filters to find what you're looking for.
+                    Try adjusting your search or filters to find what you&apos;re looking for.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     {query && (

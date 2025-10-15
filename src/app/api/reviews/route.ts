@@ -14,12 +14,15 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const sortBy = searchParams.get('sortBy') || 'createdAt';
-    const sortOrder = searchParams.get('sortOrder') || 'desc';
+    let sortOrder: 'asc' | 'desc' = (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc';
+    if (sortOrder !== 'asc' && sortOrder !== 'desc') {
+      sortOrder = 'desc'; // Default to 'desc' if invalid
+    }
 
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     
     if (productId) {
       where.productId = productId;
@@ -34,7 +37,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build orderBy clause
-    const orderBy: any = {};
+    const orderBy: Record<string, 'asc' | 'desc'> = {};
     orderBy[sortBy] = sortOrder;
 
     const [reviews, total] = await Promise.all([
@@ -150,24 +153,28 @@ export async function POST(request: NextRequest) {
     // Create review
     const review = await prisma.review.create({
       data: validatedData,
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-          }
-        },
-        product: {
-          select: {
-            name: true,
-            slug: true,
-          }
-        }
+    });
+
+    // Recalculate and update product's average rating and review count
+    const productReviews = await prisma.review.findMany({
+      where: { productId: validatedData.productId },
+      select: { rating: true },
+    });
+
+    const totalRating = productReviews.reduce((sum, r) => sum + r.rating, 0);
+    const newReviewCount = productReviews.length;
+    const newAvgRating = newReviewCount > 0 ? totalRating / newReviewCount : 0;
+
+    await prisma.product.update({
+      where: { id: validatedData.productId },
+      data: {
+        avgRating: newAvgRating,
+        reviewCount: newReviewCount,
       },
     });
 
     return NextResponse.json({ review }, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error creating review:', error);
     
     if (error instanceof z.ZodError) {
@@ -177,8 +184,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     return NextResponse.json(
-      { error: 'Failed to create review' },
+      { error: errorMessage || 'Failed to create review' },
       { status: 500 }
     );
   }

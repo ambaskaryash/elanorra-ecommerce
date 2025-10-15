@@ -10,7 +10,6 @@ import { StarIcon, HeartIcon, ShareIcon, MinusIcon, PlusIcon } from '@heroicons/
 import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useCartStore } from '@/lib/store/cart-store';
 import { useWishlistStore } from '@/lib/store/wishlist-store';
-import { useReviewsStore } from '@/lib/store/reviews-store';
 import { Product } from '@/types';
 import { toast } from 'react-hot-toast';
 import ProductReviews from '@/components/ui/ProductReviews';
@@ -32,10 +31,8 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
 
   const { addItem } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
-  const { getProductRating } = useReviewsStore();
 
   const isWishlisted = isInWishlist(product?.id || '');
-  const { averageRating, totalReviews } = getProductRating(product?.id || '');
 
   // Build ApiProduct shape for cart/wishlist stores
   const apiProductBase: ApiProduct = {
@@ -51,8 +48,8 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
     inventory: product.inventory,
     weight: product.weight,
     dimensions: product.dimensions,
-    avgRating: typeof averageRating === 'number' ? averageRating : 0,
-    reviewCount: typeof totalReviews === 'number' ? totalReviews : 0,
+    avgRating: product.avgRating || 0, // Use stored average rating
+    reviewCount: product.reviewCount || 0, // Use stored review count
     images: product.images.map((img, idx) => ({
       id: img.id,
       src: img.src,
@@ -154,8 +151,8 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
     toast.success('Sharing not supported in this environment.');
   };
 
-  const rating = averageRating;
-  const reviewCount = totalReviews;
+  const rating = product.avgRating || 0;
+  const reviewCount = product.reviewCount || 0;
 
   return (
     <div className="min-h-screen bg-white">
@@ -189,10 +186,10 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
                 : 'http://schema.org/OutOfStock',
             },
             aggregateRating:
-              (typeof reviewCount === 'number' && reviewCount > 0 && typeof rating === 'number')
+              (reviewCount > 0 && rating > 0)
                 ? {
                     '@type': 'AggregateRating',
-                    ratingValue: Number((rating as number).toFixed(1)),
+                    ratingValue: Number(rating.toFixed(1)),
                     reviewCount,
                   }
                 : undefined,

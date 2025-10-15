@@ -1,15 +1,13 @@
+import Cart from '@/components/layout/Cart';
+import Footer from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
+import { SessionProvider } from '@/components/providers/session-provider';
+import { ThemeProvider } from '@/components/providers/theme-provider';
+import { AuthProvider } from '@/lib/contexts/auth-context';
 import type { Metadata } from "next";
 import { Instrument_Sans } from "next/font/google";
-import { Toaster } from 'react-hot-toast';
 import { Suspense } from 'react';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
-import { SessionProvider } from '@/components/providers/session-provider';
-import { AuthProvider } from '@/lib/contexts/auth-context';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import Cart from '@/components/layout/Cart';
-import { ThemeProvider } from '@/components/providers/theme-provider';
+import { Toaster } from 'sonner';
 import "./globals.css";
 
 const instrumentSans = Instrument_Sans({
@@ -62,28 +60,7 @@ export default function RootLayout({
               <Footer />
               <Cart />
             </ThemeProvider>
-            <Toaster
-              position="bottom-right"
-              toastOptions={{
-                duration: 3000,
-                style: {
-                  background: '#363636',
-                  color: '#fff',
-                },
-                success: {
-                  style: {
-                    background: '#10B981',
-                    color: '#fff',
-                  },
-                },
-                error: {
-                  style: {
-                    background: '#EF4444',
-                    color: '#fff',
-                  },
-                },
-              }}
-            />
+            <Toaster richColors position="bottom-right" />
           </AuthProvider>
         </SessionProvider>
       </body>

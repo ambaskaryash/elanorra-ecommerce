@@ -1,8 +1,9 @@
 'use client';
 
+import Image from 'next/image'; // Import Next.js Image component
 import ProductModal from '@/components/admin/ProductModal';
 import { useSession } from 'next-auth/react';
-import { orderAPI, productAPI, reviewAPI, blogAPI, type ApiProduct, type ApiBlogPost } from '@/lib/services/api';
+import { orderAPI, productAPI, reviewAPI, blogAPI, type ApiProduct, type ApiBlogPost, type ApiOrder, type ApiReview } from '@/lib/services/api';
 import { useOrderStore } from '@/lib/store/order-store';
 import { useReviewsStore } from '@/lib/store/reviews-store';
 import { formatPrice } from '@/lib/utils';
@@ -24,11 +25,21 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import ImageUpload from '@/components/admin/ImageUpload';
+import { BulkProductUpload } from '@/components/admin/BulkProductUpload'; // Import the new component
+import { type Session } from 'next-auth'; // Import Session type from next-auth
 
 // Admin check based solely on isAdmin flag (remove brand-specific emails)
-const isAdmin = (user: any) => {
-  return user?.isAdmin === true;
+const isAdmin = (sessionUser: Session['user'] | undefined) => {
+  return sessionUser?.isAdmin === true;
 };
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ElementType;
+  trend?: number;
+  color?: string;
+}
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
@@ -39,8 +50,8 @@ export default function AdminDashboard() {
   
   // Database state
   const [products, setProducts] = useState<ApiProduct[]>([]);
-  const [dbOrders, setDbOrders] = useState<any[]>([]);
-  const [dbReviews, setDbReviews] = useState<any[]>([]);
+  const [dbOrders, setDbOrders] = useState<ApiOrder[]>([]);
+  const [dbReviews, setDbReviews] = useState<ApiReview[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [blogPosts, setBlogPosts] = useState<ApiBlogPost[]>([]);
   const [isSubmittingBlog, setIsSubmittingBlog] = useState(false);
@@ -91,7 +102,7 @@ export default function AdminDashboard() {
         totalProducts: productsRes.products.length,
         totalReviews: reviewsRes.reviews.length,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error loading admin data:', error);
       toast.error('Failed to load dashboard data');
     } finally {
@@ -100,9 +111,9 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    const user = session?.user as any;
+    const sessionUser = session?.user;
     if (status === 'loading') return;
-    if (status !== 'authenticated' || !isAdmin(user)) {
+    if (status !== 'authenticated' || !isAdmin(sessionUser)) {
       router.push('/auth/login?redirect=/admin');
       return;
     }
@@ -129,9 +140,9 @@ export default function AdminDashboard() {
       await productAPI.deleteProduct(product.slug);
       toast.success('Product deleted successfully!');
       await loadData(); // Refresh data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting product:', error);
-      toast.error(error.message || 'Failed to delete product');
+      toast.error(error instanceof Error ? error.message : 'Failed to delete product');
     }
   };
 
@@ -170,9 +181,9 @@ export default function AdminDashboard() {
       toast.success('Blog post created');
       setBlogForm({ title: '', slug: '', excerpt: '', content: '', coverImage: '', tags: '', published: false });
       await loadData();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating blog post:', error);
-      toast.error(error.message || 'Failed to create blog post');
+      toast.error(error instanceof Error ? error.message : 'Failed to create blog post');
     } finally {
       setIsSubmittingBlog(false);
     }
@@ -184,9 +195,9 @@ export default function AdminDashboard() {
       await blogAPI.deletePost(post.id);
       toast.success('Blog post deleted');
       await loadData();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting blog post:', error);
-      toast.error(error.message || 'Failed to delete blog post');
+      toast.error(error instanceof Error ? error.message : 'Failed to delete blog post');
     }
   };
 
@@ -195,9 +206,9 @@ export default function AdminDashboard() {
       await blogAPI.updatePost(post.id, { published: !post.published });
       toast.success(post.published ? 'Unpublished' : 'Published');
       await loadData();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating publish status:', error);
-      toast.error(error.message || 'Failed to update publish status');
+      toast.error(error instanceof Error ? error.message : 'Failed to update publish status');
     }
   };
 
@@ -220,7 +231,7 @@ export default function AdminDashboard() {
   const recentOrders = displayOrders.slice(0, 5);
   const recentReviews = displayReviews.slice(0, 5);
 
-  const StatCard = ({ title, value, icon: Icon, trend, color = 'rose' }: any) => (
+  const StatCard = ({ title, value, icon: Icon, trend, color = 'rose' }: StatCardProps) => (
     <motion.div
       whileHover={{ y: -2 }}
       className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
@@ -250,7 +261,7 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-gray-600">Welcome back, {(session?.user as any)?.firstName}!</p>
+              <p className="text-gray-600">Welcome back, {session?.user?.firstName}!</p>
             </div>
             <div className="flex space-x-4">
               <button
@@ -272,6 +283,7 @@ export default function AdminDashboard() {
               { id: 'dashboard', name: 'Dashboard', icon: ChartBarIcon },
               { id: 'orders', name: 'Orders', icon: ShoppingBagIcon },
               { id: 'products', name: 'Products', icon: CurrencyRupeeIcon },
+              { id: 'bulk-upload', name: 'Bulk Upload', icon: ShoppingBagIcon }, // Add new tab for bulk upload
               { id: 'blog', name: 'Blog', icon: PencilIcon },
               { id: 'reviews', name: 'Reviews', icon: UsersIcon },
             ].map((tab) => (
@@ -535,9 +547,11 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="h-12 w-12 rounded-lg bg-gray-200 mr-4">
-                            <img
+                            <Image
                               src={product.images[0]?.src || '/images/placeholder.jpg'}
                               alt={product.name}
+                              width={48}
+                              height={48}
                               className="h-12 w-12 rounded-lg object-cover"
                             />
                           </div>
@@ -595,6 +609,14 @@ export default function AdminDashboard() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* Bulk Upload Section */}
+        {activeTab === 'bulk-upload' && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Bulk Product Upload</h3>
+            <BulkProductUpload />
           </div>
         )}
 

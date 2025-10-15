@@ -1,8 +1,8 @@
-import { notFound } from 'next/navigation';
-import type { Metadata } from 'next';
-import ProductPageClient from './ProductPageClient';
 import { productAPI, type ApiProduct } from '@/lib/services/api';
 import { type Product } from '@/types';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import ProductPageClient from './ProductPageClient';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -33,6 +33,8 @@ function mapApiProductToProduct(api: ApiProduct): Product {
     inventory: api.inventory,
     weight: api.weight,
     dimensions: api.dimensions,
+    avgRating: api.avgRating, // Use stored average rating
+    reviewCount: api.reviewCount, // Use stored review count
     featured: false,
     bestseller: false,
     newArrival: false,
@@ -74,6 +76,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const images = product.images?.length
       ? product.images.map(img => ({ url: img.src, alt: img.alt || product.name }))
       : [{ url: `${baseUrl}/images/placeholder.jpg`, alt: product.name }];
+
+    const productSchema = {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": product.name,
+      "image": images.length > 0 ? images[0].url : `${baseUrl}/images/placeholder.jpg`,
+      "description": description,
+      "sku": product.id, // Assuming product.id can serve as SKU
+      "offers": {
+        "@type": "Offer",
+        "url": url,
+        "priceCurrency": "INR", // Assuming Indian Rupees as currency
+        "price": product.price,
+        "itemCondition": "https://schema.org/NewCondition",
+        "availability": product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      },
+      "aggregateRating": (product.reviewCount && product.reviewCount > 0 && product.avgRating)
+        ? {
+            "@type": "AggregateRating",
+            "ratingValue": product.avgRating.toFixed(1),
+            "reviewCount": product.reviewCount,
+          }
+        : undefined,
+    };
 
     return {
       title,

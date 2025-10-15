@@ -93,6 +93,8 @@ model Product {
   inventory   Int       @default(0)
   weight      Float?
   dimensions  Json?     // {length, width, height}
+  avgRating   Float     @default(0) // Stored average rating
+  reviewCount Int       @default(0) // Stored count of reviews
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -193,6 +195,7 @@ model Order {
   billingAddress    Address?  @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
   shippingAddressId String?
   billingAddressId  String?
+  returnRequests    ReturnRequest[]
 
   @@map("orders")
 }
@@ -209,6 +212,7 @@ model OrderItem {
   // Relations
   order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product    Product @relation(fields: [productId], references: [id])
+  returnRequestItems ReturnRequestItem[]
 
   @@map("order_items")
 }
@@ -310,4 +314,29 @@ model BlogPost {
   author      User?     @relation(fields: [authorId], references: [id])
 
   @@map("blog_posts")
+}
+
+model ReturnRequest {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id])
+  reason      String
+  status      String   @default("pending") // pending, approved, denied
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items ReturnRequestItem[]
+
+  @@map("return_requests")
+}
+
+model ReturnRequestItem {
+  id              String        @id @default(cuid())
+  returnRequestId String
+  returnRequest   ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
+  orderItemId     String
+  orderItem       OrderItem     @relation(fields: [orderItemId], references: [id])
+  quantity        Int
+
+  @@map("return_request_items")
 }
