@@ -485,12 +485,12 @@ async function main() {
       dimensions: { length: 45, width: 35, height: 25 },
       images: [
         {
-          src: 'https://images.unsplash.com/photo-1607344645866-009c7d0f2e4b?w=800&h=600&fit=crop&crop=center',
+          src: '/images/test-product-1.jpg',
           alt: 'Studio13 Luxury Gift Hamper',
           position: 0,
         },
         {
-          src: 'https://images.unsplash.com/photo-1493936593252-3090dc7e1de4?w=800&h=600&fit=crop&crop=center',
+          src: '/images/test-product-2.jpg',
           alt: 'Gift Hamper Contents',
           position: 1,
         },

@@ -16,6 +16,7 @@ import ProductReviews from '@/components/ui/ProductReviews';
 import RelatedProducts from '@/components/products/RelatedProducts';
 import FrequentlyBoughtTogether from '@/components/products/FrequentlyBoughtTogether';
 import ProductVariants from '@/components/ui/ProductVariants';
+import ImageZoom from '@/components/ui/ImageZoom';
 import { ApiProduct } from '@/lib/services/api';
 
 interface ProductPageClientProps {
@@ -222,16 +223,15 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
           >
             {/* Main Image */}
             <div className="relative aspect-square mb-4 bg-gray-100 rounded-2xl overflow-hidden">
-              <Image
+              <ImageZoom
                 src={product.images[selectedImage]?.src || '/images/placeholder.jpg'}
                 alt={product.images[selectedImage]?.alt || product.name}
-                fill
-                className="object-cover"
+                className="absolute inset-0"
                 priority
               />
 
               {/* Badges */}
-              <div className="absolute top-4 left-4 space-y-2">
+              <div className="absolute top-4 left-4 space-y-2 z-10">
                 {product.newArrival && (
                   <span className="inline-block px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded-full">
                     New

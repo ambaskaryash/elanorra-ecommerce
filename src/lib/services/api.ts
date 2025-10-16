@@ -194,7 +194,10 @@ async function apiFetch<T>(
     }
   }
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  const url = `${baseURL}/api${normalizedEndpoint}`;
+  // Avoid double /api/ prefix if endpoint already includes it
+  const url = normalizedEndpoint.startsWith('/api/') 
+    ? `${baseURL}${normalizedEndpoint}` 
+    : `${baseURL}/api${normalizedEndpoint}`;
   
   const config: RequestInit = {
     headers: {
@@ -333,30 +336,21 @@ export const productAPI = {
   },
 
   // Update product (admin only)
-  updateProduct: async (
-    slug: string,
-    updates: Partial<{
-      name: string;
-      slug: string;
-      description: string;
-      price: number;
-      compareAtPrice: number;
-      category: string;
-      tags: string[];
-      inStock: boolean;
-      inventory: number;
-      weight: number;
-      dimensions: {
-        length: number;
-        width: number;
-        height: number;
-      };
-    }>
-  ): Promise<{ product: ApiProduct }> => {
-    return apiFetch<{ product: ApiProduct }>(`/products/${slug}`, {
+  updateProduct: async (slug: string, updates: Partial<ApiProduct>): Promise<ApiProduct> => {
+    const response = await fetch(`/api/products/${slug}`, {
       method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(updates),
     });
+
+    if (!response.ok) {
+      throw new Error('Failed to update product');
+    }
+
+    const data = await response.json();
+    return data.product;
   },
 
   // Delete product (admin only)

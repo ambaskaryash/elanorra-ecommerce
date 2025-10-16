@@ -26,17 +26,33 @@ export default function ImageUpload({
     formData.append('file', file);
 
     try {
+      console.log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
+      
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
 
+      console.log('Upload response status:', response.status);
+
       if (!response.ok) {
         const error = await response.json();
+        console.error('Upload failed with error:', error);
         throw new Error(error.error || 'Upload failed');
       }
 
       const result = await response.json();
+      console.log('Upload successful, result:', result);
+      console.log('Returned URL:', result.url);
+      
+      // Test if the URL is accessible
+      if (result.url) {
+        const testImg = new window.Image();
+        testImg.onload = () => console.log('✅ URL is accessible:', result.url);
+        testImg.onerror = () => console.error('❌ URL is not accessible:', result.url);
+        testImg.src = result.url;
+      }
+      
       return result.url;
     } catch (error) {
       console.error('Upload error:', error);
@@ -99,12 +115,22 @@ export default function ImageUpload({
               <div
                 key={index}
                 className="relative group aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200"
+                style={{ minHeight: '150px' }}
               >
                 <Image
                   src={image}
                   alt={`Product image ${index + 1}`}
                   fill
                   className="object-cover"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  priority={index === 0}
+                  onError={(e) => {
+                    console.error('Image failed to load:', image);
+                    e.currentTarget.style.display = 'none';
+                  }}
+                  onLoad={() => {
+                    console.log('Image loaded successfully:', image);
+                  }}
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200">
                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -151,7 +177,45 @@ export default function ImageUpload({
           </div>
         )}
 
-        {/* Upload Area */}
+        {/* Upload Error */}
+        {uploadError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <X className="h-5 w-5 text-red-400" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">Upload Error</h3>
+                <div className="mt-2 text-sm text-red-700">
+                  <p>{uploadError}</p>
+                </div>
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setUploadError(null)}
+                    className="bg-red-100 px-2 py-1 rounded text-sm text-red-800 hover:bg-red-200"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Debug Info */}
+        {process.env.NODE_ENV === 'development' && images.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-blue-800 mb-2">Debug: Image URLs</h4>
+            <div className="text-xs text-blue-700 space-y-1">
+              {images.map((url, index) => (
+                <div key={index} className="break-all">
+                  {index + 1}: {url}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {images.length < maxImages && (
           <div
             {...getRootProps()}

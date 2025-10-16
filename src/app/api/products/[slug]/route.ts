@@ -88,6 +88,18 @@ const updateProductSchema = z.object({
     width: z.number().positive(),
     height: z.number().positive(),
   }).optional(),
+  images: z.array(z.object({
+    src: z.string().url(),
+    alt: z.string(),
+    position: z.number().int().min(0).optional(),
+  })).optional(),
+  variants: z.array(z.object({
+    name: z.string(),
+    value: z.string(),
+    priceAdjustment: z.number().optional(),
+    inStock: z.boolean().optional(),
+    inventory: z.number().int().min(0).optional(),
+  })).optional(),
 });
 
 export async function PUT(
@@ -116,10 +128,31 @@ export async function PUT(
       );
     }
 
+    // Prepare update data
+    const { images, variants, ...updateData } = validatedData;
+    
     // Update product
     const product = await prisma.product.update({
       where: { slug },
-      data: validatedData,
+      data: {
+        ...updateData,
+        ...(images && {
+          images: {
+            deleteMany: {},
+            create: images.map((image, index) => ({
+              src: image.src,
+              alt: image.alt,
+              position: image.position ?? index,
+            })),
+          },
+        }),
+        ...(variants && {
+          variants: {
+            deleteMany: {},
+            create: variants,
+          },
+        }),
+      },
       include: {
         images: true,
         variants: true,
@@ -132,7 +165,7 @@ export async function PUT(
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
+        { error: 'Validation failed', details: error.issues },
         { status: 400 }
       );
     }
