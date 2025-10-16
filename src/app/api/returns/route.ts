@@ -19,7 +19,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const returnRequests = await (prisma as any).returnRequest.findMany({
+  const returnRequests = await (prisma as any).ReturnRequest.findMany({
     where: { order: { userId: session.user.id } },
     include: { order: true, items: { include: { orderItem: { include: { product: true } } } } },
     orderBy: { createdAt: 'desc' },
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
   const { orderId, reason, items } = validation.data;
 
-  const newReturnRequest = await (prisma as any).returnRequest.create({
+  const newReturnRequest = await (prisma as any).ReturnRequest.create({
     data: {
       orderId,
       reason,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { saveUploadedFile } from '@/lib/upload';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await saveUploadedFile(file);
+    const result = await uploadToCloudinary(file, 'ecommerce/products');
 
     if (!result.success) {
       return NextResponse.json(
@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       url: result.url,
+      public_id: result.public_id,
     });
   } catch (error) {
     console.error('Upload error:', error);

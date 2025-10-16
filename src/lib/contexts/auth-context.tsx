@@ -32,6 +32,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkAuth = () => {
       try {
+        // Ensure we're in the browser before accessing localStorage
+        if (typeof window === 'undefined') {
+          setIsLoading(false);
+          return;
+        }
+        
         const storedUser = localStorage.getItem('Elanorra_user');
         const storedToken = localStorage.getItem('Elanorra_token');
         
@@ -41,8 +47,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('Error checking auth:', error);
-        localStorage.removeItem('Elanorra_user');
-        localStorage.removeItem('Elanorra_token');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('Elanorra_user');
+          localStorage.removeItem('Elanorra_token');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -75,10 +83,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               address2: 'Apt 4B',
               city: 'Mumbai',
               country: 'India',
-              province: 'Maharashtra',
-              zip: '400001',
+              state: 'Maharashtra',
+              zipCode: '400001',
               phone: '+91 9876543210',
               isDefault: true,
+              isDefaultShipping: true,
+              isDefaultBilling: true,
             },
           ],
         };

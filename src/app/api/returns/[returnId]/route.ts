@@ -9,7 +9,7 @@ export async function GET(req: NextRequest, { params }: { params: { returnId: st
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const returnRequest = await (prisma as any).returnRequest.findUnique({
+  const returnRequest = await (prisma as any).ReturnRequest.findUnique({
     where: { id: params.returnId },
     include: { order: true, items: { include: { orderItem: { include: { product: true } } } } },
   });

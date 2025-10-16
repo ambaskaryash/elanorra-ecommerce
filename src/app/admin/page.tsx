@@ -3,7 +3,7 @@
 import Image from 'next/image'; // Import Next.js Image component
 import ProductModal from '@/components/admin/ProductModal';
 import { useSession } from 'next-auth/react';
-import { orderAPI, productAPI, reviewAPI, blogAPI, type ApiProduct, type ApiBlogPost, type ApiOrder, type ApiReview } from '@/lib/services/api';
+import { orderAPI, productAPI, reviewAPI, blogAPI, api, type ApiProduct, type ApiBlogPost, type ApiOrder, type ApiReview, type ApiReturnRequest } from '@/lib/services/api';
 import { useOrderStore } from '@/lib/store/order-store';
 import { useReviewsStore } from '@/lib/store/reviews-store';
 import { formatPrice } from '@/lib/utils';
@@ -18,6 +18,7 @@ import {
   TrashIcon,
   UsersIcon,
   XCircleIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -54,6 +55,7 @@ export default function AdminDashboard() {
   const [dbReviews, setDbReviews] = useState<ApiReview[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [blogPosts, setBlogPosts] = useState<ApiBlogPost[]>([]);
+  const [returnRequests, setReturnRequests] = useState<ApiReturnRequest[]>([]);
   const [isSubmittingBlog, setIsSubmittingBlog] = useState(false);
   const [blogForm, setBlogForm] = useState({
     title: '',
@@ -82,17 +84,22 @@ export default function AdminDashboard() {
   const loadData = async () => {
     setIsLoadingData(true);
     try {
-      const [productsRes, ordersRes, reviewsRes, blogsRes] = await Promise.all([
+      const [productsRes, ordersRes, reviewsRes, blogsRes, returnsRes] = await Promise.all([
         productAPI.getProducts({ limit: 100 }),
         orderAPI.getOrders({ limit: 100 }),
         reviewAPI.getReviews({ limit: 100 }),
         blogAPI.getPosts({ limit: 100, published: undefined }),
+        api.returns.getAllReturnRequests(),
       ]);
+      
+      console.log('Admin loadData - Products response:', productsRes);
+      console.log('Admin loadData - Products count:', productsRes.products.length);
       
       setProducts(productsRes.products);
       setDbOrders(ordersRes.orders);
       setDbReviews(reviewsRes.reviews);
       setBlogPosts(blogsRes.posts);
+      setReturnRequests(returnsRes.returnRequests);
       
       // Calculate stats
       setStats({
@@ -212,6 +219,17 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleUpdateReturnStatus = async (returnId: string, status: string, adminNotes?: string) => {
+    try {
+      await api.returns.updateReturnStatus(returnId, status, adminNotes);
+      toast.success('Return status updated successfully');
+      await loadData(); // Refresh the list
+    } catch (error: unknown) {
+      console.error('Error updating return status:', error);
+      toast.error('Failed to update return status');
+    }
+  };
+
   if (status === 'loading' || isLoadingData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -284,6 +302,7 @@ export default function AdminDashboard() {
               { id: 'orders', name: 'Orders', icon: ShoppingBagIcon },
               { id: 'products', name: 'Products', icon: CurrencyRupeeIcon },
               { id: 'bulk-upload', name: 'Bulk Upload', icon: ShoppingBagIcon }, // Add new tab for bulk upload
+              { id: 'returns', name: 'Returns', icon: ArrowPathIcon },
               { id: 'blog', name: 'Blog', icon: PencilIcon },
               { id: 'reviews', name: 'Reviews', icon: UsersIcon },
             ].map((tab) => (
@@ -617,6 +636,95 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Bulk Product Upload</h3>
             <BulkProductUpload />
+          </div>
+        )}
+
+        {/* Returns Management */}
+        {activeTab === 'returns' && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Returns Management</h3>
+              <p className="text-sm text-gray-600 mt-1">Manage customer return requests and refunds</p>
+            </div>
+            <div className="p-6">
+              <div className="space-y-6">
+                {returnRequests.length === 0 && (
+                  <p className="text-sm text-gray-500">No return requests yet.</p>
+                )}
+                {returnRequests.map((returnRequest) => (
+                  <div key={returnRequest.id} className="border border-gray-200 rounded-lg p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h4 className="font-medium text-gray-900">Return Request #{returnRequest.id.slice(-8)}</h4>
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            returnRequest.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            returnRequest.status === 'approved' ? 'bg-green-100 text-green-800' :
+                            returnRequest.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {returnRequest.status.charAt(0).toUpperCase() + returnRequest.status.slice(1)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Order: #{returnRequest.order.orderNumber} • Customer: {returnRequest.order.user?.firstName} {returnRequest.order.user?.lastName}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Email: {returnRequest.order.user?.email} • Created: {new Date(returnRequest.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="mb-4">
+                      <h5 className="font-medium text-gray-900 mb-2">Reason:</h5>
+                      <p className="text-gray-700">{returnRequest.reason}</p>
+                    </div>
+                    
+                    <div className="mb-4">
+                      <h5 className="font-medium text-gray-900 mb-2">Items to Return:</h5>
+                      <div className="space-y-2">
+                        {returnRequest.items.map((item) => (
+                          <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-900">{item.orderItem.product.name}</p>
+                              <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {returnRequest.status === 'pending' && (
+                      <div className="flex space-x-3">
+                        <button
+                          onClick={() => handleUpdateReturnStatus(returnRequest.id, 'approved')}
+                          className="px-4 py-2 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors"
+                        >
+                          Approve Return
+                        </button>
+                        <button
+                          onClick={() => handleUpdateReturnStatus(returnRequest.id, 'rejected', 'Return request rejected by admin')}
+                          className="px-4 py-2 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+                        >
+                          Reject Return
+                        </button>
+                      </div>
+                    )}
+                    
+                    {returnRequest.status === 'approved' && (
+                      <div className="flex space-x-3">
+                        <button
+                          onClick={() => handleUpdateReturnStatus(returnRequest.id, 'processed', 'Refund processed')}
+                          className="px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
+                        >
+                          Mark as Processed
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 

@@ -58,9 +58,19 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt"
   },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: false // Set to true in production with HTTPS
+      }
+    }
+  },
   pages: {
     signIn: "/auth/login",
-    signUp: "/auth/register",
     error: "/auth/error",
   },
   callbacks: {

@@ -201,6 +201,7 @@ async function apiFetch<T>(
       'Content-Type': 'application/json',
       ...options.headers,
     },
+    credentials: 'include', // Include cookies for authentication
     ...options,
   };
 
@@ -671,15 +672,26 @@ export const authAPI = {
 
 export const returnAPI = {
   getReturnRequests: async (): Promise<ApiReturnRequest[]> => {
-    return apiFetch('/returns');
+    return apiFetch<ApiReturnRequest[]>('/api/returns');
   },
   getReturnRequest: async (returnId: string): Promise<ApiReturnRequest> => {
-    return apiFetch(`/returns/${returnId}`);
+    return apiFetch<ApiReturnRequest>(`/api/returns/${returnId}`);
   },
   createReturnRequest: async (data: { orderId: string; reason: string; items: { orderItemId: string; quantity: number }[] }): Promise<ApiReturnRequest> => {
-    return apiFetch('/returns', {
+    return apiFetch<ApiReturnRequest>('/api/returns', {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  },
+  
+  // Admin functions
+  getAllReturnRequests: async (): Promise<{ returnRequests: ApiReturnRequest[] }> => {
+    return apiFetch<{ returnRequests: ApiReturnRequest[] }>('/api/admin/returns');
+  },
+  updateReturnStatus: async (returnId: string, status: string, adminNotes?: string): Promise<ApiReturnRequest> => {
+    return apiFetch<ApiReturnRequest>('/api/admin/returns', {
+      method: 'PATCH',
+      body: JSON.stringify({ returnId, status, adminNotes }),
     });
   },
 };
@@ -698,7 +710,14 @@ export const api = {
 export type ApiReturnRequest = {
   id: string;
   orderId: string;
-  order: ApiOrder;
+  order: ApiOrder & {
+    user?: {
+      id: string;
+      firstName?: string;
+      lastName?: string;
+      email: string;
+    };
+  };
   reason: string;
   status: string;
   createdAt: string;
@@ -707,7 +726,11 @@ export type ApiReturnRequest = {
     orderItem: {
       id: string;
       product: {
+        id: string;
         name: string;
+        slug: string;
+        price: number;
+        images: Array<{ src: string; alt: string }>;
       };
     };
     quantity: number;
