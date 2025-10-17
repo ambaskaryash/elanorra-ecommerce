@@ -87,7 +87,7 @@ const createOrderSchema = z.object({
     productId: z.string(),
     quantity: z.number().int().positive(),
     price: z.number().positive(),
-    variants: z.record(z.any()).optional(),
+    variants: z.record(z.string(), z.any()).optional(),
   })),
   shippingAddress: z.object({
     firstName: z.string(),
@@ -198,14 +198,8 @@ export async function POST(request: NextRequest) {
         where: {
           code: validatedData.couponCode,
           isActive: true,
-          OR: [
-            { validFrom: null },
-            { validFrom: { lte: now } },
-          ],
-          OR: [
-            { validTo: null },
-            { validTo: { gte: now } },
-          ],
+          validFrom: { lte: now },
+          validTo: { gte: now },
         },
       });
 
@@ -341,7 +335,7 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
+        { error: 'Validation failed', details: error.issues },
         { status: 400 }
       );
     }

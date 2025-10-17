@@ -1,16 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/lib/auth';
+import { z } from 'zod';
+import { rateLimit, rateLimitConfigs, createRateLimitResponse } from '@/lib/rate-limit';
 
 const changePasswordSchema = z.object({
-  currentPassword: z.string().min(6),
+  currentPassword: z.string().min(1),
   newPassword: z.string().min(6),
 });
 
+const limiter = rateLimit(rateLimitConfigs.auth);
+
 export async function POST(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResult = await limiter(request);
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult.error!, rateLimitResult.resetTime!);
+  }
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {

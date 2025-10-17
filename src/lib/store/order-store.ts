@@ -21,9 +21,9 @@ interface CreateOrderData {
   lineItems: OrderLineItem[];
   shippingAddress: any;
   billingAddress: any;
-  subtotalPrice: number;
-  totalTax: number;
-  totalShipping: number;
+  subtotal: number;
+  taxes: number;
+  shipping: number;
   totalPrice: number;
   currency: string;
 }
@@ -38,6 +38,18 @@ export const useOrderStore = create<OrderState>()(
       orders: [],
       currentOrder: null,
       isLoading: false,
+      error: null,
+
+      fetchOrders: async (params) => {
+        set({ isLoading: true, error: null });
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          set({ isLoading: false });
+        } catch (error) {
+          set({ isLoading: false, error: 'Failed to fetch orders' });
+        }
+      },
 
       createOrder: async (orderData: CreateOrderData) => {
         set({ isLoading: true });
@@ -56,13 +68,25 @@ export const useOrderStore = create<OrderState>()(
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             totalPrice: orderData.totalPrice,
-            subtotalPrice: orderData.subtotalPrice,
-            totalTax: orderData.totalTax,
-            totalShipping: orderData.totalShipping,
+            subtotal: orderData.subtotal,
+            taxes: orderData.taxes,
+            shipping: orderData.shipping,
+            discount: 0,
             currency: orderData.currency,
             financialStatus: 'pending',
             fulfillmentStatus: 'unfulfilled',
-            lineItems: orderData.lineItems,
+            items: orderData.lineItems.map(item => ({
+              id: item.id,
+              productId: item.productId,
+              quantity: item.quantity,
+              price: item.price,
+              variants: {},
+              product: {
+                name: item.title,
+                slug: item.productId,
+                images: [{ src: item.image, alt: item.title }]
+              }
+            })),
             shippingAddress: orderData.shippingAddress,
             billingAddress: orderData.billingAddress,
           };
@@ -121,6 +145,10 @@ export const useOrderStore = create<OrderState>()(
 
       clearOrders: () => {
         set({ orders: [], currentOrder: null });
+      },
+
+      clearError: () => {
+        set({ error: null });
       },
     }),
     {

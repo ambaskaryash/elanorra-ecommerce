@@ -15,12 +15,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     const { post } = await blogAPI.getPostBySlug(slug);
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://elanorraliving.in';
     const url = `${baseUrl}/blog/${post.slug}`;
     const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Blog';
     const title = `${post.title} | ${siteName}`;
     const description = post.excerpt || post.content.substring(0, 150) + '...' || post.title;
-    const imageUrl = post.coverImage || `${baseUrl}/images/placeholder.jpg`;
+    const imageUrl = post.coverImage || `${baseUrl}/images/placeholder.svg`;
 
     const blogPostSchema = {
       "@context": "https://schema.org",
@@ -80,11 +80,11 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://elanorraliving.in';
   const url = `${baseUrl}/blog/${post.slug}`;
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Blog';
   const description = post.excerpt || post.content.substring(0, 150) + '...' || post.title;
-  const imageUrl = post.coverImage || `${baseUrl}/images/placeholder.jpg`;
+  const imageUrl = post.coverImage || `${baseUrl}/images/placeholder.svg`;
 
   const blogPostSchema = {
     "@context": "https://schema.org",
@@ -125,7 +125,7 @@ export default async function BlogPostPage({ params }: Props) {
       />
       <section className="relative h-[50vh] bg-gray-900">
         <Image
-          src={post.coverImage || '/images/placeholder.jpg'}
+          src={post.coverImage || '/images/placeholder.svg'}
           alt={post.title}
           fill
           className="object-cover opacity-60"

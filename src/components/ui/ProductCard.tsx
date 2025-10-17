@@ -54,7 +54,7 @@ export default function ProductCard({ product, className = '' }: ProductCardProp
           )}
           
           <Image
-            src={imgError ? '/images/placeholder.jpg' : (product.images[0]?.src || '/images/placeholder.jpg')}
+            src={imgError ? '/images/placeholder.svg' : (product.images[0]?.src || '/images/placeholder.svg')}
             alt={product.images[0]?.alt || product.name}
             fill
             className={`object-cover transition-all duration-500 group-hover:scale-105 ${

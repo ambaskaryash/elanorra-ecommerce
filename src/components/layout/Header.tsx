@@ -14,7 +14,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { useCartStore } from '@/lib/store/cart-store';
 // Dynamic navigation will be created from database collections
-import { cn } from '@/lib/utils';
 import SearchBar from '@/components/ui/SearchBar';
 import { useSession, signOut } from 'next-auth/react';
 import ThemeToggle from '@/components/ui/ThemeToggle';
@@ -156,7 +155,7 @@ export default function Header({ className }: HeaderProps) {
   }, []);
 
   return (
-    <header className={cn('sticky top-0 z-50 glass', className)}>
+    <header className={`sticky top-0 z-50 glass ${className || ''}`}>
       {/* Newsletter Banner */}
       <div className="bg-rose-50 text-center py-2 text-sm sm:text-base text-gray-700">
         <span className="font-medium">✨ Welcome to ElanorraLiving</span>
@@ -529,7 +528,7 @@ export default function Header({ className }: HeaderProps) {
                             <div key={item.productId} className="py-3 flex items-center gap-3">
                               <div className="h-14 w-14 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
                                 <Image
-                                  src={item.product.images[0]?.src || '/images/placeholder.jpg'}
+                                  src={item.product.images[0]?.src || '/images/placeholder.svg'}
                                   alt={item.product.name}
                                   width={56}
                                   height={56}
@@ -623,10 +622,7 @@ export default function Header({ className }: HeaderProps) {
                       >
                         {item.name}
                         <ChevronDownIcon 
-                          className={cn(
-                            'h-4 w-4 transition-transform',
-                            activeDropdown === item.id && 'rotate-180'
-                          )} 
+                          className={`h-4 w-4 transition-transform ${activeDropdown === item.id ? 'rotate-180' : ''}`}
                         />
                       </button>
                       

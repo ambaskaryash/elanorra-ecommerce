@@ -2,20 +2,40 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { rateLimit, rateLimitConfigs } from '@/lib/rate-limit';
+import { handleError } from '@/lib/error-handler';
+
+const limiter = rateLimit(rateLimitConfigs.api);
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResult = await limiter(request);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429 }
+      );
+    }
+
     // Check authentication
     const session = await getServerSession(authOptions);
     console.log('Upload API - Session:', session);
     
-    // Temporary bypass for testing - remove in production
+    // Enhanced security - require admin access in production
     const isDevelopment = process.env.NODE_ENV === 'development';
     
-    if (!isDevelopment && !session?.user?.isAdmin) {
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    if (!isDevelopment && !session.user.isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized. Admin access required.' },
-        { status: 401 }
+        { status: 403 }
       );
     }
 
@@ -29,7 +49,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // File validation
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        { error: 'File size too large. Maximum 10MB allowed.' },
+        { status: 400 }
+      );
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json(
+        { error: 'Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed.' },
+        { status: 400 }
+      );
+    }
+
     console.log('Processing file:', file.name, 'Size:', file.size, 'Type:', file.type);
+
+    // Log admin action
+    console.log(`Admin action: ${session.user.id} uploaded file ${file.name} at ${new Date().toISOString()}`);
 
     const result = await uploadToCloudinary(file, 'ecommerce/products');
 
@@ -48,10 +88,10 @@ export async function POST(request: NextRequest) {
       public_id: result.public_id,
     });
   } catch (error) {
-    console.error('Upload error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return handleError(error, {
+      url: request.url,
+      method: request.method,
+      userAgent: request.headers.get('user-agent') || undefined,
+    });
   }
 }

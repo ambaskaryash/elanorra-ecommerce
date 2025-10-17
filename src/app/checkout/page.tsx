@@ -173,8 +173,8 @@ export default function CheckoutPage() {
         address1: defaultAddress.address1,
         address2: defaultAddress.address2 || '',
         city: defaultAddress.city,
-        state: defaultAddress.province,
-        pincode: defaultAddress.zip,
+        state: defaultAddress.state,
+        pincode: defaultAddress.zipCode,
         phone: defaultAddress.phone || user.phone || '',
       });
     }
@@ -428,9 +428,9 @@ export default function CheckoutPage() {
           zip: shippingAddress.pincode,
           isDefault: false,
         },
-        subtotalPrice,
-        totalTax: taxAmount,
-        totalShipping: shippingAmount,
+        subtotal: subtotalPrice,
+        taxes: taxAmount,
+        shipping: shippingAmount,
         totalPrice,
         currency: 'INR',
         paymentMethod: selectedPayment,
@@ -817,7 +817,7 @@ export default function CheckoutPage() {
                       <div key={item.productId} className="flex items-center space-x-4">
                         <div className="h-16 w-16 flex-shrink-0 rounded-md overflow-hidden bg-gray-200">
                           <Image
-                            src={item.product.images[0]?.src || '/images/placeholder.jpg'}
+                            src={item.product.images[0]?.src || '/images/placeholder.svg'}
                             alt={item.product.name}
                             width={64}
                             height={64}

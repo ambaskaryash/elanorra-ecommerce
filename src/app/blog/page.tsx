@@ -12,7 +12,7 @@ export default async function BlogPage() {
       <section className="relative h-[40vh] bg-gray-900 flex items-center justify-center text-center">
         <div className="absolute inset-0">
           <Image
-            src="/images/placeholder.jpg"
+            src="/images/placeholder.svg"
             alt="Blog"
             fill
             className="object-cover opacity-50"
@@ -35,7 +35,7 @@ export default async function BlogPage() {
                 <Link key={post.id} href={`/blog/${post.slug}`} className="group border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
                   <div className="relative h-48 w-full bg-gray-100">
                     <Image
-                      src={post.coverImage || '/images/placeholder.jpg'}
+                      src={post.coverImage || '/images/placeholder.svg'}
                       alt={post.title}
                       fill
                       className="object-cover"

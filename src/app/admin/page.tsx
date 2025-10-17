@@ -469,7 +469,7 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">#{order.orderNumber}</div>
-                          <div className="text-sm text-gray-500">{order.lineItems.length} items</div>
+                          <div className="text-sm text-gray-500">{order.items.length} items</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -567,7 +567,7 @@ export default function AdminDashboard() {
                         <div className="flex items-center">
                           <div className="h-12 w-12 rounded-lg bg-gray-200 mr-4">
                             <Image
-                              src={product.images[0]?.src || '/images/placeholder.jpg'}
+                              src={product.images[0]?.src || '/images/placeholder.svg'}
                               alt={product.name}
                               width={48}
                               height={48}

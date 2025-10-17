@@ -160,19 +160,19 @@ export default function OrderConfirmationPage({ params }: Props) {
               <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Items</h2>
               
               <div className="space-y-4">
-                {order.lineItems.map((item) => (
+                {order.items.map((item) => (
                   <div key={item.id} className="flex items-center space-x-4 py-4 border-b border-gray-200 last:border-b-0">
                     <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
                       <Image
-                        src={item.image || '/images/placeholder.jpg'}
-                        alt={item.title}
+                        src={item.product.images[0]?.src || '/images/placeholder.svg'}
+                        alt={item.product.name}
                         width={64}
                         height={64}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 truncate">{item.title}</h3>
+                      <h3 className="font-medium text-gray-900 truncate">{item.product.name}</h3>
                       <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
                     </div>
                     <div className="text-right">
@@ -203,15 +203,15 @@ export default function OrderConfirmationPage({ params }: Props) {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span>{formatPrice(order.subtotalPrice)}</span>
+                  <span>{formatPrice(order.subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
-                  <span>{formatPrice(order.totalShipping)}</span>
+                  <span>{formatPrice(order.shipping)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax</span>
-                  <span>{formatPrice(order.totalTax)}</span>
+                  <span>{formatPrice(order.taxes)}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-2 mt-2">
                   <div className="flex justify-between font-semibold">
@@ -246,7 +246,7 @@ export default function OrderConfirmationPage({ params }: Props) {
                   <p>{order.shippingAddress.address2}</p>
                 )}
                 <p>
-                  {order.shippingAddress.city}, {order.shippingAddress.province} {order.shippingAddress.zip}
+                  {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
                 </p>
                 <p>{order.shippingAddress.country}</p>
                 {order.shippingAddress.phone && (

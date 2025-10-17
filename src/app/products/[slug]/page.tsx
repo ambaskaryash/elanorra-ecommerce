@@ -56,7 +56,7 @@ export default async function ProductPage({ params }: Props) {
   }
 
   const product = mapApiProductToProduct(apiProduct);
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://elanorraliving.in';
   const canonicalUrl = `${baseUrl}/products/${product.slug}`;
 
   return <ProductPageClient product={product} canonicalUrl={canonicalUrl} />;
@@ -68,20 +68,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { product: apiProduct } = await productAPI.getProduct(slug);
     const product = mapApiProductToProduct(apiProduct);
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://elanorraliving.in';
     const url = `${baseUrl}/products/${product.slug}`;
     const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Shop';
     const title = `${product.name} | ${siteName}`;
     const description = product.shortDescription || product.description || `${product.name}`;
     const images = product.images?.length
       ? product.images.map(img => ({ url: img.src, alt: img.alt || product.name }))
-      : [{ url: `${baseUrl}/images/placeholder.jpg`, alt: product.name }];
+      : [{ url: `${baseUrl}/images/placeholder.svg`, alt: product.name }];
 
     const productSchema = {
       "@context": "https://schema.org/",
       "@type": "Product",
       "name": product.name,
-      "image": images.length > 0 ? images[0].url : `${baseUrl}/images/placeholder.jpg`,
+      "image": images.length > 0 ? images[0].url : `${baseUrl}/images/placeholder.svg`,
       "description": description,
       "sku": product.id, // Assuming product.id can serve as SKU
       "offers": {

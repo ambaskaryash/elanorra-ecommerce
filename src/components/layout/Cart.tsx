@@ -93,7 +93,7 @@ export default function Cart() {
                                 <li key={item.productId} className="flex py-6">
                                   <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                                     <Image
-                                      src={item.product.images[0]?.src || '/images/placeholder.jpg'}
+                                      src={item.product.images[0]?.src || '/images/placeholder.svg'}
                                       alt={item.product.images[0]?.alt || item.product.name}
                                       width={96}
                                       height={96}

@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { replaceUnsplashWithCloudinary } from '../src/lib/data/cloudinary-images';
 
 const prisma = new PrismaClient();
 
@@ -14,7 +15,7 @@ async function main() {
         name: 'Vasant',
         slug: 'vasant',
         description: 'Vasant Collection is pure love. Inspired by spring and new beginnings. Each piece celebrates the beauty of renewal and fresh starts.',
-        image: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&h=600&fit=crop&crop=center',
+        image: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-cup-set',
       },
     }),
     prisma.collection.upsert({
@@ -24,7 +25,7 @@ async function main() {
         name: 'Anaar',
         slug: 'anaar',
         description: 'Rich pomegranate-inspired designs that celebrate abundance and prosperity. Deep reds and intricate patterns tell stories of heritage.',
-        image: 'https://images.unsplash.com/photo-1607344645866-009c7d0f2e4b?w=800&h=600&fit=crop&crop=center',
+        image: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-serving-set',
       },
     }),
     prisma.collection.upsert({
@@ -34,7 +35,7 @@ async function main() {
         name: 'Gulistan',
         slug: 'gulistan',
         description: 'Rose garden collection featuring hand-painted floral motifs that celebrate the beauty of nature. Inspired by Mughal gardens.',
-        image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop&crop=center',
+        image: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/anaar-dinner-plates',
       },
     }),
     prisma.collection.upsert({
@@ -44,7 +45,7 @@ async function main() {
         name: 'Sundarbans',
         slug: 'sundarbans',
         description: 'Inspired by the mystical mangrove forests and their natural beauty. Earthy tones and organic patterns.',
-        image: 'https://images.unsplash.com/photo-1585129777188-94600ff10dd6?w=800&h=600&fit=crop&crop=center',
+        image: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-victoria-meal-set',
       },
     }),
     prisma.collection.upsert({
@@ -54,7 +55,7 @@ async function main() {
         name: 'Kids Victoria',
         slug: 'kids-victoria',
         description: 'Whimsical tableware designed for little dreamers. Safe, durable, and magical designs that inspire imagination.',
-        image: 'https://images.unsplash.com/photo-1607734834271-d7c1b5c4e4d1?w=800&h=600&fit=crop&crop=center',
+        image: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-victoria-special',
       },
     }),
     prisma.collection.upsert({
@@ -64,7 +65,7 @@ async function main() {
         name: 'Pondicherry',
         slug: 'pondicherry',
         description: 'French colonial elegance meets Indian craftsmanship in this coastal-inspired collection. Timeless sophistication.',
-        image: 'https://images.unsplash.com/photo-1493936593252-3090dc7e1de4?w=800&h=600&fit=crop&crop=center',
+        image: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/pondicherry-coastal',
       },
     }),
     prisma.collection.upsert({
@@ -74,7 +75,7 @@ async function main() {
         name: 'Le Jardin Bleu',
         slug: 'le-jardin-bleu',
         description: 'Blue garden-themed collection with French elegance and delicate floral patterns. Sophisticated and serene.',
-        image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop&crop=center',
+        image: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/anaar-dinner-plates',
       },
     }),
     prisma.collection.upsert({
@@ -84,7 +85,7 @@ async function main() {
         name: 'Vintage Garden',
         slug: 'vintage-garden',
         description: 'Classic botanical prints with a vintage charm. Timeless designs that never go out of style.',
-        image: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&h=600&fit=crop&crop=center',
+        image: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-cup-set',
       },
     }),
     prisma.collection.upsert({
@@ -94,7 +95,7 @@ async function main() {
         name: 'Limited Edition',
         slug: 'limited-edition',
         description: 'Exclusive collections crafted by master artisans. Available in very limited quantities.',
-        image: 'https://images.unsplash.com/photo-1607344645866-009c7d0f2e4b?w=800&h=600&fit=crop&crop=center',
+        image: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-serving-set',
       },
     }),
   ]);
@@ -117,17 +118,17 @@ async function main() {
       dimensions: { length: 27, width: 27, height: 2.5 },
       images: [
         {
-          src: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-cup-set',
           alt: 'Vasant Dinner Plate Set - Spring Collection',
           position: 0,
         },
         {
-          src: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/anaar-dinner-plates',
           alt: 'Vasant Dinner Plate Detail',
           position: 1,
         },
         {
-          src: 'https://images.unsplash.com/photo-1607344645866-009c7d0f2e4b?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-serving-set',
           alt: 'Vasant Collection Table Setting',
           position: 2,
         },
@@ -148,12 +149,12 @@ async function main() {
       dimensions: { length: 12, width: 12, height: 6 },
       images: [
         {
-          src: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/floral-paradise-notebook',
           alt: 'Vasant Tea Cup & Saucer Set',
           position: 0,
         },
         {
-          src: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-cup-set',
           alt: 'Tea Cup Close-up',
           position: 1,
         },
@@ -176,17 +177,17 @@ async function main() {
       dimensions: { length: 35, width: 25, height: 3 },
       images: [
         {
-          src: 'https://images.unsplash.com/photo-1607344645866-009c7d0f2e4b?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-serving-set',
           alt: 'Anaar Large Serving Platter',
           position: 0,
         },
         {
-          src: 'https://images.unsplash.com/photo-1493936593252-3090dc7e1de4?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/pondicherry-coastal',
           alt: 'Anaar Platter Detail View',
           position: 1,
         },
         {
-          src: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/anaar-dinner-plates',
           alt: 'Festive Table with Platter',
           position: 2,
         },
@@ -206,12 +207,12 @@ async function main() {
       dimensions: { length: 20, width: 20, height: 8 },
       images: [
         {
-          src: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/anaar-dinner-plates',
           alt: 'Anaar Bowl Set',
           position: 0,
         },
         {
-          src: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-cup-set',
           alt: 'Bowl Detail',
           position: 1,
         },
@@ -234,17 +235,17 @@ async function main() {
       dimensions: { length: 40, width: 30, height: 20 },
       images: [
         {
-          src: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/anaar-dinner-plates',
           alt: 'Gulistan Rose Garden Dinner Set',
           position: 0,
         },
         {
-          src: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-cup-set',
           alt: 'Gulistan Set Individual Pieces',
           position: 1,
         },
         {
-          src: 'https://images.unsplash.com/photo-1607344645866-009c7d0f2e4b?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-serving-set',
           alt: 'Table Decor with Gulistan',
           position: 2,
         },
@@ -264,12 +265,12 @@ async function main() {
       dimensions: { length: 22, width: 15, height: 12 },
       images: [
         {
-          src: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-cup-set',
           alt: 'Gulistan Tea Pot with Infuser',
           position: 0,
         },
         {
-          src: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/anaar-dinner-plates',
           alt: 'Teapot Close-up',
           position: 1,
         },
@@ -291,12 +292,12 @@ async function main() {
       dimensions: { length: 25, width: 20, height: 8 },
       images: [
         {
-          src: 'https://images.unsplash.com/photo-1607734834271-d7c1b5c4e4d1?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-victoria-special',
           alt: 'Kids Victoria Princess Meal Set',
           position: 0,
         },
         {
-          src: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-cup-set',
           alt: 'Princess Set Individual Pieces',
           position: 1,
         },
@@ -316,12 +317,12 @@ async function main() {
       dimensions: { length: 25, width: 20, height: 8 },
       images: [
         {
-          src: 'https://images.unsplash.com/photo-1585129777188-94600ff10dd6?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-victoria-meal-set',
           alt: 'Kids Victoria Adventure Explorer Set',
           position: 0,
         },
         {
-          src: 'https://images.unsplash.com/photo-1607734834271-d7c1b5c4e4d1?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-victoria-special',
           alt: 'Explorer Motif Detail',
           position: 1,
         },
@@ -344,12 +345,12 @@ async function main() {
       dimensions: { length: 12, width: 9, height: 10 },
       images: [
         {
-          src: 'https://images.unsplash.com/photo-1585129777188-94600ff10dd6?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-victoria-meal-set',
           alt: 'Sundarbans Forest Mug Collection',
           position: 0,
         },
         {
-          src: 'https://images.unsplash.com/photo-1493936593252-3090dc7e1de4?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/pondicherry-coastal',
           alt: 'Individual Sundarbans Mugs',
           position: 1,
         },
@@ -372,12 +373,12 @@ async function main() {
       dimensions: { length: 30, width: 25, height: 15 },
       images: [
         {
-          src: 'https://images.unsplash.com/photo-1493936593252-3090dc7e1de4?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/pondicherry-coastal',
           alt: 'Pondicherry Coastal Breakfast Set',
           position: 0,
         },
         {
-          src: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-cup-set',
           alt: 'Coastal Table Styling',
           position: 1,
         },
@@ -400,12 +401,12 @@ async function main() {
       dimensions: { length: 25, width: 25, height: 35 },
       images: [
         {
-          src: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/anaar-dinner-plates',
           alt: 'Le Jardin Bleu 3-Tier Cake Stand',
           position: 0,
         },
         {
-          src: 'https://images.unsplash.com/photo-1607344645866-009c7d0f2e4b?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-serving-set',
           alt: 'Cake Stand Detail',
           position: 1,
         },
@@ -427,12 +428,12 @@ async function main() {
       dimensions: { length: 21, width: 15, height: 2 },
       images: [
         {
-          src: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-cup-set',
           alt: 'Floral Paradise Notebook Collection',
           position: 0,
         },
         {
-          src: 'https://images.unsplash.com/photo-1607344645866-009c7d0f2e4b?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-serving-set',
           alt: 'Notebook Cover Detail',
           position: 1,
         },
@@ -457,12 +458,12 @@ async function main() {
       dimensions: { length: 35, width: 25, height: 8 },
       images: [
         {
-          src: 'https://images.unsplash.com/photo-1585129777188-94600ff10dd6?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-victoria-meal-set',
           alt: 'Premium Art Supply Set for Kids',
           position: 0,
         },
         {
-          src: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop&crop=center',
+          src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/anaar-dinner-plates',
           alt: 'Art Set Contents',
           position: 1,
         },

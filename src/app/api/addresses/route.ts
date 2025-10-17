@@ -17,8 +17,7 @@ const addressSchema = z.object({
   zipCode: z.string().min(1, 'Zip code is required'),
   country: z.string().min(1, 'Country is required').default('India'),
   phone: z.string().optional(),
-  isDefaultShipping: z.boolean().optional().default(false),
-  isDefaultBilling: z.boolean().optional().default(false),
+  isDefault: z.boolean().optional().default(false),
 });
 
 // GET /api/addresses - Get all addresses for a user
@@ -31,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     const addresses = await prisma.address.findMany({
       where: { userId: session.user.id },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { id: 'desc' },
     });
 
     return NextResponse.json({ addresses });
@@ -55,25 +54,22 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = addressSchema.parse(body);
 
-    // Force ownership to authenticated user
-    validatedData.userId = session.user.id;
+    // Create address data with authenticated user ID
+    const addressData = {
+      ...validatedData,
+      userId: session.user.id,
+    };
 
     // If setting as default, unset previous defaults for this user
-    if (validatedData.isDefaultShipping && validatedData.userId) {
+    if (addressData.isDefault) {
       await prisma.address.updateMany({
-        where: { userId: validatedData.userId, isDefaultShipping: true },
-        data: { isDefaultShipping: false },
-      });
-    }
-    if (validatedData.isDefaultBilling && validatedData.userId) {
-      await prisma.address.updateMany({
-        where: { userId: validatedData.userId, isDefaultBilling: true },
-        data: { isDefaultBilling: false },
+        where: { userId: addressData.userId, isDefault: true },
+        data: { isDefault: false },
       });
     }
 
     const address = await prisma.address.create({
-      data: validatedData,
+      data: addressData,
     });
 
     return NextResponse.json({ address }, { status: 201 });
@@ -111,16 +107,10 @@ export async function PUT(request: NextRequest) {
     const validatedData = addressSchema.partial().parse(body); // Allow partial updates
 
     // If setting as default, unset previous defaults for this user
-    if (validatedData.isDefaultShipping && validatedData.userId) {
+    if (validatedData.isDefault && validatedData.userId) {
       await prisma.address.updateMany({
-        where: { userId: validatedData.userId, isDefaultShipping: true, id: { not: id } },
-        data: { isDefaultShipping: false },
-      });
-    }
-    if (validatedData.isDefaultBilling && validatedData.userId) {
-      await prisma.address.updateMany({
-        where: { userId: validatedData.userId, isDefaultBilling: true, id: { not: id } },
-        data: { isDefaultBilling: false },
+        where: { userId: validatedData.userId, isDefault: true, id: { not: id } },
+        data: { isDefault: false },
       });
     }
 

@@ -13,7 +13,7 @@ const heroSlides = [
     subtitle: 'Exquisite ceramic tableware and bespoke gifting solutions',
     buttonText: 'Shop Tableware',
     buttonLink: '/shop?category=tableware',
-    image: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=1600&h=900&fit=crop&crop=center',
+    image: 'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/vasant-collection_hero1',
   },
   {
     id: '2',
@@ -21,7 +21,7 @@ const heroSlides = [
     subtitle: 'From Anaar to Vasant - Discover stories in every piece',
     buttonText: 'Explore Collections',
     buttonLink: '/collections',
-    image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=1600&h=900&fit=crop&crop=center',
+    image: 'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/anaar-collection_hero2',
   },
   {
     id: '3',
@@ -29,7 +29,7 @@ const heroSlides = [
     subtitle: 'Custom gifting solutions for your special moments',
     buttonText: 'Gift Sets',
     buttonLink: '/shop?category=gifting',
-    image: 'https://images.unsplash.com/photo-1607344645866-009c7d0f2e4b?w=1600&h=900&fit=crop&crop=center',
+    image: 'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/gulistan-collection_hero3',
   },
   {
     id: '4',
@@ -37,7 +37,7 @@ const heroSlides = [
     subtitle: 'Beautiful designs that cater to the whole family',
     buttonText: 'Kids Collection',
     buttonLink: '/collections/kids-victoria',
-    image: 'https://images.unsplash.com/photo-1585129777188-94600ff10dd6?w=1600&h=900&fit=crop&crop=center',
+    image: 'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/kids-victoria_hero4',
   },
 ];
 
@@ -88,7 +88,7 @@ export default function HeroCarousel() {
           {/* Background Image */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-transparent z-10" />
           <Image
-            src={erroredSlides[currentSlide] ? '/images/placeholder.jpg' : heroSlides[currentSlide].image}
+            src={erroredSlides[currentSlide] ? '/images/placeholder.svg' : heroSlides[currentSlide].image}
             alt={heroSlides[currentSlide].title}
             fill
             className="object-cover opacity-90"

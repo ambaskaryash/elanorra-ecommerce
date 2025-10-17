@@ -8,6 +8,8 @@ import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { signIn } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 
+import { validateAndSanitizeUser } from '@/lib/validation';
+
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -74,40 +76,31 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
+      // Validate and sanitize user input
+      const sanitizedData = validateAndSanitizeUser({
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
+      });
+
       // Register user via API
       const registerResponse = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone,
-        }),
+        body: JSON.stringify(sanitizedData),
       });
       
       const registerData = await registerResponse.json();
       
       if (registerResponse.ok) {
-        toast.success('Account created successfully!');
+        toast.success('Account created successfully! Please check your email to verify your account.');
         
-        // Automatically sign in the user
-        const signInResult = await signIn('credentials', {
-          email: formData.email,
-          password: formData.password,
-          redirect: false,
-        });
-        
-        if (signInResult?.ok) {
-          router.push(redirectTo);
-        } else {
-          // If auto-login fails, redirect to login page
-          toast.success('Please sign in with your new account');
-          router.push('/auth/login');
-        }
+        // Redirect to verification message page instead of auto-login
+        router.push('/auth/verify-email?message=check-email');
       } else {
         toast.error(registerData.error || 'Registration failed');
       }

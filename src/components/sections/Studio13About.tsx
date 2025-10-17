@@ -21,7 +21,7 @@ export default function AboutSection() {
               <div className="space-y-6">
                 <div className="relative h-48 rounded-lg overflow-hidden shadow-lg">
                   <Image
-                    src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop&crop=center"
+                    src="https://res.cloudinary.com/demo/image/upload/w_400,h_300,c_fill/ecommerce/about/studio-workspace-1"
                     alt="Handcrafted Ceramics"
                     fill
                     className="object-cover"
@@ -30,7 +30,7 @@ export default function AboutSection() {
                 </div>
                 <div className="relative h-64 rounded-lg overflow-hidden shadow-lg">
                   <Image
-                    src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=400&h=400&fit=crop&crop=center"
+                    src="https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/about/studio-workspace-2"
                     alt="Elegant Table Setting"
                     fill
                     className="object-cover"
@@ -41,7 +41,7 @@ export default function AboutSection() {
               <div className="space-y-6 pt-8">
                 <div className="relative h-64 rounded-lg overflow-hidden shadow-lg">
                   <Image
-                    src="https://images.unsplash.com/photo-1563822249366-6ca44a4ed2e8?w=400&h=400&fit=crop&crop=center"
+                    src="https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/about/studio-workspace-3"
                     alt="Tea Set Collection"
                     fill
                     className="object-cover"
@@ -50,7 +50,7 @@ export default function AboutSection() {
                 </div>
                 <div className="relative h-48 rounded-lg overflow-hidden shadow-lg">
                   <Image
-                    src="https://images.unsplash.com/photo-1578633746648-ed24d9c05d6e?w=400&h=300&fit=crop&crop=center"
+                    src="https://res.cloudinary.com/demo/image/upload/w_400,h_300,c_fill/ecommerce/about/studio-workspace-4"
                     alt="Artisan Workshop"
                     fill
                     className="object-cover"

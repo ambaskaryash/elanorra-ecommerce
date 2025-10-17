@@ -40,6 +40,16 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Documentation files (deployment guides and summaries)
+SECURITY.md
+PROJECT_SUMMARY.md
+HOSTINGER_PREMIUM_SETUP.md
+HOSTINGER_DEPLOYMENT.md
+DEPLOYMENT.md
+
+# Scripts (admin and utility scripts)
+scripts/create-admin-user.js
+scripts/replace-unsplash.js
 
 public/uploads/MF7DDu4YyWiJfgIPu1L7C-1760532678170.png
 public/uploads/MSIlVSY-dWRBFriIRxJUT-1760532739260.png

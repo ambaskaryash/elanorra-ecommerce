@@ -221,7 +221,7 @@ export default function WishlistPage() {
                 <Link href={`/products/${product.slug}`}>
                   <div className="relative aspect-square overflow-hidden bg-gray-100">
                     <Image
-                      src={product.images[0]?.src || '/images/placeholder.jpg'}
+                      src={product.images[0]?.src || '/images/placeholder.svg'}
                       alt={product.name}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
