@@ -2,6 +2,9 @@ import { PrismaClient } from '@prisma/client';
 import { withAccelerate } from '@prisma/extension-accelerate';
 import { withOptimize } from '@prisma/extension-optimize';
 
+// Trigger a non-functional change to force TypeScript re-evaluation
+// const dummy = 1;
+
 // Build base client and conditionally extend with Optimize only when API key is provided
 const baseClient = new PrismaClient({
   log: ['query'],
@@ -20,7 +23,7 @@ declare global {
 // Attach PrismaClient to the global object in development to prevent exhausting connections
 const prisma: PrismaClient = (globalThis.prisma as PrismaClient | undefined) ?? (extendedClient as unknown as PrismaClient);
 
-if (process.env.NODE_ENV !== 'production') (globalThis as any).prisma = prisma;
+if (process.env.NODE_ENV !== 'production') globalThis.prisma = prisma;
 
 export { prisma };
 

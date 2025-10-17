@@ -118,19 +118,58 @@ export interface Address {
 export interface Order {
   id: string;
   orderNumber: string;
+  userId?: string;
   email: string;
-  createdAt: string;
-  updatedAt: string;
-  totalPrice: number;
-  subtotalPrice: number;
-  totalTax: number;
-  totalShipping: number;
-  currency: string;
   financialStatus: string;
   fulfillmentStatus: string;
-  lineItems: OrderLineItem[];
-  shippingAddress: Address;
-  billingAddress: Address;
+  subtotal: number;
+  taxes: number;
+  shipping: number;
+  discount: number;
+  totalPrice: number;
+  currency: string;
+  paymentMethod?: string;
+  paymentId?: string;
+  couponCode?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+  items: Array<{
+    id: string;
+    productId: string;
+    quantity: number;
+    price: number;
+    variants?: Record<string, unknown>;
+    product: {
+      name: string;
+      slug: string;
+      images: Array<{ src: string; alt: string }>;
+    };
+  }>;
+  shippingAddress: {
+    firstName: string;
+    lastName: string;
+    company?: string;
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+    phone?: string;
+  };
+  billingAddress?: {
+    firstName: string;
+    lastName: string;
+    company?: string;
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+    phone?: string;
+  };
 }
 
 export interface OrderLineItem {

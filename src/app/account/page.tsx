@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import {
-  UserCircleIcon,
   ArrowRightOnRectangleIcon,
   BellIcon,
   CogIcon,
@@ -18,10 +17,10 @@ import {
   HomeModernIcon
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Order, Address, User } from '@/types';
-import { api } from '@/lib/services/api';
+import { api, ApiError } from '@/lib/services/api';
 
 interface AddressFormInput {
   firstName: string;
@@ -50,7 +49,7 @@ const accountMenuItems = [
 
 export default function AccountPage() {
   const [activeSection, setActiveSection] = useState('profile');
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -60,7 +59,7 @@ export default function AccountPage() {
   const [currentAddressToEdit, setCurrentAddressToEdit] = useState<Address | null>(null);
   const { data: session, status } = useSession();
   const router = useRouter();
-  const pathname = usePathname();
+  // const pathname = usePathname(); // Removed as it's unused
 
   const sessionUser = (session?.user || null) as User | null;
   const [editableProfile, setEditableProfile] = useState({
@@ -92,7 +91,7 @@ export default function AccountPage() {
   });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     if (!sessionUser?.id) return;
     setOrdersLoading(true);
     try {
@@ -104,26 +103,28 @@ export default function AccountPage() {
       }
     } catch (error: unknown) {
       console.error('Error fetching orders:', error);
-      toast.error((error as Error).message || 'An error occurred while fetching orders');
+      const errorMessage = error instanceof ApiError ? error.message : 'An unknown error occurred.';
+      toast.error(errorMessage || 'An error occurred while fetching orders');
     } finally {
       setOrdersLoading(false);
     }
-  };
+  }, [sessionUser?.id]);
 
-  const fetchAddresses = async () => {
+  const fetchAddresses = useCallback(async () => {
     if (session?.user?.id) {
       setAddressesLoading(true);
       try {
         const response = await api.addresses.getAddresses(session.user.id);
         setAddresses(response.addresses);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error fetching addresses:', error);
-        toast.error('An error occurred while fetching your addresses.');
+        const errorMessage = error instanceof ApiError ? error.message : 'An unknown error occurred.';
+        toast.error(errorMessage || 'An error occurred while fetching your addresses.');
       } finally {
         setAddressesLoading(false);
       }
     }
-  };
+  }, [session?.user?.id]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -132,7 +133,7 @@ export default function AccountPage() {
       fetchOrders();
       fetchAddresses();
     }
-  }, [status, router]);
+  }, [status, router, fetchOrders, fetchAddresses]);
 
   // Handlers for Address Management
   const handleAddAddress = () => {
@@ -225,14 +226,15 @@ export default function AccountPage() {
 
   const handleProfileUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsEditing(true);
+    setIsEditingProfile(true);
     try {
       await api.users.updateMe(editableProfile);
       toast.success('Profile updated successfully!');
-      setIsEditing(false);
-    } catch (error) {
+      setIsEditingProfile(false);
+    } catch (error: unknown) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile.');
+      const errorMessage = error instanceof ApiError ? error.message : 'An unknown error occurred.';
+      toast.error(errorMessage || 'Failed to update profile.');
     }
   };
 
@@ -253,9 +255,10 @@ export default function AccountPage() {
       }
       toast.success('Password changed successfully!');
       setPasswordData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error changing password:', error);
-      toast.error(error.message || 'Failed to change password.');
+      const errorMessage = error instanceof ApiError ? error.message : 'An unknown error occurred.';
+      toast.error(errorMessage || 'Failed to change password.');
     } finally {
       setIsChangingPassword(false);
     }
@@ -536,7 +539,7 @@ export default function AccountPage() {
                         </div>
                       ))
                     ) : (
-                      <p>You have no saved addresses.</p>
+                      <p className="mt-4 text-gray-600">You have no saved addresses.</p>
                     )}
                   </div>
                 </div>
