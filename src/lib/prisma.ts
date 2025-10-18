@@ -9,7 +9,7 @@ import { withOptimize } from '@prisma/extension-optimize';
 const baseClient = new PrismaClient({
   log: ['query'],
 }).$extends(withAccelerate());
-
+      
 const optimizeApiKey = process.env.OPTIMIZE_API_KEY;
 const extendedClient = optimizeApiKey
   ? baseClient.$extends(withOptimize({ apiKey: optimizeApiKey }))

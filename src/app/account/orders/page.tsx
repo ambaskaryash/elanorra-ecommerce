@@ -1,7 +1,7 @@
 'use client';
 
 import { api, ApiOrder } from '@/lib/services/api';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice } from '@/lib/utils/index';
 import { ArrowRightIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';

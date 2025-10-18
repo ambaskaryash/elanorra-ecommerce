@@ -1,16 +1,16 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { orderAPI, type ApiOrder } from '@/lib/services/api';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice } from '@/lib/utils/index';
 import {
-    ArrowLeftIcon,
-    CreditCardIcon,
-    MapPinIcon,
-    PencilIcon,
-    TruckIcon
+  ArrowLeftIcon,
+  CreditCardIcon,
+  MapPinIcon,
+  PencilIcon,
+  TruckIcon
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, useRouter } from 'next/navigation';

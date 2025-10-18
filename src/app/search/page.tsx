@@ -2,7 +2,7 @@
 
 import ProductCard from '@/components/ui/ProductCard';
 import type { ApiProduct } from '@/lib/services/api';
-import { capitalizeFirst } from '@/lib/utils';
+import { capitalizeFirst } from '@/lib/utils/index';
 import { FunnelIcon } from '@heroicons/react/24/outline';
 import { cubicBezier, motion, Variants } from 'framer-motion';
 import Link from 'next/link';

@@ -5,8 +5,9 @@ import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, MinusIcon, PlusIcon, TagIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
+
 import { useCartStore } from '@/lib/store/cart-store';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice } from '@/lib/utils/index';
 import { toast } from 'react-hot-toast';
 
 export default function Cart() {
