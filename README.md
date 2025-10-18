@@ -48,7 +48,13 @@ A complete, modern e-commerce website for premium home decor and lifestyle produ
    npm run dev
    ```
 
-3. **Open in browser**:
+3. **Environment Setup**
+   ```bash
+   # Configure your environment variables in .env file
+   # Make sure to set all required variables for your environment
+   ```
+
+4. **Open in browser**:
    Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## 🚀 Available Scripts

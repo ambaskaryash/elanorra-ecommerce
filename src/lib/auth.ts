@@ -29,6 +29,11 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
+          // Check if email is verified
+          if (!user.emailVerified) {
+            throw new Error("Please verify your email before signing in");
+          }
+
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
             user.password
@@ -56,7 +61,9 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
   },
   cookies: {
     sessionToken: {
@@ -65,7 +72,26 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: false // Set to true in production with HTTPS
+        secure: process.env.NODE_ENV === 'production', // Dynamic based on environment
+        domain: process.env.NODE_ENV === 'production' ? process.env.NEXTAUTH_URL?.replace(/https?:\/\//, '') : undefined
+      }
+    },
+    callbackUrl: {
+      name: `next-auth.callback-url`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      }
+    },
+    csrfToken: {
+      name: `next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
       }
     }
   },

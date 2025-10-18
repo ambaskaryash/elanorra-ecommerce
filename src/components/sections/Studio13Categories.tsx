@@ -65,7 +65,7 @@ export default function CategoriesSection() {
               <Link href="/shop/tableware" className="block">
                 <div className="relative h-[500px] rounded-2xl overflow-hidden bg-gradient-to-br from-rose-100 to-orange-100">
                   <Image
-                    src="https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&h=600&fit=crop&crop=center"
+                    src="https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-cup-set"
                     alt="Tableware Collection"
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -121,7 +121,7 @@ export default function CategoriesSection() {
                 <Link href="/shop/stationery" className="block">
                   <div className="relative h-[240px] rounded-2xl overflow-hidden bg-gradient-to-br from-blue-100 to-indigo-100">
                     <Image
-                      src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&h=400&fit=crop&crop=center"
+                      src="https://res.cloudinary.com/demo/image/upload/w_600,h_400,c_fill/ecommerce/categories/stationery-category"
                       alt="Stationery Collection"
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -157,7 +157,7 @@ export default function CategoriesSection() {
                 <Link href="/shop/gifting" className="block">
                   <div className="relative h-[240px] rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100">
                     <Image
-                      src="https://images.unsplash.com/photo-1607344645866-009c7d0f2e4b?w=600&h=400&fit=crop&crop=center"
+                      src="https://res.cloudinary.com/demo/image/upload/w_600,h_400,c_fill/ecommerce/categories/dining-category"
                       alt="Gifting Collection"
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-700"

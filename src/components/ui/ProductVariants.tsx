@@ -12,7 +12,18 @@ interface ProductVariantsProps {
 }
 
 // Mock variant data - in a real app this would come from the product data or API
-const mockVariants = {
+interface VariantOption {
+  id: string;
+  name: string;
+  value: string;
+  price: number;
+}
+
+interface VariantGroup {
+  [key: string]: VariantOption[];
+}
+
+const mockVariants: Record<string, VariantGroup> = {
   '1': {
     size: [
       { id: 'size-small', name: 'Small (150ml)', value: 'small', price: 0 },
@@ -37,7 +48,7 @@ const mockVariants = {
       { id: 'material-bone-china', name: 'Bone China', value: 'bone-china', price: 800 },
     ],
   },
-} as const;
+};
 
 const colorMap = {
   white: '#F8F9FA',
@@ -50,7 +61,7 @@ export default function ProductVariants({ productId, onVariantChange, className 
   const [selectedVariants, setSelectedVariants] = useState<{ [key: string]: string }>({});
   const [totalPriceChange, setTotalPriceChange] = useState(0);
 
-  const variants = mockVariants[productId as keyof typeof mockVariants];
+  const variants = mockVariants[productId];
 
   // Initialize with first option of each variant type
   useEffect(() => {
@@ -70,9 +81,9 @@ export default function ProductVariants({ productId, onVariantChange, className 
     if (variants) {
       let priceChange = 0;
       Object.entries(selectedVariants).forEach(([variantType, selectedValue]) => {
-        const variantOptions = variants[variantType as keyof typeof variants];
+        const variantOptions = variants[variantType];
         if (variantOptions) {
-          const selectedOption = variantOptions.find(option => option.value === selectedValue);
+          const selectedOption = variantOptions.find((option: VariantOption) => option.value === selectedValue);
           if (selectedOption) {
             priceChange += selectedOption.price;
           }
@@ -112,7 +123,7 @@ export default function ProductVariants({ productId, onVariantChange, className 
           {/* Color variants - show as color swatches */}
           {variantType === 'color' && (
             <div className="flex items-center space-x-3">
-              {options.map((option) => (
+              {options.map((option: VariantOption) => (
                 <motion.button
                   key={option.id}
                   onClick={() => handleVariantSelect(variantType, option.value)}
@@ -139,7 +150,7 @@ export default function ProductVariants({ productId, onVariantChange, className 
           {/* Size and Material variants - show as buttons */}
           {variantType !== 'color' && (
             <div className="flex flex-wrap gap-3">
-              {options.map((option) => (
+              {options.map((option: VariantOption) => (
                 <motion.button
                   key={option.id}
                   onClick={() => handleVariantSelect(variantType, option.value)}
@@ -183,8 +194,8 @@ export default function ProductVariants({ productId, onVariantChange, className 
       {/* Variant details */}
       <div className="text-xs text-gray-500 space-y-1">
         {Object.entries(selectedVariants).map(([variantType, selectedValue]) => {
-          const option = variants[variantType as keyof typeof variants]?.find(
-            opt => opt.value === selectedValue
+          const option = variants[variantType]?.find(
+            (opt: VariantOption) => opt.value === selectedValue
           );
           if (!option) return null;
           

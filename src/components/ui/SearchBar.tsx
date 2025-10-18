@@ -158,7 +158,7 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
                 >
                   <div className="flex-shrink-0 w-12 h-12 relative bg-gray-100 rounded-lg overflow-hidden">
                     <Image
-            src={product.images[0]?.src || '/images/placeholder.jpg'}
+            src={product.images[0]?.src || '/images/placeholder.svg'}
                       alt={product.name}
                       fill
                       className="object-cover"

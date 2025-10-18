@@ -229,13 +229,15 @@ export default function ProductModal({ isOpen, onClose, product, onSuccess }: Pr
         } : undefined,
         images: formData.images
           .map((src, index) => ({
+            id: `temp-${index}`, // Temporary ID for new images
             src,
             alt: formData.name,
             position: index,
           })),
         variants: formData.variants
           .filter(variant => variant.name.trim() && variant.value.trim())
-          .map(variant => ({
+          .map((variant, index) => ({
+            id: `temp-variant-${index}`, // Temporary ID for new variants
             name: variant.name,
             value: variant.value,
             priceAdjustment: parseFloat(variant.priceAdjustment) || 0,

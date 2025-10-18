@@ -187,10 +187,12 @@ async function apiFetch<T>(
       } catch {}
     }
 
-    // Final fallback to localhost with a sensible dev port
+    // Final fallback to production domain
     if (!baseURL) {
       const port = process.env.PORT || 3001;
-      baseURL = `http://localhost:${port}`;
+      baseURL = process.env.NODE_ENV === 'production' 
+        ? 'https://elanorraliving.in'
+        : `http://localhost:${port}`;
     }
   }
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;

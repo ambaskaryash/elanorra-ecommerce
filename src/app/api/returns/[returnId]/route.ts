@@ -3,14 +3,15 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest, { params }: { params: { returnId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ returnId: string }> }) {
+  const { returnId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const returnRequest = await (prisma as any).ReturnRequest.findUnique({
-    where: { id: params.returnId },
+    where: { id: returnId },
     include: { order: true, items: { include: { orderItem: { include: { product: true } } } } },
   });
 

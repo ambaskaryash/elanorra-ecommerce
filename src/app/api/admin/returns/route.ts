@@ -3,19 +3,38 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { rateLimit, rateLimitConfigs, createRateLimitResponse } from '@/lib/rate-limit';
+import { verifyAdminAccess, logAdminAction, requireAdminConfirmation } from '@/lib/admin-security';
+import { handleError, asyncHandler, ValidationError } from '@/lib/error-handler';
 
 const updateReturnSchema = z.object({
   status: z.enum(['pending', 'approved', 'rejected', 'processed']),
   adminNotes: z.string().optional(),
 });
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.isAdmin) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+const limiter = rateLimit(rateLimitConfigs.api);
 
+export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    
+    // Enhanced admin verification
+    if (!session?.user?.isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Apply rate limiting
+     const rateLimitResult = await limiter(request);
+     if (!rateLimitResult.success) {
+       return NextResponse.json(
+         { error: 'Too many requests' },
+         { status: 429 }
+       );
+     }
+
+    // Log admin action
+    console.log(`Admin action: ${session.user.id} viewed return requests at ${new Date().toISOString()}`);
+
     const returnRequests = await (prisma as any).ReturnRequest.findMany({
       include: {
         order: {
@@ -53,18 +72,30 @@ export async function GET() {
 
     return NextResponse.json({ returnRequests });
   } catch (error) {
-    console.error('Error fetching return requests:', error);
-    return NextResponse.json({ error: 'Failed to fetch return requests' }, { status: 500 });
+    return handleError(error, {
+      url: request.url,
+      method: request.method,
+      userAgent: request.headers.get('user-agent') || undefined,
+    });
   }
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.isAdmin) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Apply rate limiting
+    const rateLimitResult = await limiter(req);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { returnId, ...updateData } = body;
     
@@ -76,6 +107,9 @@ export async function PATCH(req: NextRequest) {
     if (!validation.success) {
       return NextResponse.json({ error: validation.error.issues }, { status: 400 });
     }
+
+    // Log admin action for sensitive operations
+    console.log(`Admin action: ${session.user.id} updated return request ${returnId} with status ${validation.data.status} at ${new Date().toISOString()}`);
 
     const updatedReturn = await (prisma as any).ReturnRequest.update({
       where: { id: returnId },
@@ -118,7 +152,10 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json(updatedReturn);
   } catch (error) {
-    console.error('Error updating return request:', error);
-    return NextResponse.json({ error: 'Failed to update return request' }, { status: 500 });
+    return handleError(error, {
+      url: req.url,
+      method: req.method,
+      userAgent: req.headers.get('user-agent') || undefined,
+    });
   }
 }

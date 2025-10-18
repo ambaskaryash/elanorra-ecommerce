@@ -224,7 +224,7 @@ export default function ProductClient({ product, canonicalUrl }: ProductClientPr
             {/* Main Image */}
             <div className="relative aspect-square mb-4 bg-gray-100 rounded-2xl overflow-hidden">
               <Image
-            src={product.images[selectedImage]?.src || '/images/placeholder.jpg'}
+            src={product.images[selectedImage]?.src || '/images/placeholder.svg'}
                 alt={product.images[selectedImage]?.alt || product.name}
                 fill
                 className="object-cover"

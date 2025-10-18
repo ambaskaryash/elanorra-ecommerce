@@ -117,7 +117,7 @@ export default function HeroSection() {
               {/* Main Image */}
               <div className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl">
                 <Image
-                  src="https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600&h=600&fit=crop&crop=center"
+                  src="https://res.cloudinary.com/demo/image/upload/w_600,h_600,c_fill/ecommerce/categories/featured-collection"
                   alt="Premium Tableware"
                   fill
                   className="object-cover"

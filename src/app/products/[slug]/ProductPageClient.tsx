@@ -224,7 +224,7 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
             {/* Main Image */}
             <div className="relative aspect-square mb-4 bg-gray-100 rounded-2xl overflow-hidden">
               <ImageZoom
-                src={product.images[selectedImage]?.src || '/images/placeholder.jpg'}
+                src={product.images[selectedImage]?.src || '/images/placeholder.svg'}
                 alt={product.images[selectedImage]?.alt || product.name}
                 className="absolute inset-0"
                 priority

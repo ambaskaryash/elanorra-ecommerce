@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -60,8 +60,12 @@ model User {
   firstName     String?
   lastName      String?
   phone         String?
-  isAdmin       Boolean   @default(false)
+
   password      String?   // For credentials login
+  resetToken    String?   // Password reset token
+  resetTokenExpiry DateTime? // Password reset token expiry
+  emailVerificationToken String? // Email verification token
+  isAdmin       Boolean   @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

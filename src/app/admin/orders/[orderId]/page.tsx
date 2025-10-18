@@ -163,7 +163,7 @@ export default function AdminOrderDetailPage({ params }: Props) {
                   <div key={item.id} className="flex items-center space-x-4 py-4 border-b border-gray-200 last:border-b-0">
                     <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
                       <Image
-                        src={item.product.images[0]?.src || '/images/placeholder.jpg'}
+                        src={item.product.images[0]?.src || '/images/placeholder.svg'}
                         alt={item.product.name}
                         width={64}
                         height={64}

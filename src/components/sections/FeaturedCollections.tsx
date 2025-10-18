@@ -147,7 +147,7 @@ export default function FeaturedCollections() {
                   <div className="relative h-72 overflow-hidden bg-stone-100 group-hover:shadow-lg transition-shadow duration-300">
                     {/* Background Image */}
                     <Image
-                      src={imageErrors[collection.id] ? '/images/placeholder.jpg' : (collection.image ?? '/images/placeholder.jpg')}
+                      src={imageErrors[collection.id] ? '/images/placeholder.svg' : (collection.image ?? '/images/placeholder.svg')}
                       alt={collection.name}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"

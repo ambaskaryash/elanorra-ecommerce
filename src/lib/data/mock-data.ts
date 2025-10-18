@@ -199,8 +199,8 @@ export const products: Product[] = [
     price: 1299,
     compareAtPrice: 1599,
     images: [
-      { id: '1-1', src: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&h=600&fit=crop&crop=center', alt: 'Vasant Tea Cup Set', width: 800, height: 600, position: 1 },
-      { id: '1-2', src: 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=800&h=600&fit=crop&crop=center', alt: 'Vasant Tea Cup Detail', width: 800, height: 600, position: 2 },
+      { id: '1-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-detail-1', alt: 'Vasant Tea Cup Set', width: 800, height: 600, position: 1 },
+      { id: '1-2', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/le-jardin-bleu-cups', alt: 'Vasant Tea Cup Detail', width: 800, height: 600, position: 2 },
     ],
     category: 'tableware',
     subcategory: 'cups-mugs',
@@ -222,7 +222,7 @@ export const products: Product[] = [
     shortDescription: 'Pomegranate-inspired dinner plates for elegant dining',
     price: 2499,
     images: [
-      { id: '2-1', src: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop&crop=center', alt: 'Anaar Dinner Plate Set', width: 800, height: 600, position: 1 },
+      { id: '2-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/anaar-dinner-plates', alt: 'Anaar Dinner Plate Set', width: 800, height: 600, position: 1 },
     ],
     category: 'tableware',
     subcategory: 'dining',
@@ -244,7 +244,7 @@ export const products: Product[] = [
     shortDescription: 'Adventure-themed meal set for children',
     price: 899,
     images: [
-      { id: '3-1', src: 'https://images.unsplash.com/photo-1585129777188-94600ff10dd6?w=800&h=600&fit=crop&crop=center', alt: 'Kids Victoria Meal Set', width: 800, height: 600, position: 1 },
+      { id: '3-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-victoria-meal-set', alt: 'Kids Victoria Meal Set', width: 800, height: 600, position: 1 },
     ],
     category: 'tableware',
     subcategory: 'childrens-sets',
@@ -265,7 +265,7 @@ export const products: Product[] = [
     price: 599,
     compareAtPrice: 799,
     images: [
-      { id: '4-1', src: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=800&h=600&fit=crop&crop=center', alt: 'Sundarbans Coffee Mug', width: 800, height: 600, position: 1 },
+      { id: '4-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/sundarbans-coffee-mug', alt: 'Sundarbans Coffee Mug', width: 800, height: 600, position: 1 },
     ],
     category: 'tableware',
     subcategory: 'cups-mugs',
@@ -285,7 +285,7 @@ export const products: Product[] = [
     shortDescription: 'Elegant serving tray with vintage botanical design',
     price: 1799,
     images: [
-      { id: '5-1', src: 'https://images.unsplash.com/photo-1515263487990-61b07816b7bd?w=800&h=600&fit=crop&crop=center', alt: 'Vintage Garden Serving Tray', width: 800, height: 600, position: 1 },
+      { id: '5-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vintage-garden-tray', alt: 'Vintage Garden Serving Tray', width: 800, height: 600, position: 1 },
     ],
     category: 'tableware',
     subcategory: 'trays-cutlery',
@@ -308,8 +308,8 @@ export const products: Product[] = [
     price: 2899,
     compareAtPrice: 3499,
     images: [
-      { id: '6-1', src: 'https://images.unsplash.com/photo-1578633746648-ed24d9c05d6e?w=800&h=600&fit=crop&crop=center', alt: 'Gulistan Rose Garden Dinner Plates', width: 800, height: 600, position: 1 },
-      { id: '6-2', src: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop&crop=center', alt: 'Gulistan Plate Detail', width: 800, height: 600, position: 2 },
+      { id: '6-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-rose-plates', alt: 'Gulistan Rose Garden Dinner Plates', width: 800, height: 600, position: 1 },
+      { id: '6-2', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/anaar-dinner-plates', alt: 'Gulistan Plate Detail', width: 800, height: 600, position: 2 },
     ],
     category: 'tableware',
     subcategory: 'dining',
@@ -333,7 +333,7 @@ export const products: Product[] = [
     price: 4999,
     compareAtPrice: 6299,
     images: [
-      { id: '7-1', src: 'https://images.unsplash.com/photo-1563822249366-6ca44a4ed2e8?w=800&h=600&fit=crop&crop=center', alt: 'Gulistan Tea Set Complete', width: 800, height: 600, position: 1 },
+      { id: '7-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-tea-set', alt: 'Gulistan Tea Set Complete', width: 800, height: 600, position: 1 },
     ],
     category: 'tableware',
     subcategory: 'cups-mugs',
@@ -357,7 +357,7 @@ export const products: Product[] = [
     shortDescription: 'French colonial inspired serving bowls',
     price: 1899,
     images: [
-      { id: '8-1', src: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&crop=center', alt: 'Pondicherry Coastal Bowls Set', width: 800, height: 600, position: 1 },
+      { id: '8-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/pondicherry-bowls', alt: 'Pondicherry Coastal Bowls Set', width: 800, height: 600, position: 1 },
     ],
     category: 'tableware',
     subcategory: 'dining',
@@ -380,7 +380,7 @@ export const products: Product[] = [
     shortDescription: 'Charming coastal breakfast plates',
     price: 1599,
     images: [
-      { id: '9-1', src: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&crop=center', alt: 'Pondicherry Breakfast Plates', width: 800, height: 600, position: 1 },
+      { id: '9-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/pondicherry-bowls', alt: 'Pondicherry Breakfast Plates', width: 800, height: 600, position: 1 },
     ],
     category: 'tableware',
     subcategory: 'dining',
@@ -405,7 +405,7 @@ export const products: Product[] = [
     price: 899,
     compareAtPrice: 1199,
     images: [
-      { id: '10-1', src: 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=800&h=600&fit=crop&crop=center', alt: 'Le Jardin Bleu Coffee Cups', width: 800, height: 600, position: 1 },
+      { id: '10-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/le-jardin-bleu-cups', alt: 'Le Jardin Bleu Coffee Cups', width: 800, height: 600, position: 1 },
     ],
     category: 'tableware',
     subcategory: 'cups-mugs',
@@ -428,7 +428,7 @@ export const products: Product[] = [
     shortDescription: 'Elegant three-tiered blue floral cake stand',
     price: 2799,
     images: [
-      { id: '11-1', src: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&crop=center', alt: 'Le Jardin Bleu Cake Stand', width: 800, height: 600, position: 1 },
+      { id: '11-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/pondicherry-bowls', alt: 'Le Jardin Bleu Cake Stand', width: 800, height: 600, position: 1 },
     ],
     category: 'tableware',
     subcategory: 'trays-cutlery',
@@ -452,7 +452,7 @@ export const products: Product[] = [
     shortDescription: 'Princess-themed complete dining set for kids',
     price: 1299,
     images: [
-      { id: '12-1', src: 'https://images.unsplash.com/photo-1585129777188-94600ff10dd6?w=800&h=600&fit=crop&crop=center', alt: 'Kids Victoria Princess Dining Set', width: 800, height: 600, position: 1 },
+      { id: '12-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-victoria-meal-set', alt: 'Kids Victoria Princess Dining Set', width: 800, height: 600, position: 1 },
     ],
     category: 'tableware',
     subcategory: 'childrens-sets',
@@ -475,7 +475,7 @@ export const products: Product[] = [
     shortDescription: 'Educational dining plates for children',
     price: 699,
     images: [
-      { id: '13-1', src: 'https://images.unsplash.com/photo-1585129777188-94600ff10dd6?w=800&h=600&fit=crop&crop=center', alt: 'Kids Victoria Learning Plates', width: 800, height: 600, position: 1 },
+      { id: '13-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-victoria-meal-set', alt: 'Kids Victoria Learning Plates', width: 800, height: 600, position: 1 },
     ],
     category: 'tableware',
     subcategory: 'childrens-sets',
@@ -499,7 +499,7 @@ export const products: Product[] = [
     shortDescription: 'Premium floral notebook collection',
     price: 899,
     images: [
-      { id: '14-1', src: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&h=600&fit=crop&crop=center', alt: 'Floral Paradise Notebook Set', width: 800, height: 600, position: 1 },
+      { id: '14-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/floral-paradise-notebook', alt: 'Floral Paradise Notebook Set', width: 800, height: 600, position: 1 },
     ],
     category: 'stationery',
     subcategory: 'stationery-sets',
@@ -521,7 +521,7 @@ export const products: Product[] = [
     shortDescription: 'Complete art supplies for creative children',
     price: 1499,
     images: [
-      { id: '15-1', src: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800&h=600&fit=crop&crop=center', alt: 'Kids Art Supply Box', width: 800, height: 600, position: 1 },
+      { id: '15-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-art-supply-box', alt: 'Kids Art Supply Box', width: 800, height: 600, position: 1 },
     ],
     category: 'stationery',
     subcategory: 'childrens-stationery',
@@ -544,7 +544,7 @@ export const products: Product[] = [
     price: 2499,
     compareAtPrice: 2999,
     images: [
-      { id: '16-1', src: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=800&h=600&fit=crop&crop=center', alt: 'Executive Pen Collection', width: 800, height: 600, position: 1 },
+      { id: '16-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/executive-pen-collection', alt: 'Executive Pen Collection', width: 800, height: 600, position: 1 },
     ],
     category: 'stationery',
     subcategory: 'stationery-sets',
@@ -567,7 +567,7 @@ export const products: Product[] = [
     shortDescription: 'Premium garden-scented soy wax candles',
     price: 1299,
     images: [
-      { id: '17-1', src: 'https://images.unsplash.com/photo-1602874801007-5d50ed33dcf7?w=800&h=600&fit=crop&crop=center', alt: 'Garden Bloom Scented Candles', width: 800, height: 600, position: 1 },
+      { id: '17-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/garden-bloom-candles', alt: 'Garden Bloom Scented Candles', width: 800, height: 600, position: 1 },
     ],
     category: 'tableware',
     subcategory: 'candles-gifting',
@@ -590,7 +590,7 @@ export const products: Product[] = [
     price: 4999,
     compareAtPrice: 6499,
     images: [
-      { id: '18-1', src: 'https://images.unsplash.com/photo-1607344645866-009c7d0f2e4b?w=800&h=600&fit=crop&crop=center', alt: 'Luxury Gift Hamper', width: 800, height: 600, position: 1 },
+      { id: '18-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-serving-set', alt: 'Luxury Gift Hamper', width: 800, height: 600, position: 1 },
     ],
     category: 'gifting',
     tags: ['gift hamper', 'luxury', 'curated', 'special occasion'],
@@ -613,7 +613,7 @@ export const products: Product[] = [
     price: 12999,
     compareAtPrice: 15999,
     images: [
-      { id: '19-1', src: 'https://images.unsplash.com/photo-1578633746648-ed24d9c05d6e?w=800&h=600&fit=crop&crop=center', alt: 'Royal Heritage Dinner Service', width: 800, height: 600, position: 1 },
+      { id: '19-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-rose-plates', alt: 'Royal Heritage Dinner Service', width: 800, height: 600, position: 1 },
     ],
     category: 'tableware',
     subcategory: 'dining',
@@ -637,7 +637,7 @@ export const products: Product[] = [
     price: 8999,
     compareAtPrice: 11999,
     images: [
-      { id: '20-1', src: 'https://images.unsplash.com/photo-1563822249366-6ca44a4ed2e8?w=800&h=600&fit=crop&crop=center', alt: 'Artisan Craft Tea Set', width: 800, height: 600, position: 1 },
+      { id: '20-1', src: 'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-tea-set', alt: 'Artisan Craft Tea Set', width: 800, height: 600, position: 1 },
     ],
     category: 'tableware',
     subcategory: 'cups-mugs',
@@ -661,7 +661,7 @@ export const heroSlides = [
     subtitle: 'Exquisite ceramic tableware and bespoke gifting solutions',
     buttonText: 'Shop Tableware',
     buttonLink: '/shop/tableware',
-    image: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=1600&h=900&fit=crop&crop=center',
+    image: 'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/vasant-collection_hero1',
   },
   {
     id: '2',
@@ -669,7 +669,7 @@ export const heroSlides = [
     subtitle: 'From Anaar to Vasant - Discover stories in every piece',
     buttonText: 'Explore Collections',
     buttonLink: '/collections',
-    image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=1600&h=900&fit=crop&crop=center',
+    image: 'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/anaar-collection_hero2',
   },
   {
     id: '3',
@@ -677,7 +677,7 @@ export const heroSlides = [
     subtitle: 'Custom gifting solutions for your special moments',
     buttonText: 'Gift Sets',
     buttonLink: '/shop/gifting',
-    image: 'https://images.unsplash.com/photo-1607344645866-009c7d0f2e4b?w=1600&h=900&fit=crop&crop=center',
+    image: 'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/gulistan-collection_hero3',
   },
   {
     id: '4',
@@ -685,6 +685,6 @@ export const heroSlides = [
     subtitle: 'Beautiful designs that cater to the whole family',
     buttonText: 'Kids Collection',
     buttonLink: '/collections/kids-victoria',
-    image: 'https://images.unsplash.com/photo-1585129777188-94600ff10dd6?w=1600&h=900&fit=crop&crop=center',
+    image: 'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/kids-victoria_hero4',
   },
 ];

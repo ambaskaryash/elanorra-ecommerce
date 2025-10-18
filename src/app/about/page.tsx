@@ -53,19 +53,19 @@ const team = [
   {
     name: 'Sarah Mitchell',
     role: 'Founder & Creative Director',
-    image: 'https://images.unsplash.com/photo-1494790108755-2616c1be3c7c?w=400&h=400&fit=crop&crop=center',
+    image: 'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/team/sarah-mitchell',
     description: 'With over 15 years in interior design, Sarah founded Elanorr Living to make luxury accessible to everyone.',
   },
   {
     name: 'David Chen',
     role: 'Head of Product Curation',
-    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=center',
+    image: 'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/team/david-chen',
     description: 'David travels the world to discover unique pieces that combine traditional craftsmanship with modern aesthetics.',
   },
   {
     name: 'Maya Patel',
     role: 'Sustainability Director',
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=center',
+    image: 'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/team/maya-patel',
     description: 'Maya ensures our commitment to sustainable practices while maintaining the highest quality standards.',
   },
 ];
@@ -77,7 +77,7 @@ export default function AboutPage() {
       <section className="relative h-[60vh] bg-gray-900 overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1600&h=900&fit=crop&crop=center"
+            src="https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/banners/about-hero"
             alt="Elanorr Living Story"
             fill
             className="object-cover opacity-60"
@@ -133,7 +133,7 @@ export default function AboutPage() {
             <motion.div variants={itemVariants}>
               <div className="relative h-96 rounded-2xl overflow-hidden shadow-2xl">
                 <Image
-                  src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&h=600&fit=crop&crop=center"
+                  src="https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/banners/about-story"
                   alt="Elanorr Living workspace"
                   fill
                   className="object-cover"

@@ -102,7 +102,7 @@ export default function FrequentlyBoughtTogether({ product }: FrequentlyBoughtTo
               className="h-4 w-4"
             />
             <div className="relative w-16 h-16 rounded-md overflow-hidden">
-            <Image src={p.images[0]?.src || '/images/placeholder.jpg'} alt={p.images[0]?.alt || p.name} fill className="object-cover" />
+            <Image src={p.images[0]?.src || '/images/placeholder.svg'} alt={p.images[0]?.alt || p.name} fill className="object-cover" />
             </div>
             <div className="flex-1">
               <div className="font-medium text-gray-900">{p.name}</div>

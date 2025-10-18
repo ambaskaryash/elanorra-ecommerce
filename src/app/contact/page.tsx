@@ -106,7 +106,7 @@ export default function ContactPage() {
       <section className="relative h-[50vh] bg-gray-900 overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&h=900&fit=crop&crop=center"
+            src="https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/banners/contact-hero"
             alt="Contact Elanorra Living"
             fill
             className="object-cover opacity-60"
