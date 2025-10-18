@@ -42,7 +42,6 @@ next-env.d.ts
 
 # Documentation files (deployment guides and summaries)
 SECURITY.md
-PROJECT_SUMMARY.md
 HOSTINGER_PREMIUM_SETUP.md
 HOSTINGER_DEPLOYMENT.md
 DEPLOYMENT.md
