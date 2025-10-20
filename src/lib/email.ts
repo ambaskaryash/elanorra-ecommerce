@@ -1,10 +1,5 @@
-// Email service for sending transactional emails
-// This is a placeholder implementation - in production, you would use a service like:
-// - SendGrid
-// - Mailgun
-// - AWS SES
-// - Resend
-// - Postmark
+// Email service for sending transactional emails using nodemailer
+import nodemailer from 'nodemailer';
 
 interface EmailOptions {
   to: string;
@@ -26,45 +21,52 @@ interface WelcomeEmailData {
   verificationUrl?: string;
 }
 
-// Mock email service for development
+// Email service with nodemailer
 class EmailService {
-  private isDevelopment = process.env.NODE_ENV === 'development';
+  private transporter: nodemailer.Transporter | null = null;
+
+  constructor() {
+    this.initializeTransporter();
+  }
+
+  private initializeTransporter() {
+    try {
+      this.transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        secure: false, // true for 465, false for other ports
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASSWORD,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to initialize email transporter:', error);
+    }
+  }
 
   async sendEmail(options: EmailOptions): Promise<boolean> {
-    if (this.isDevelopment) {
-      // In development, just log the email
-      console.log('📧 Email would be sent:');
-      console.log('To:', options.to);
-      console.log('Subject:', options.subject);
-      console.log('HTML:', options.html);
-      console.log('Text:', options.text);
-      return true;
+    if (!this.transporter) {
+      console.error('Email transporter not initialized');
+      return false;
     }
 
-    // In production, implement actual email sending
-    // Example with SendGrid:
-    /*
     try {
-      const sgMail = require('@sendgrid/mail');
-      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-      
-      await sgMail.send({
+      const mailOptions = {
+        from: `"Elanorra" <${process.env.EMAIL_FROM || process.env.SMTP_USER}>`,
         to: options.to,
-        from: process.env.FROM_EMAIL,
         subject: options.subject,
         html: options.html,
         text: options.text,
-      });
-      
+      };
+
+      const result = await this.transporter.sendMail(mailOptions);
+      console.log('✅ Email sent successfully:', result.messageId);
       return true;
     } catch (error) {
-      console.error('Email sending failed:', error);
+      console.error('❌ Email sending failed:', error);
       return false;
     }
-    */
-
-    console.warn('Email sending not implemented in production');
-    return false;
   }
 
   async sendPasswordResetEmail(data: PasswordResetEmailData): Promise<boolean> {
