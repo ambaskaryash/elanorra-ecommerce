@@ -5,6 +5,20 @@ import { authOptions } from '@/lib/auth';
 
 // GET /api/blog - List blog posts with optional filters
 export async function GET(request: NextRequest) {
+  // Check if DATABASE_URL is available (for build-time safety)
+  if (!process.env.DATABASE_URL) {
+    console.warn('⚠️ DATABASE_URL not available, returning empty response for build');
+    return NextResponse.json({
+      posts: [],
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: 0,
+        pages: 0,
+      },
+    });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
@@ -57,6 +71,12 @@ export async function GET(request: NextRequest) {
 
 // POST /api/blog - Create a new blog post (admin only)
 export async function POST(request: NextRequest) {
+  // Check if DATABASE_URL is available (for build-time safety)
+  if (!process.env.DATABASE_URL) {
+    console.warn('⚠️ DATABASE_URL not available, returning error for build');
+    return NextResponse.json({ error: 'Database not available during build' }, { status: 503 });
+  }
+
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user || !session.user.isAdmin) {

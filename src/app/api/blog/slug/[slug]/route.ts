@@ -8,6 +8,12 @@ export async function GET(
   request: NextRequest,
   { params }: { params: RouteParamsPromise }
 ) {
+  // Check if DATABASE_URL is available (for build-time safety)
+  if (!process.env.DATABASE_URL) {
+    console.warn('⚠️ DATABASE_URL not available, returning mock response for build');
+    return NextResponse.json({ error: 'Database not available during build' }, { status: 503 });
+  }
+
   try {
     const { slug } = await params;
     const post = await prisma.blogPost.findUnique({

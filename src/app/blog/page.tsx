@@ -5,7 +5,15 @@ import { blogAPI, type ApiBlogPost } from '@/lib/services/api';
 export const dynamic = 'force-dynamic';
 
 export default async function BlogPage() {
-  const { posts } = await blogAPI.getPosts({ published: true, page: 1, limit: 12 });
+  let posts: ApiBlogPost[] = [];
+  
+  try {
+    const response = await blogAPI.getPosts({ published: true, page: 1, limit: 12 });
+    posts = response.posts || [];
+  } catch (error) {
+    console.warn('⚠️ Failed to fetch blog posts during build, showing empty state:', error);
+    posts = [];
+  }
 
   return (
     <div className="min-h-screen bg-white">
