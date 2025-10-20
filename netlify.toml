@@ -1,0 +1,62 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_ENV = "production"
+  SKIP_ENV_VALIDATION = "true"
+
+# Environment variables that should be available during build
+[context.production.environment]
+  DATABASE_URL = "${DATABASE_URL}"
+  OPTIMIZE_API_KEY = "${OPTIMIZE_API_KEY}"
+  DIRECT_URL = "${DIRECT_URL}"
+  NEXTAUTH_SECRET = "${NEXTAUTH_SECRET}"
+  NEXTAUTH_URL = "${NEXTAUTH_URL}"
+  NEXT_PUBLIC_RAZORPAY_KEY_ID = "${NEXT_PUBLIC_RAZORPAY_KEY_ID}"
+  RAZORPAY_KEY_SECRET = "${RAZORPAY_KEY_SECRET}"
+  SMTP_HOST = "${SMTP_HOST}"
+  SMTP_PORT = "${SMTP_PORT}"
+  SMTP_USER = "${SMTP_USER}"
+  SMTP_PASSWORD = "${SMTP_PASSWORD}"
+  CLOUDINARY_CLOUD_NAME = "${CLOUDINARY_CLOUD_NAME}"
+  CLOUDINARY_API_KEY = "${CLOUDINARY_API_KEY}"
+  CLOUDINARY_API_SECRET = "${CLOUDINARY_API_SECRET}"
+  JWT_SECRET = "${JWT_SECRET}"
+  EMAIL_FROM = "${EMAIL_FROM}"
+  MAILCHIMP_API_KEY = "${MAILCHIMP_API_KEY}"
+  MAILCHIMP_AUDIENCE_ID = "${MAILCHIMP_AUDIENCE_ID}"
+  RATE_LIMIT_MAX_REQUESTS = "${RATE_LIMIT_MAX_REQUESTS}"
+  RATE_LIMIT_WINDOW_MS = "${RATE_LIMIT_WINDOW_MS}"
+  SESSION_MAX_AGE = "${SESSION_MAX_AGE}"
+  SESSION_UPDATE_AGE = "${SESSION_UPDATE_AGE}"
+  SECURITY_HEADERS_ENABLED = "${SECURITY_HEADERS_ENABLED}"
+  CSP_ENABLED = "${CSP_ENABLED}"
+  HSTS_ENABLED = "${HSTS_ENABLED}"
+
+# Redirect rules
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Cache static assets
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
