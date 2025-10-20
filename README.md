@@ -151,7 +151,12 @@ interface Product {
 
 ## 🚀 Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This Next.js application can be deployed on various platforms including Netlify, Railway, or any hosting service that supports Node.js applications.
+
+For Netlify deployment:
+1. Connect your repository to Netlify
+2. Set up environment variables in your Netlify dashboard
+3. Deploy with the build command: `npm run build`
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
@@ -172,4 +177,3 @@ This project draws inspiration from modern lifestyle and tableware e-commerce ex
 ---
 
 **Made with ❤️ using Next.js and modern web technologies**
-# Fresh commit for Vercel deployment
