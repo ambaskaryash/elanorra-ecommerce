@@ -172,3 +172,4 @@ This project draws inspiration from modern lifestyle and tableware e-commerce ex
 ---
 
 **Made with ❤️ using Next.js and modern web technologies**
+# Fresh commit for Vercel deployment
