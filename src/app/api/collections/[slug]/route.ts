@@ -9,6 +9,14 @@ export async function GET(
   { params }: { params: RouteParamsPromise }
 ) {
   try {
+    // Check if DATABASE_URL is available (for build-time compatibility)
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json(
+        { error: 'Collection not found' },
+        { status: 404 }
+      );
+    }
+
     const { slug } = await params;
 
     const collection = await prisma.collection.findUnique({

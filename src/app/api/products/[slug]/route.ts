@@ -12,6 +12,14 @@ export async function GET(
   { params }: { params: RouteParamsPromise }
 ) {
   try {
+    // Check if DATABASE_URL is available (for build-time compatibility)
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json(
+        { error: 'Product not found' },
+        { status: 404 }
+      );
+    }
+
     const { slug } = await params;
 
     const product = await prisma.product.findUnique({
@@ -107,6 +115,14 @@ export async function PUT(
   { params }: { params: RouteParamsPromise }
 ) {
   try {
+    // Check if DATABASE_URL is available (for build-time compatibility)
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
+
     const session = await getServerSession(authOptions);
     if (!session || !session.user || !session.user.isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -183,6 +199,14 @@ export async function DELETE(
   { params }: { params: RouteParamsPromise }
 ) {
   try {
+    // Check if DATABASE_URL is available (for build-time compatibility)
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
+
     const session = await getServerSession(authOptions);
     if (!session || !session.user || !session.user.isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -4,6 +4,13 @@ import { prisma } from '@/lib/prisma';
 // GET /api/collections - Get all collections
 export async function GET(request: NextRequest) {
   try {
+    // Check if DATABASE_URL is available (for build-time compatibility)
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({
+        collections: [],
+      });
+    }
+
     const { searchParams } = new URL(request.url);
     const featured = searchParams.get('featured');
     

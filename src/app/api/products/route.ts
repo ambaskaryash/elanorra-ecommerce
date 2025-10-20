@@ -7,6 +7,19 @@ import { authOptions } from '@/lib/auth';
 // GET /api/products - Get all products with optional filters
 export async function GET(request: NextRequest) {
   try {
+    // Check if DATABASE_URL is available (for build-time compatibility)
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({
+        products: [],
+        pagination: {
+          page: 1,
+          limit: 12,
+          total: 0,
+          pages: 0,
+        },
+      });
+    }
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const search = searchParams.get('search');
@@ -129,6 +142,14 @@ const createProductSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if DATABASE_URL is available (for build-time compatibility)
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
+
     const session = await getServerSession(authOptions);
     if (!session || !session.user || !session.user.isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
