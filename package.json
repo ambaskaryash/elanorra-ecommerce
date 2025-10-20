@@ -4,13 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
@@ -37,7 +41,7 @@
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
     "csv-parser": "^3.2.0",
-    "dotenv": "^17.2.3",
+    "dotenv": "^16.4.5",
     "formidable": "^3.5.4",
     "framer-motion": "^12.23.24",
     "fuse.js": "^7.1.0",
@@ -60,7 +64,7 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4",
     "use-debounce": "^10.0.6",
-    "zod": "^4.1.12",
+    "zod": "^3.23.8",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
