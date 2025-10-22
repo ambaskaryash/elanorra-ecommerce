@@ -2,6 +2,7 @@ const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
   skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -11,9 +12,6 @@ const withPWA = require('next-pwa')({
         expiration: {
           maxEntries: 10,
           maxAgeSeconds: 60 * 60 * 24 * 365, // 365 days
-        },
-        cacheKeyWillBeUsed: async ({ request }) => {
-          return `${request.url}?${Math.round(Date.now() / (1000 * 60 * 60 * 24))}`;
         },
       },
     },
@@ -62,30 +60,6 @@ const withPWA = require('next-pwa')({
       },
     },
     {
-      urlPattern: /\.(?:mp3|wav|ogg)$/i,
-      handler: 'CacheFirst',
-      options: {
-        rangeRequests: true,
-        cacheName: 'static-audio-assets',
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:mp4)$/i,
-      handler: 'CacheFirst',
-      options: {
-        rangeRequests: true,
-        cacheName: 'static-video-assets',
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-        },
-      },
-    },
-    {
       urlPattern: /\.(?:js)$/i,
       handler: 'StaleWhileRevalidate',
       options: {
@@ -116,44 +90,6 @@ const withPWA = require('next-pwa')({
           maxEntries: 32,
           maxAgeSeconds: 60 * 60 * 24, // 24 hours
         },
-      },
-    },
-    {
-      urlPattern: /\.(?:json|xml|csv)$/i,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'static-data-assets',
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 60 * 60 * 24, // 24 hours
-        },
-      },
-    },
-    {
-      urlPattern: ({ request }) => {
-        return request.destination === 'document';
-      },
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'pages',
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 60 * 60 * 24, // 24 hours
-        },
-      },
-    },
-    {
-      urlPattern: ({ request }) => {
-        return request.destination === '';
-      },
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'api-cache',
-        expiration: {
-          maxEntries: 16,
-          maxAgeSeconds: 60 * 60, // 1 hour
-        },
-        networkTimeoutSeconds: 10,
       },
     },
   ],
