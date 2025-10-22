@@ -51,7 +51,7 @@ export default function ResendVerificationPage() {
   };
 
   const handleBackToSignIn = () => {
-    router.push('/auth/signin');
+    router.push('/auth/login');
   };
 
   if (isSuccess) {

@@ -64,7 +64,7 @@ export default function VerifyEmailPage() {
   };
 
   const handleContinue = () => {
-    router.push('/auth/signin');
+    router.push('/auth/login');
   };
 
   const handleResendVerification = () => {
