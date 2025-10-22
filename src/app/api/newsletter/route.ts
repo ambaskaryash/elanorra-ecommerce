@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { subscribeToNewsletter } from '@/lib/services/mailchimp';
+import { emailService } from '@/lib/email';
 import { rateLimit, rateLimitConfigs, createRateLimitResponse } from '@/lib/rate-limit';
 import { z } from 'zod';
 
@@ -20,7 +21,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email } = newsletterSchema.parse(body);
 
+    // Subscribe to Mailchimp
     await subscribeToNewsletter(email);
+
+    // Send confirmation email
+    await emailService.sendNewsletterSubscriptionConfirmation(email);
 
     return NextResponse.json({ message: 'Successfully subscribed to newsletter!' }, { status: 200 });
   } catch (error: unknown) {

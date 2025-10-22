@@ -53,7 +53,7 @@ class EmailService {
 
     try {
       const mailOptions = {
-        from: `"Elanorra Living" <${process.env.EMAIL_FROM || process.env.SMTP_USER}>`,
+        from: `"Elanorra Living" <info@elanorraliving.in>`,
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -449,6 +449,152 @@ class EmailService {
     // TODO: Implement shipping notification email
     console.log('Shipping notification email would be sent for order:', orderData.orderNumber);
     return true;
+  }
+
+  async sendNewsletterSubscriptionConfirmation(email: string): Promise<boolean> {
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Welcome to Elanorra Newsletter</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); min-height: 100vh;">
+        <div style="max-width: 600px; margin: 0 auto; background: #ffffff; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); border-radius: 16px; overflow: hidden;">
+          
+          <!-- Header with gradient background -->
+          <div style="background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%); padding: 40px 30px; text-align: center; position: relative;">
+            <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; display: inline-block;">
+              <div style="display: inline-block; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" style="display: block;">
+                  <defs>
+                    <linearGradient id="newsletter-logo-gradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" style="stop-color:#8b5cf6"/>
+                      <stop offset="100%" style="stop-color:#a855f7"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M24 4L6 14v20c0 11.05 7.95 20 18 20s18-8.95 18-20V14L24 4z" fill="url(#newsletter-logo-gradient)"/>
+                  <path d="M24 16l-8 6v12h16V22l-8-6z" fill="white" opacity="0.9"/>
+                </svg>
+              </div>
+              <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                Welcome to Our Newsletter!
+              </h1>
+              <p style="color: rgba(255, 255, 255, 0.9); font-size: 16px; margin: 8px 0 0 0; font-weight: 500;">
+                You're now part of the Elanorra community
+              </p>
+            </div>
+          </div>
+
+          <!-- Main content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h2 style="color: #1e293b; font-size: 24px; font-weight: 600; margin: 0 0 15px 0;">
+                🎉 Subscription Confirmed!
+              </h2>
+              <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin: 0;">
+                Thank you for subscribing to the Elanorra newsletter! You'll now receive exclusive offers, design inspiration, and the latest updates on luxury home living.
+              </p>
+            </div>
+
+            <!-- What to expect section -->
+            <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 16px; padding: 30px; margin: 30px 0; border: 1px solid #e2e8f0;">
+              <h3 style="color: #1e293b; font-size: 20px; font-weight: 600; margin: 0 0 20px 0; text-align: center;">
+                What to Expect
+              </h3>
+              
+              <div style="display: grid; gap: 15px;">
+                <div style="display: flex; align-items: flex-start;">
+                  <span style="font-size: 20px; margin-right: 12px; margin-top: 2px;">✨</span>
+                  <div>
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 5px 0;">Exclusive Offers</h4>
+                    <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.5;">
+                      Be the first to know about sales, discounts, and special promotions.
+                    </p>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: flex-start;">
+                  <span style="font-size: 20px; margin-right: 12px; margin-top: 2px;">🏡</span>
+                  <div>
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 5px 0;">Design Inspiration</h4>
+                    <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.5;">
+                      Get curated home décor ideas and styling tips from our design experts.
+                    </p>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: flex-start;">
+                  <span style="font-size: 20px; margin-right: 12px; margin-top: 2px;">🆕</span>
+                  <div>
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 5px 0;">New Arrivals</h4>
+                    <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.5;">
+                      Discover the latest additions to our premium furniture collection.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CTA Button -->
+            <div style="text-align: center; margin: 40px 0;">
+              <a href="${process.env.NEXTAUTH_URL}/shop" 
+                 style="display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%); color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3); transition: all 0.3s ease;">
+                🛍️ Start Shopping
+              </a>
+            </div>
+
+            <!-- Unsubscribe notice -->
+            <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin: 30px 0; border-left: 4px solid #8b5cf6;">
+              <p style="color: #64748b; font-size: 14px; margin: 0; text-align: center;">
+                You can unsubscribe from these emails at any time by clicking the unsubscribe link in any newsletter email.
+              </p>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="background: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0 0 10px 0; font-weight: 500;">
+              © 2024 Elanorra Living. All rights reserved.
+            </p>
+            <p style="color: #64748b; font-size: 11px; margin: 0; line-height: 1.4;">
+              This email was sent from Elanorra. Please do not reply to this email.<br>
+              For support, visit our website or contact our customer service team.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+      Welcome to Elanorra Newsletter!
+      
+      Subscription Confirmed!
+      
+      Thank you for subscribing to the Elanorra newsletter! You'll now receive exclusive offers, design inspiration, and the latest updates on luxury home living.
+      
+      What to Expect:
+      - Exclusive Offers: Be the first to know about sales, discounts, and special promotions
+      - Design Inspiration: Get curated home décor ideas and styling tips from our design experts
+      - New Arrivals: Discover the latest additions to our premium furniture collection
+      
+      Start shopping: ${process.env.NEXTAUTH_URL}/shop
+      
+      You can unsubscribe from these emails at any time by clicking the unsubscribe link in any newsletter email.
+      
+      ---
+      © 2024 Elanorra Living. All rights reserved.
+      This email was sent from Elanorra. Please do not reply to this email.
+    `;
+
+    return this.sendEmail({
+      to: email,
+      subject: 'Welcome to Elanorra Newsletter - Subscription Confirmed!',
+      html,
+      text,
+    });
   }
 }
 
