@@ -5,7 +5,7 @@ import DOMPurify from 'isomorphic-dompurify';
 export const emailSchema = z.string().email().max(254);
 export const passwordSchema = z.string().min(8).max(128);
 export const nameSchema = z.string().min(1).max(100).regex(/^[a-zA-Z\s'-]+$/);
-export const phoneSchema = z.string().regex(/^\+?[\d\s\-\(\)]+$/).min(10).max(20);
+export const phoneSchema = z.string().regex(/^\+?[\d\s\-\(\)]+$/).min(10).max(20).optional();
 
 // Product validation schemas
 export const productNameSchema = z.string().min(1).max(200);
@@ -61,7 +61,12 @@ export function validateAndSanitizeUser(data: any) {
     password: passwordSchema,
     firstName: nameSchema,
     lastName: nameSchema,
-    phone: phoneSchema.optional(),
+    phone: z.string().optional().refine((val) => {
+      if (!val || val.trim() === '') return true; // Allow empty/undefined
+      return /^\+?[\d\s\-\(\)]+$/.test(val) && val.length >= 10 && val.length <= 20;
+    }, {
+      message: "Phone number must be 10-20 characters and contain only digits, spaces, hyphens, parentheses, and optional + prefix"
+    }),
   });
 
   const validated = userSchema.parse(data);
@@ -71,7 +76,7 @@ export function validateAndSanitizeUser(data: any) {
     password: validated.password, // Don't sanitize password
     firstName: sanitizeText(validated.firstName),
     lastName: sanitizeText(validated.lastName),
-    phone: validated.phone ? sanitizeText(validated.phone) : undefined,
+    phone: validated.phone && validated.phone.trim() !== '' ? sanitizeText(validated.phone) : undefined,
   };
 }
 

@@ -58,8 +58,8 @@ export default function RegisterPage() {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    if (formData.phone && !/^[\+]?[\d\s\-\(\)]+$/.test(formData.phone)) {
-      newErrors.phone = 'Please enter a valid phone number';
+    if (formData.phone && (!/^[\+]?[\d\s\-\(\)]+$/.test(formData.phone) || formData.phone.length < 10)) {
+      newErrors.phone = 'Please enter a valid phone number (minimum 10 characters)';
     }
 
     setErrors(newErrors);
@@ -68,12 +68,15 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted!', formData);
     
     if (!validateForm()) {
+      console.log('Form validation failed', errors);
       return;
     }
 
     setIsLoading(true);
+    console.log('Starting registration process...');
 
     try {
       // Validate and sanitize user input
@@ -85,6 +88,8 @@ export default function RegisterPage() {
         phone: formData.phone,
       });
 
+      console.log('Sanitized data:', sanitizedData);
+
       // Register user via API
       const registerResponse = await fetch('/api/auth/register', {
         method: 'POST',
@@ -94,7 +99,9 @@ export default function RegisterPage() {
         body: JSON.stringify(sanitizedData),
       });
       
+      console.log('API response status:', registerResponse.status);
       const registerData = await registerResponse.json();
+      console.log('API response data:', registerData);
       
       if (registerResponse.ok) {
         toast.success('Account created successfully! Please check your email to verify your account.');
@@ -105,6 +112,7 @@ export default function RegisterPage() {
         toast.error(registerData.error || 'Registration failed');
       }
     } catch (error) {
+      console.error('Registration error:', error);
       toast.error('An unexpected error occurred');
     } finally {
       setIsLoading(false);
