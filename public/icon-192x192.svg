@@ -1,0 +1,18 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" rx="32" fill="#f43f5e"/>
+  <g transform="translate(32, 32)">
+    <!-- E Letter -->
+    <rect x="16" y="24" width="32" height="8" fill="white"/>
+    <rect x="16" y="24" width="8" height="80" fill="white"/>
+    <rect x="16" y="60" width="24" height="8" fill="white"/>
+    <rect x="16" y="96" width="32" height="8" fill="white"/>
+    
+    <!-- L Letter -->
+    <rect x="64" y="24" width="8" height="80" fill="white"/>
+    <rect x="64" y="96" width="24" height="8" fill="white"/>
+    
+    <!-- Decorative element -->
+    <circle cx="112" cy="64" r="16" fill="white" opacity="0.9"/>
+    <path d="M104 64l6 6 12-12" stroke="#f43f5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

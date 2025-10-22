@@ -1,0 +1,26 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="64" fill="#f43f5e"/>
+  <g transform="translate(64, 64)">
+    <!-- Background circle -->
+    <circle cx="192" cy="192" r="160" fill="white" opacity="0.1"/>
+    
+    <!-- E Letter -->
+    <rect x="64" y="96" width="96" height="24" fill="white"/>
+    <rect x="64" y="96" width="24" height="192" fill="white"/>
+    <rect x="64" y="180" width="72" height="24" fill="white"/>
+    <rect x="64" y="264" width="96" height="24" fill="white"/>
+    
+    <!-- L Letter -->
+    <rect x="192" y="96" width="24" height="192" fill="white"/>
+    <rect x="192" y="264" width="72" height="24" fill="white"/>
+    
+    <!-- Decorative elements -->
+    <circle cx="320" cy="192" r="48" fill="white" opacity="0.9"/>
+    <path d="M296 192l18 18 36-36" stroke="#f43f5e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Additional decorative dots -->
+    <circle cx="128" cy="320" r="8" fill="white" opacity="0.6"/>
+    <circle cx="256" cy="320" r="8" fill="white" opacity="0.6"/>
+    <circle cx="320" cy="320" r="8" fill="white" opacity="0.6"/>
+  </g>
+</svg>

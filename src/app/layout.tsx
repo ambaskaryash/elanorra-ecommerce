@@ -1,6 +1,8 @@
 import Cart from '@/components/layout/Cart';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
+import PWAInstaller from '@/components/pwa/PWAInstaller';
+import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 import { SessionProvider } from '@/components/providers/session-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { AuthProvider } from '@/lib/contexts/auth-context';
@@ -105,10 +107,12 @@ export default function RootLayout({
               </main>
               <Footer />
               <Cart />
+              <PWAInstaller />
             </ThemeProvider>
             <Toaster richColors position="bottom-right" />
           </AuthProvider>
         </SessionProvider>
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );
