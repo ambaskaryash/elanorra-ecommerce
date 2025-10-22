@@ -167,7 +167,7 @@ const termsData: Section[] = [
     title: '15. Contact Information',
     content: [
       'If you have any questions about these Terms of Service, please contact us:',
-      'Email: legal@elanorraliving.com',
+      'Email: legal@elanorraliving.in',
       'Phone: +91 9876543210',
       'Address: Mumbai, Maharashtra, India',
       'We will respond to your inquiries within 48 hours during business days.'

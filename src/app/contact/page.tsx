@@ -11,6 +11,7 @@ import {
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import LiveChat from '@/components/ui/LiveChat';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -38,7 +39,7 @@ const contactInfo = [
   {
     icon: EnvelopeIcon,
     title: 'Email Us',
-    info: 'hello@Elanorraliving.com',
+    info: 'hello@elanorraliving.in',
     subInfo: 'We reply within 24 hours',
   },
   {
@@ -72,6 +73,7 @@ export default function ContactPage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -316,20 +318,15 @@ export default function ContactPage() {
                     <p className="text-sm opacity-90">
                       Need immediate assistance? Our team is available for urgent queries.
                     </p>
-                    <button className="mt-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                    <button 
+                      onClick={() => setIsChatOpen(true)}
+                      className="mt-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                    >
                       Live Chat
                     </button>
                   </div>
 
-                  <div className="bg-gray-50 p-6 rounded-2xl">
-                    <h4 className="font-semibold text-gray-900 mb-2">Schedule a Consultation</h4>
-                    <p className="text-gray-600 text-sm mb-4">
-                      Book a free 30-minute design consultation with our experts.
-                    </p>
-                    <button className="bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition-colors">
-                      Book Now
-                    </button>
-                  </div>
+
                 </div>
               </motion.div>
             </div>
@@ -357,14 +354,17 @@ export default function ContactPage() {
 
             <motion.div variants={itemVariants} className="bg-white rounded-2xl shadow-lg overflow-hidden">
               <div className="aspect-w-16 aspect-h-9 h-96">
-                {/* Replace with actual map integration */}
-                <div className="bg-gray-200 flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPinIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 font-medium">Interactive Map</p>
-                    <p className="text-gray-500 text-sm">Showroom Location: Bandra West, Mumbai</p>
-                  </div>
-                </div>
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3770.8267739562896!2d72.8200!3d19.0596!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c9c676018b43%3A0x7b1b1b1b1b1b1b1b!2sBandra%20West%2C%20Mumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1635000000000!5m2!1sen!2sin"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Elanorra Living Showroom Location"
+                  className="w-full h-full"
+                />
               </div>
               
               <div className="p-8">
@@ -397,6 +397,9 @@ export default function ContactPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* Live Chat Modal */}
+      <LiveChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   );
 }

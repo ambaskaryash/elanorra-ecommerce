@@ -157,7 +157,7 @@ export default function Footer() {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <EnvelopeIcon className="h-5 w-5 text-rose-500" />
-                <span className="text-gray-300">hello@Elanorraliving.com</span>
+                <span className="text-gray-300">hello@elanorraliving.in</span>
               </div>
               <div className="flex items-center space-x-3">
                 <PhoneIcon className="h-5 w-5 text-rose-500" />

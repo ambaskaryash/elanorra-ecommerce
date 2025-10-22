@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Mock validation - in real app, send to backend
-      if (email === 'demo@Elanorraliving.com' && password === 'demo123') {
+      if (email === 'demo@elanorraliving.in' && password === 'demo123') {
         const mockUser: User = {
           id: '1',
           email,

@@ -180,10 +180,10 @@ const privacyData: Section[] = [
     title: '15. Contact Us',
     content: [
       'If you have questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:',
-      'Email: privacy@elanorraliving.com',
+      'Email: privacy@elanorraliving.in',
       'Phone: +91 9876543210',
       'Address: Mumbai, Maharashtra, India',
-      'Data Protection Officer: dpo@elanorraliving.com',
+      'Data Protection Officer: dpo@elanorraliving.in',
       'We will respond to your inquiries within 30 days or as required by applicable law.'
     ]
   }
@@ -320,7 +320,7 @@ export default function PrivacyPolicy() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link 
-              href="mailto:privacy@elanorraliving.com" 
+              href="mailto:privacy@elanorraliving.in" 
               className="inline-flex items-center justify-center px-6 py-3 bg-rose-600 text-white font-medium rounded-lg hover:bg-rose-700 transition-colors"
             >
               Contact Privacy Team
