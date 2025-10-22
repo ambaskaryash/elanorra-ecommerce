@@ -1,7 +1,24 @@
 import { NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+
+// Conditionally import prisma to avoid build-time initialization
+let prisma: any;
+
+if (process.env.DATABASE_URL) {
+  const { prisma: prismaClient } = require("@/lib/prisma");
+  prisma = prismaClient;
+} else {
+  // Mock prisma for build time
+  prisma = {
+    user: {
+      findUnique: () => Promise.resolve(null),
+    },
+    adminAction: {
+      create: () => Promise.resolve({}),
+    }
+  };
+}
 
 export interface AdminSecurityResult {
   success: boolean;

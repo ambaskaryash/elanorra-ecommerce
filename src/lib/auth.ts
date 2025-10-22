@@ -2,10 +2,43 @@ import { NextAuthOptions } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+
+// Conditionally import prisma to avoid build-time initialization
+let prisma: any;
+let PrismaAdapter_: any;
+
+if (process.env.DATABASE_URL) {
+  const { prisma: prismaClient } = require("@/lib/prisma");
+  const { PrismaAdapter: PrismaAdapterImport } = require("@next-auth/prisma-adapter");
+  prisma = prismaClient;
+  PrismaAdapter_ = PrismaAdapterImport;
+} else {
+  // Mock adapter for build time
+  PrismaAdapter_ = () => ({
+    createUser: () => Promise.resolve(null),
+    getUser: () => Promise.resolve(null),
+    getUserByEmail: () => Promise.resolve(null),
+    getUserByAccount: () => Promise.resolve(null),
+    updateUser: () => Promise.resolve(null),
+    deleteUser: () => Promise.resolve(null),
+    linkAccount: () => Promise.resolve(null),
+    unlinkAccount: () => Promise.resolve(null),
+    createSession: () => Promise.resolve(null),
+    getSessionAndUser: () => Promise.resolve(null),
+    updateSession: () => Promise.resolve(null),
+    deleteSession: () => Promise.resolve(null),
+    createVerificationToken: () => Promise.resolve(null),
+    useVerificationToken: () => Promise.resolve(null),
+  });
+  prisma = {
+    user: {
+      findUnique: () => Promise.resolve(null),
+    }
+  };
+}
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter_(prisma),
   providers: [
     CredentialsProvider({
       name: "credentials",

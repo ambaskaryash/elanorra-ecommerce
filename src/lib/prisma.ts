@@ -1,7 +1,3 @@
-import { PrismaClient } from '@prisma/client';
-import { withAccelerate } from '@prisma/extension-accelerate';
-import { withOptimize } from '@prisma/extension-optimize';
-
 // Check if DATABASE_URL is available (for build-time safety)
 const isDatabaseAvailable = !!process.env.DATABASE_URL;
 
@@ -32,36 +28,46 @@ const createMockPrismaClient = () => {
         get: () => mockMethods.findMany
       });
     }
-  }) as unknown as PrismaClient;
+  }) as any;
 };
 
-// Build base client and conditionally extend with Optimize only when API key is provided
-// Only initialize if DATABASE_URL is available
-let prismaClient: PrismaClient;
+// Only import and initialize Prisma if DATABASE_URL is available
+let prismaClient: any;
 
 if (isDatabaseAvailable) {
+  // Dynamic imports to avoid loading Prisma during build time
+  const { PrismaClient } = require('@prisma/client');
+  const { withAccelerate } = require('@prisma/extension-accelerate');
+  
   const baseClient = new PrismaClient({
     log: ['query'],
   }).$extends(withAccelerate());
       
   const optimizeApiKey = process.env.OPTIMIZE_API_KEY;
-  const extendedClient = optimizeApiKey
-    ? baseClient.$extends(withOptimize({ apiKey: optimizeApiKey }))
-    : baseClient;
+  if (optimizeApiKey) {
+    try {
+      const { withOptimize } = require('@prisma/extension-optimize');
+      prismaClient = baseClient.$extends(withOptimize({ apiKey: optimizeApiKey }));
+    } catch (error) {
+      console.warn('Failed to load Prisma Optimize extension:', error);
+      prismaClient = baseClient;
+    }
+  } else {
+    prismaClient = baseClient;
+  }
 
-  prismaClient = extendedClient as unknown as PrismaClient;
 } else {
   prismaClient = createMockPrismaClient();
 }
 
 declare global {
   // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
+  var prisma: any | undefined;
 }
 
 // Attach PrismaClient to the global object in development to prevent exhausting connections
-const prisma: PrismaClient = isDatabaseAvailable && process.env.NODE_ENV !== 'production'
-  ? ((globalThis.prisma as PrismaClient | undefined) ?? prismaClient)
+const prisma: any = isDatabaseAvailable && process.env.NODE_ENV !== 'production'
+  ? ((globalThis.prisma as any | undefined) ?? prismaClient)
   : prismaClient;
 
 if (process.env.NODE_ENV !== 'production' && isDatabaseAvailable) {

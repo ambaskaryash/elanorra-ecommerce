@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    telemetry: false,
-  },
   images: {
     domains: ['images.unsplash.com', 'via.placeholder.com'],
   },
