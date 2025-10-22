@@ -12,6 +12,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
   CurrencyRupeeIcon,
+  EnvelopeIcon,
   EyeIcon,
   PencilIcon,
   ShoppingBagIcon,
@@ -290,7 +291,59 @@ export default function AdminDashboard() {
                 {description && (
                   <p className="text-xs text-gray-500 mt-1">{description}</p>
                 )}
+
+          {/* Newsletter Management */}
+          {activeTab === 'newsletter' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
+            >
+              <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-teal-50 to-cyan-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-teal-500 rounded-lg">
+                      <EnvelopeIcon className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">Newsletter Management</h3>
+                      <p className="text-sm text-gray-600">Manage subscribers and send campaigns</p>
+                    </div>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => router.push('/admin/newsletter')}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    <EnvelopeIcon className="h-4 w-4" />
+                    <span>Open Newsletter Dashboard</span>
+                  </motion.button>
+                </div>
               </div>
+              <div className="p-6">
+                <div className="text-center py-12">
+                  <EnvelopeIcon className="h-16 w-16 text-teal-400 mx-auto mb-4" />
+                  <h4 className="text-lg font-medium text-gray-900 mb-2">Newsletter Dashboard</h4>
+                  <p className="text-gray-600 mb-6">
+                    Access the full newsletter management dashboard to view subscribers, send campaigns, and track analytics.
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => router.push('/admin/newsletter')}
+                    className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    <span>Go to Newsletter Dashboard</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
             </div>
             <div className="flex items-end space-x-2">
               <p className="text-3xl font-bold text-gray-900">{value}</p>
@@ -319,6 +372,7 @@ export default function AdminDashboard() {
     { id: 'bulk-upload', name: 'Bulk Upload', icon: ArrowPathIcon, color: 'indigo' },
     { id: 'returns', name: 'Returns', icon: ArrowPathIcon, color: 'orange' },
     { id: 'blog', name: 'Blog', icon: DocumentTextIcon, color: 'pink' },
+    { id: 'newsletter', name: 'Newsletter', icon: EnvelopeIcon, color: 'teal' },
     { id: 'reviews', name: 'Reviews', icon: StarIcon, color: 'yellow' },
   ];
 
@@ -332,6 +386,7 @@ export default function AdminDashboard() {
         indigo: 'bg-gradient-to-r from-indigo-500 to-indigo-600',
         orange: 'bg-gradient-to-r from-orange-500 to-orange-600',
         pink: 'bg-gradient-to-r from-pink-500 to-pink-600',
+        teal: 'bg-gradient-to-r from-teal-500 to-teal-600',
         yellow: 'bg-gradient-to-r from-yellow-500 to-yellow-600',
       };
       return colorMap[color] || 'bg-gradient-to-r from-blue-500 to-blue-600';

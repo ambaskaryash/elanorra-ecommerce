@@ -128,7 +128,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/login');
+      router.push('auth/login');
     } else if (status === 'authenticated') {
       fetchOrders();
       fetchAddresses();

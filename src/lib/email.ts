@@ -21,6 +21,60 @@ interface WelcomeEmailData {
   verificationUrl?: string;
 }
 
+interface NewsletterCampaignData {
+  subject: string;
+  htmlContent: string;
+  textContent?: string;
+  unsubscribeUrl: string;
+}
+
+interface NewsletterWelcomeData {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  unsubscribeUrl: string;
+}
+
+interface WeeklyNewsletterData {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  unsubscribeUrl: string;
+  weekNumber: number;
+  featuredProducts?: Array<{
+    name: string;
+    price: number;
+    description?: string;
+    image?: string;
+    link: string;
+  }>;
+  designTips?: Array<{
+    title: string;
+    content: string;
+    link?: string;
+  }>;
+  specialOffers?: Array<{
+    title: string;
+    description: string;
+    code?: string;
+    link: string;
+    ctaText?: string;
+  }>;
+  blogPosts?: Array<{
+    title: string;
+    excerpt: string;
+    image?: string;
+    link: string;
+  }>;
+  newArrivals?: Array<{
+    name: string;
+    price: number;
+    description?: string;
+    image?: string;
+    link: string;
+  }>;
+}
+
 // Email service with nodemailer
 class EmailService {
   private transporter: nodemailer.Transporter | null = null;
@@ -29,12 +83,371 @@ class EmailService {
     this.initializeTransporter();
   }
 
+  async sendWeeklyNewsletter(data: WeeklyNewsletterData): Promise<boolean> {
+    const { 
+      email, 
+      firstName, 
+      lastName, 
+      unsubscribeUrl, 
+      weekNumber, 
+      featuredProducts = [], 
+      designTips = [], 
+      specialOffers = [], 
+      blogPosts = [],
+      newArrivals = []
+    } = data;
+    
+    const displayName = firstName ? (lastName ? `${firstName} ${lastName}` : firstName) : 'Valued Customer';
+    const currentDate = new Date().toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ElanorraLiving Weekly - Week ${weekNumber} | Luxury Home Updates & Exclusive Offers</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); min-height: 100vh;">
+        <div style="max-width: 650px; margin: 0 auto; background: #ffffff; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); border-radius: 16px; overflow: hidden;">
+          
+          <!-- Header with gradient background -->
+          <div style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); padding: 30px; text-align: center; position: relative;">
+            <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; display: inline-block;">
+              <div style="display: inline-block; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 48 48" style="display: block;">
+                  <defs>
+                    <linearGradient id="weekly-logo-gradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" style="stop-color:#dc2626"/>
+                      <stop offset="100%" style="stop-color:#ef4444"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M24 4L6 14v20c0 11.05 7.95 20 18 20s18-8.95 18-20V14L24 4z" fill="url(#weekly-logo-gradient)"/>
+                  <path d="M24 16l-8 6v12h16V22l-8-6z" fill="white" opacity="0.9"/>
+                </svg>
+              </div>
+              <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                ElanorraLiving Weekly
+              </h1>
+              <p style="color: rgba(255, 255, 255, 0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">
+                Week ${weekNumber} • ${currentDate}
+              </p>
+            </div>
+          </div>
+
+          <!-- Personal Greeting -->
+          <div style="padding: 30px 30px 20px 30px;">
+            <div style="text-align: center; margin-bottom: 25px;">
+              <h2 style="color: #1e293b; font-size: 22px; font-weight: 600; margin: 0 0 10px 0;">
+                Hello ${displayName}! 👋
+              </h2>
+              <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin: 0;">
+                Welcome to your weekly dose of luxury living inspiration, exclusive offers, and the latest trends in premium home décor.
+              </p>
+            </div>
+
+            ${specialOffers.length > 0 ? `
+            <!-- Special Offers Section -->
+            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 16px; padding: 25px; margin: 25px 0; border: 2px solid #f59e0b; text-align: center;">
+              <h3 style="color: #92400e; font-size: 20px; font-weight: 700; margin: 0 0 15px 0;">
+                🔥 This Week's Exclusive Offers
+              </h3>
+              ${specialOffers.map(offer => `
+                <div style="background: rgba(255, 255, 255, 0.8); border-radius: 12px; padding: 15px; margin: 10px 0; text-align: left;">
+                  <h4 style="color: #92400e; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">${offer.title}</h4>
+                  <p style="color: #78350f; font-size: 14px; margin: 0 0 10px 0;">${offer.description}</p>
+                  ${offer.code ? `<p style="color: #92400e; font-size: 14px; margin: 0 0 10px 0; font-weight: 600;">Code: <strong>${offer.code}</strong></p>` : ''}
+                  <a href="${offer.link}?utm_source=email&utm_medium=weekly&utm_campaign=special_offer" 
+                     style="display: inline-block; background: #f59e0b; color: #ffffff; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 12px;">
+                    ${offer.ctaText || 'Shop Now'}
+                  </a>
+                </div>
+              `).join('')}
+            </div>
+            ` : ''}
+
+            ${newArrivals.length > 0 ? `
+            <!-- New Arrivals Section -->
+            <div style="margin: 30px 0;">
+              <h3 style="color: #1e293b; font-size: 20px; font-weight: 600; margin: 0 0 20px 0; text-align: center; border-bottom: 2px solid #dc2626; padding-bottom: 10px; display: inline-block; width: 100%;">
+                ✨ New Arrivals This Week
+              </h3>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                ${newArrivals.slice(0, 4).map(product => `
+                  <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; text-align: center; transition: all 0.3s ease;">
+                    ${product.image ? `<img src="${product.image}" alt="${product.name}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">` : ''}
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">${product.name}</h4>
+                    <p style="color: #64748b; font-size: 14px; margin: 0 0 10px 0; line-height: 1.4;">${product.description || ''}</p>
+                    <p style="color: #dc2626; font-size: 18px; font-weight: 700; margin: 0 0 12px 0;">$${product.price}</p>
+                    <a href="${product.link}?utm_source=email&utm_medium=weekly&utm_campaign=new_arrivals" 
+                       style="display: inline-block; background: #dc2626; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                      View Product
+                    </a>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            ` : ''}
+
+            ${featuredProducts.length > 0 ? `
+            <!-- Featured Products Section -->
+            <div style="margin: 30px 0;">
+              <h3 style="color: #1e293b; font-size: 20px; font-weight: 600; margin: 0 0 20px 0; text-align: center; border-bottom: 2px solid #dc2626; padding-bottom: 10px; display: inline-block; width: 100%;">
+                🏆 Featured Products
+              </h3>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                ${featuredProducts.slice(0, 3).map(product => `
+                  <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; text-align: center; transition: all 0.3s ease;">
+                    ${product.image ? `<img src="${product.image}" alt="${product.name}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">` : ''}
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">${product.name}</h4>
+                    <p style="color: #64748b; font-size: 14px; margin: 0 0 10px 0; line-height: 1.4;">${product.description || ''}</p>
+                    <p style="color: #dc2626; font-size: 18px; font-weight: 700; margin: 0 0 12px 0;">$${product.price}</p>
+                    <a href="${product.link}?utm_source=email&utm_medium=weekly&utm_campaign=featured_products" 
+                       style="display: inline-block; background: #dc2626; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                      Shop Now
+                    </a>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            ` : ''}
+
+            ${designTips.length > 0 ? `
+            <!-- Design Tips Section -->
+            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 16px; padding: 25px; margin: 30px 0; border-left: 4px solid #0ea5e9;">
+              <h3 style="color: #0c4a6e; font-size: 20px; font-weight: 600; margin: 0 0 20px 0; text-align: center;">
+                💡 This Week's Design Tips
+              </h3>
+              ${designTips.map((tip, index) => `
+                <div style="background: rgba(255, 255, 255, 0.8); border-radius: 12px; padding: 20px; margin: 15px 0;">
+                  <h4 style="color: #0c4a6e; font-size: 16px; font-weight: 600; margin: 0 0 10px 0;">
+                    ${index + 1}. ${tip.title}
+                  </h4>
+                  <p style="color: #164e63; font-size: 14px; margin: 0; line-height: 1.6;">${tip.content}</p>
+                  ${tip.link ? `
+                    <div style="margin-top: 10px;">
+                      <a href="${tip.link}?utm_source=email&utm_medium=weekly&utm_campaign=design_tips" 
+                         style="color: #0ea5e9; text-decoration: none; font-weight: 500; font-size: 14px;">
+                        Read More →
+                      </a>
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+            ` : ''}
+
+            ${blogPosts.length > 0 ? `
+            <!-- Blog Posts Section -->
+            <div style="margin: 30px 0;">
+              <h3 style="color: #1e293b; font-size: 20px; font-weight: 600; margin: 0 0 20px 0; text-align: center; border-bottom: 2px solid #dc2626; padding-bottom: 10px; display: inline-block; width: 100%;">
+                📚 Latest from Our Blog
+              </h3>
+              ${blogPosts.map(post => `
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 15px 0; display: flex; align-items: flex-start; gap: 15px;">
+                  ${post.image ? `
+                    <div style="flex-shrink: 0;">
+                      <img src="${post.image}" alt="${post.title}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                    </div>
+                  ` : ''}
+                  <div style="flex: 1;">
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">${post.title}</h4>
+                    <p style="color: #64748b; font-size: 14px; margin: 0 0 10px 0; line-height: 1.5;">${post.excerpt}</p>
+                    <a href="${post.link}?utm_source=email&utm_medium=weekly&utm_campaign=blog_posts" 
+                       style="color: #dc2626; text-decoration: none; font-weight: 500; font-size: 14px;">
+                      Read Full Article →
+                    </a>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            ` : ''}
+
+            <!-- Social Proof Section -->
+            <div style="background: #fef7f0; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #f97316;">
+              <h4 style="color: #ea580c; font-size: 18px; font-weight: 600; margin: 0 0 15px 0; text-align: center;">
+                ⭐ Customer Spotlight
+              </h4>
+              <p style="color: #9a3412; font-size: 14px; margin: 0 0 10px 0; text-align: center; font-style: italic;">
+                "This week I received my new dining set from ElanorraLiving and I'm absolutely in love! The craftsmanship is exceptional and it's transformed our dining room into a luxury space." - Jennifer K.
+              </p>
+              <div style="text-align: center;">
+                <a href="${process.env.NEXTAUTH_URL}/reviews?utm_source=email&utm_medium=weekly&utm_campaign=customer_spotlight" 
+                   style="color: #ea580c; text-decoration: none; font-weight: 500; font-size: 14px;">
+                  Share Your Story →
+                </a>
+              </div>
+            </div>
+
+            <!-- Quick Shop Categories -->
+            <div style="margin: 30px 0;">
+              <h3 style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0 0 20px 0; text-align: center;">
+                Quick Shop by Category
+              </h3>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+                <a href="${process.env.NEXTAUTH_URL}/categories/living-room?utm_source=email&utm_medium=weekly&utm_campaign=quick_shop" 
+                   style="display: block; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; text-decoration: none; text-align: center; transition: all 0.3s ease;">
+                  <div style="font-size: 20px; margin-bottom: 6px;">🛋️</div>
+                  <h4 style="color: #1e293b; font-size: 12px; font-weight: 600; margin: 0;">Living Room</h4>
+                </a>
+                <a href="${process.env.NEXTAUTH_URL}/categories/bedroom?utm_source=email&utm_medium=weekly&utm_campaign=quick_shop" 
+                   style="display: block; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; text-decoration: none; text-align: center; transition: all 0.3s ease;">
+                  <div style="font-size: 20px; margin-bottom: 6px;">🛏️</div>
+                  <h4 style="color: #1e293b; font-size: 12px; font-weight: 600; margin: 0;">Bedroom</h4>
+                </a>
+                <a href="${process.env.NEXTAUTH_URL}/categories/dining?utm_source=email&utm_medium=weekly&utm_campaign=quick_shop" 
+                   style="display: block; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; text-decoration: none; text-align: center; transition: all 0.3s ease;">
+                  <div style="font-size: 20px; margin-bottom: 6px;">🍽️</div>
+                  <h4 style="color: #1e293b; font-size: 12px; font-weight: 600; margin: 0;">Dining</h4>
+                </a>
+                <a href="${process.env.NEXTAUTH_URL}/categories/decor?utm_source=email&utm_medium=weekly&utm_campaign=quick_shop" 
+                   style="display: block; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; text-decoration: none; text-align: center; transition: all 0.3s ease;">
+                  <div style="font-size: 20px; margin-bottom: 6px;">🎨</div>
+                  <h4 style="color: #1e293b; font-size: 12px; font-weight: 600; margin: 0;">Décor</h4>
+                </a>
+              </div>
+            </div>
+
+            <!-- Social Media -->
+            <div style="text-align: center; margin: 30px 0;">
+              <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 15px 0;">
+                Follow Us for Daily Inspiration
+              </h4>
+              <div style="display: inline-flex; gap: 12px;">
+                <a href="${process.env.NEXTAUTH_URL}/social/facebook?utm_source=email&utm_medium=weekly&utm_campaign=social" style="display: inline-block; width: 36px; height: 36px; background: #1877f2; border-radius: 50%; text-decoration: none; color: white; text-align: center; line-height: 36px; font-size: 16px;">📘</a>
+                <a href="${process.env.NEXTAUTH_URL}/social/instagram?utm_source=email&utm_medium=weekly&utm_campaign=social" style="display: inline-block; width: 36px; height: 36px; background: #e4405f; border-radius: 50%; text-decoration: none; color: white; text-align: center; line-height: 36px; font-size: 16px;">📷</a>
+                <a href="${process.env.NEXTAUTH_URL}/social/pinterest?utm_source=email&utm_medium=weekly&utm_campaign=social" style="display: inline-block; width: 36px; height: 36px; background: #bd081c; border-radius: 50%; text-decoration: none; color: white; text-align: center; line-height: 36px; font-size: 16px;">📌</a>
+                <a href="${process.env.NEXTAUTH_URL}/social/youtube?utm_source=email&utm_medium=weekly&utm_campaign=social" style="display: inline-block; width: 36px; height: 36px; background: #ff0000; border-radius: 50%; text-decoration: none; color: white; text-align: center; line-height: 36px; font-size: 16px;">📺</a>
+              </div>
+            </div>
+
+            <!-- Unsubscribe notice -->
+            <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin: 30px 0; border-left: 4px solid #dc2626;">
+              <p style="color: #64748b; font-size: 14px; margin: 0; text-align: center;">
+                You're receiving this weekly newsletter because you subscribed to ElanorraLiving updates. 
+                <a href="${unsubscribeUrl}" style="color: #dc2626; text-decoration: none;">Unsubscribe</a> | 
+                <a href="${process.env.NEXTAUTH_URL}/newsletter/preferences?email=${encodeURIComponent(email)}" style="color: #dc2626; text-decoration: none;">Update Preferences</a>
+              </p>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="background: #f8fafc; padding: 25px; text-align: center; border-top: 1px solid #e2e8f0;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0 0 8px 0; font-weight: 500;">
+              © 2024 ElanorraLiving. All rights reserved.
+            </p>
+            <p style="color: #64748b; font-size: 11px; margin: 0; line-height: 1.4;">
+              ElanorraLiving - Premium Home Furniture & Décor<br>
+              Transforming houses into luxury homes since 2024<br>
+              For support, visit our <a href="${process.env.NEXTAUTH_URL}/contact" style="color: #dc2626; text-decoration: none;">contact page</a>
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+      ElanorraLiving Weekly - Week ${weekNumber}
+      ${currentDate}
+      
+      Hello ${displayName}!
+      
+      Welcome to your weekly dose of luxury living inspiration, exclusive offers, and the latest trends in premium home décor.
+      
+      ${specialOffers.length > 0 ? `
+      🔥 THIS WEEK'S EXCLUSIVE OFFERS:
+      ${specialOffers.map(offer => `
+      - ${offer.title}
+        ${offer.description}
+        ${offer.code ? `Code: ${offer.code}` : ''}
+        Shop: ${offer.link}?utm_source=email&utm_medium=weekly&utm_campaign=special_offer
+      `).join('')}
+      ` : ''}
+      
+      ${newArrivals.length > 0 ? `
+      ✨ NEW ARRIVALS THIS WEEK:
+      ${newArrivals.slice(0, 4).map(product => `
+      - ${product.name} - $${product.price}
+        ${product.description || ''}
+        View: ${product.link}?utm_source=email&utm_medium=weekly&utm_campaign=new_arrivals
+      `).join('')}
+      ` : ''}
+      
+      ${featuredProducts.length > 0 ? `
+      🏆 FEATURED PRODUCTS:
+      ${featuredProducts.slice(0, 3).map(product => `
+      - ${product.name} - $${product.price}
+        ${product.description || ''}
+        Shop: ${product.link}?utm_source=email&utm_medium=weekly&utm_campaign=featured_products
+      `).join('')}
+      ` : ''}
+      
+      ${designTips.length > 0 ? `
+      💡 THIS WEEK'S DESIGN TIPS:
+      ${designTips.map((tip, index) => `
+      ${index + 1}. ${tip.title}
+         ${tip.content}
+         ${tip.link ? `Read more: ${tip.link}?utm_source=email&utm_medium=weekly&utm_campaign=design_tips` : ''}
+      `).join('')}
+      ` : ''}
+      
+      ${blogPosts.length > 0 ? `
+      📚 LATEST FROM OUR BLOG:
+      ${blogPosts.map(post => `
+      - ${post.title}
+        ${post.excerpt}
+        Read: ${post.link}?utm_source=email&utm_medium=weekly&utm_campaign=blog_posts
+      `).join('')}
+      ` : ''}
+      
+      ⭐ CUSTOMER SPOTLIGHT:
+      "This week I received my new dining set from ElanorraLiving and I'm absolutely in love! The craftsmanship is exceptional and it's transformed our dining room into a luxury space." - Jennifer K.
+      
+      Share your story: ${process.env.NEXTAUTH_URL}/reviews?utm_source=email&utm_medium=weekly&utm_campaign=customer_spotlight
+      
+      QUICK SHOP BY CATEGORY:
+      Living Room: ${process.env.NEXTAUTH_URL}/categories/living-room?utm_source=email&utm_medium=weekly&utm_campaign=quick_shop
+      Bedroom: ${process.env.NEXTAUTH_URL}/categories/bedroom?utm_source=email&utm_medium=weekly&utm_campaign=quick_shop
+      Dining: ${process.env.NEXTAUTH_URL}/categories/dining?utm_source=email&utm_medium=weekly&utm_campaign=quick_shop
+      Décor: ${process.env.NEXTAUTH_URL}/categories/decor?utm_source=email&utm_medium=weekly&utm_campaign=quick_shop
+      
+      Follow us for daily inspiration:
+      Facebook: ${process.env.NEXTAUTH_URL}/social/facebook?utm_source=email&utm_medium=weekly&utm_campaign=social
+      Instagram: ${process.env.NEXTAUTH_URL}/social/instagram?utm_source=email&utm_medium=weekly&utm_campaign=social
+      Pinterest: ${process.env.NEXTAUTH_URL}/social/pinterest?utm_source=email&utm_medium=weekly&utm_campaign=social
+      YouTube: ${process.env.NEXTAUTH_URL}/social/youtube?utm_source=email&utm_medium=weekly&utm_campaign=social
+      
+      ---
+      You're receiving this weekly newsletter because you subscribed to ElanorraLiving updates.
+      Unsubscribe: ${unsubscribeUrl}
+      Update Preferences: ${process.env.NEXTAUTH_URL}/newsletter/preferences?email=${encodeURIComponent(email)}
+      
+      © 2024 ElanorraLiving. All rights reserved.
+      ElanorraLiving - Premium Home Furniture & Décor
+      Transforming houses into luxury homes since 2024
+      For support, visit: ${process.env.NEXTAUTH_URL}/contact
+    `;
+
+    return this.sendEmail({
+      to: email,
+      subject: `🏡 ElanorraLiving Weekly #${weekNumber} - New Arrivals, Design Tips & Exclusive Offers Inside!`,
+      html,
+      text,
+    });
+  }
+
   private initializeTransporter() {
     try {
       this.transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: false, // true for 465, false for other ports
+        secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASSWORD,
@@ -451,27 +864,30 @@ class EmailService {
     return true;
   }
 
-  async sendNewsletterSubscriptionConfirmation(email: string): Promise<boolean> {
+  async sendNewsletterWelcomeEmail(data: NewsletterWelcomeData): Promise<boolean> {
+    const { email, firstName, lastName, unsubscribeUrl } = data;
+    const displayName = firstName ? (lastName ? `${firstName} ${lastName}` : firstName) : '';
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Welcome to Elanorra Newsletter</title>
+        <title>Welcome to ElanorraLiving Community - Your Journey to Luxury Living Begins!</title>
       </head>
       <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); min-height: 100vh;">
         <div style="max-width: 600px; margin: 0 auto; background: #ffffff; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); border-radius: 16px; overflow: hidden;">
           
           <!-- Header with gradient background -->
-          <div style="background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%); padding: 40px 30px; text-align: center; position: relative;">
+          <div style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); padding: 40px 30px; text-align: center; position: relative;">
             <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; display: inline-block;">
               <div style="display: inline-block; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" style="display: block;">
                   <defs>
                     <linearGradient id="newsletter-logo-gradient" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" style="stop-color:#8b5cf6"/>
-                      <stop offset="100%" style="stop-color:#a855f7"/>
+                      <stop offset="0%" style="stop-color:#dc2626"/>
+                      <stop offset="100%" style="stop-color:#ef4444"/>
                     </linearGradient>
                   </defs>
                   <path d="M24 4L6 14v20c0 11.05 7.95 20 18 20s18-8.95 18-20V14L24 4z" fill="url(#newsletter-logo-gradient)"/>
@@ -479,10 +895,10 @@ class EmailService {
                 </svg>
               </div>
               <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                Welcome to Our Newsletter!
+                Welcome to ElanorraLiving Community!
               </h1>
               <p style="color: rgba(255, 255, 255, 0.9); font-size: 16px; margin: 8px 0 0 0; font-weight: 500;">
-                You're now part of the Elanorra community
+                ${displayName ? `Hello ${displayName}! ` : ''}Your journey to luxury living begins now
               </p>
             </div>
           </div>
@@ -491,26 +907,50 @@ class EmailService {
           <div style="padding: 40px 30px;">
             <div style="text-align: center; margin-bottom: 30px;">
               <h2 style="color: #1e293b; font-size: 24px; font-weight: 600; margin: 0 0 15px 0;">
-                🎉 Subscription Confirmed!
+                🎉 Welcome to the Community!
               </h2>
               <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin: 0;">
-                Thank you for subscribing to the Elanorra newsletter! You'll now receive exclusive offers, design inspiration, and the latest updates on luxury home living.
+                Thank you for joining the ElanorraLiving Community! You're now part of an exclusive group that receives premium home décor insights, luxury furniture updates, and insider access to the latest trends in elegant living.
               </p>
+            </div>
+
+            <!-- Special Welcome Offer -->
+            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 16px; padding: 25px; margin: 30px 0; border: 2px solid #f59e0b; text-align: center;">
+              <h3 style="color: #92400e; font-size: 20px; font-weight: 700; margin: 0 0 10px 0;">
+                🎁 Exclusive Welcome Offer - 15% OFF
+              </h3>
+              <p style="color: #78350f; font-size: 16px; margin: 0 0 15px 0; font-weight: 500;">
+                Use code <strong>WELCOME15</strong> on your first purchase
+              </p>
+              <a href="${process.env.NEXTAUTH_URL}/shop?utm_source=email&utm_medium=welcome&utm_campaign=new_subscriber" 
+                 style="display: inline-block; background: #f59e0b; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                Shop Now & Save 15%
+              </a>
             </div>
 
             <!-- What to expect section -->
             <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 16px; padding: 30px; margin: 30px 0; border: 1px solid #e2e8f0;">
               <h3 style="color: #1e293b; font-size: 20px; font-weight: 600; margin: 0 0 20px 0; text-align: center;">
-                What to Expect
+                Your Weekly Luxury Living Updates
               </h3>
               
               <div style="display: grid; gap: 15px;">
                 <div style="display: flex; align-items: flex-start;">
+                  <span style="font-size: 20px; margin-right: 12px; margin-top: 2px;">🎁</span>
+                  <div>
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 5px 0;">Exclusive Offers & Flash Sales</h4>
+                    <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.5;">
+                      Be the first to access special discounts, early bird sales, member-only promotions, and limited-time flash deals on premium furniture.
+                    </p>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: flex-start;">
                   <span style="font-size: 20px; margin-right: 12px; margin-top: 2px;">✨</span>
                   <div>
-                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 5px 0;">Exclusive Offers</h4>
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 5px 0;">Design Inspiration & Trends</h4>
                     <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.5;">
-                      Be the first to know about sales, discounts, and special promotions.
+                      Get curated home décor ideas, styling tips, seasonal trends, and interior design insights from our expert team and industry professionals.
                     </p>
                   </div>
                 </div>
@@ -518,37 +958,97 @@ class EmailService {
                 <div style="display: flex; align-items: flex-start;">
                   <span style="font-size: 20px; margin-right: 12px; margin-top: 2px;">🏡</span>
                   <div>
-                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 5px 0;">Design Inspiration</h4>
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 5px 0;">New Product Launches</h4>
                     <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.5;">
-                      Get curated home décor ideas and styling tips from our design experts.
+                      Discover the latest in premium furniture, luxury décor, and lifestyle products before they're available to the general public.
                     </p>
                   </div>
                 </div>
 
                 <div style="display: flex; align-items: flex-start;">
-                  <span style="font-size: 20px; margin-right: 12px; margin-top: 2px;">🆕</span>
+                  <span style="font-size: 20px; margin-right: 12px; margin-top: 2px;">📚</span>
                   <div>
-                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 5px 0;">New Arrivals</h4>
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 5px 0;">Home Styling Guides & Tips</h4>
                     <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.5;">
-                      Discover the latest additions to our premium furniture collection.
+                      Weekly how-to guides, room makeover ideas, color palette suggestions, and expert advice to transform your living space.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
+            <!-- Featured Categories -->
+            <div style="margin: 30px 0;">
+              <h3 style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0 0 20px 0; text-align: center;">
+                Explore Our Premium Collections
+              </h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <a href="${process.env.NEXTAUTH_URL}/categories/living-room?utm_source=email&utm_medium=welcome&utm_campaign=category_living" 
+                   style="display: block; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-decoration: none; text-align: center; transition: all 0.3s ease;">
+                  <div style="font-size: 24px; margin-bottom: 8px;">🛋️</div>
+                  <h4 style="color: #1e293b; font-size: 14px; font-weight: 600; margin: 0;">Living Room</h4>
+                </a>
+                <a href="${process.env.NEXTAUTH_URL}/categories/bedroom?utm_source=email&utm_medium=welcome&utm_campaign=category_bedroom" 
+                   style="display: block; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-decoration: none; text-align: center; transition: all 0.3s ease;">
+                  <div style="font-size: 24px; margin-bottom: 8px;">🛏️</div>
+                  <h4 style="color: #1e293b; font-size: 14px; font-weight: 600; margin: 0;">Bedroom</h4>
+                </a>
+                <a href="${process.env.NEXTAUTH_URL}/categories/dining?utm_source=email&utm_medium=welcome&utm_campaign=category_dining" 
+                   style="display: block; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-decoration: none; text-align: center; transition: all 0.3s ease;">
+                  <div style="font-size: 24px; margin-bottom: 8px;">🍽️</div>
+                  <h4 style="color: #1e293b; font-size: 14px; font-weight: 600; margin: 0;">Dining</h4>
+                </a>
+                <a href="${process.env.NEXTAUTH_URL}/categories/decor?utm_source=email&utm_medium=welcome&utm_campaign=category_decor" 
+                   style="display: block; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-decoration: none; text-align: center; transition: all 0.3s ease;">
+                  <div style="font-size: 24px; margin-bottom: 8px;">🎨</div>
+                  <h4 style="color: #1e293b; font-size: 14px; font-weight: 600; margin: 0;">Décor</h4>
+                </a>
+              </div>
+            </div>
+
             <!-- CTA Button -->
             <div style="text-align: center; margin: 40px 0;">
-              <a href="${process.env.NEXTAUTH_URL}/shop" 
-                 style="display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%); color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3); transition: all 0.3s ease;">
-                🛍️ Start Shopping
+              <a href="${process.env.NEXTAUTH_URL}/shop?utm_source=email&utm_medium=welcome&utm_campaign=main_cta" 
+                 style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 8px 20px rgba(220, 38, 38, 0.3); transition: all 0.3s ease;">
+                🛍️ Explore Our Luxury Collection
               </a>
             </div>
 
+            <!-- Social Media -->
+            <div style="text-align: center; margin: 30px 0;">
+              <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 15px 0;">
+                Follow Us for Daily Inspiration & Behind-the-Scenes Content
+              </h4>
+              <div style="display: inline-flex; gap: 15px;">
+                <a href="${process.env.NEXTAUTH_URL}/social/facebook?utm_source=email&utm_medium=welcome&utm_campaign=social" style="display: inline-block; width: 40px; height: 40px; background: #1877f2; border-radius: 50%; text-decoration: none; color: white; text-align: center; line-height: 40px; font-size: 18px;">📘</a>
+                <a href="${process.env.NEXTAUTH_URL}/social/instagram?utm_source=email&utm_medium=welcome&utm_campaign=social" style="display: inline-block; width: 40px; height: 40px; background: #e4405f; border-radius: 50%; text-decoration: none; color: white; text-align: center; line-height: 40px; font-size: 18px;">📷</a>
+                <a href="${process.env.NEXTAUTH_URL}/social/pinterest?utm_source=email&utm_medium=welcome&utm_campaign=social" style="display: inline-block; width: 40px; height: 40px; background: #bd081c; border-radius: 50%; text-decoration: none; color: white; text-align: center; line-height: 40px; font-size: 18px;">📌</a>
+                <a href="${process.env.NEXTAUTH_URL}/social/youtube?utm_source=email&utm_medium=welcome&utm_campaign=social" style="display: inline-block; width: 40px; height: 40px; background: #ff0000; border-radius: 50%; text-decoration: none; color: white; text-align: center; line-height: 40px; font-size: 18px;">📺</a>
+              </div>
+            </div>
+
+            <!-- Customer Reviews Teaser -->
+            <div style="background: #fef7f0; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #f97316;">
+              <h4 style="color: #ea580c; font-size: 16px; font-weight: 600; margin: 0 0 15px 0; text-align: center;">
+                ⭐ What Our Community Says
+              </h4>
+              <p style="color: #9a3412; font-size: 14px; margin: 0; text-align: center; font-style: italic;">
+                "ElanorraLiving transformed my home into a luxury sanctuary. The quality and style are unmatched!" - Sarah M.
+              </p>
+              <div style="text-align: center; margin-top: 15px;">
+                <a href="${process.env.NEXTAUTH_URL}/reviews?utm_source=email&utm_medium=welcome&utm_campaign=reviews" 
+                   style="color: #ea580c; text-decoration: none; font-weight: 500; font-size: 14px;">
+                  Read More Reviews →
+                </a>
+              </div>
+            </div>
+
             <!-- Unsubscribe notice -->
-            <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin: 30px 0; border-left: 4px solid #8b5cf6;">
+            <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin: 30px 0; border-left: 4px solid #dc2626;">
               <p style="color: #64748b; font-size: 14px; margin: 0; text-align: center;">
-                You can unsubscribe from these emails at any time by clicking the unsubscribe link in any newsletter email.
+                You're receiving this because you subscribed to ElanorraLiving updates. 
+                <a href="${unsubscribeUrl}" style="color: #dc2626; text-decoration: none;">Unsubscribe</a> | 
+                <a href="${process.env.NEXTAUTH_URL}/newsletter/preferences?email=${encodeURIComponent(email)}" style="color: #dc2626; text-decoration: none;">Update Preferences</a>
               </p>
             </div>
           </div>
@@ -556,11 +1056,12 @@ class EmailService {
           <!-- Footer -->
           <div style="background: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
             <p style="color: #94a3b8; font-size: 12px; margin: 0 0 10px 0; font-weight: 500;">
-              © 2024 Elanorra Living. All rights reserved.
+              © 2024 ElanorraLiving. All rights reserved.
             </p>
             <p style="color: #64748b; font-size: 11px; margin: 0; line-height: 1.4;">
-              This email was sent from Elanorra. Please do not reply to this email.<br>
-              For support, visit our website or contact our customer service team.
+              ElanorraLiving - Premium Home Furniture & Décor<br>
+              Transforming houses into luxury homes since 2024<br>
+              For support, visit our <a href="${process.env.NEXTAUTH_URL}/contact" style="color: #dc2626; text-decoration: none;">contact page</a>
             </p>
           </div>
         </div>
@@ -569,32 +1070,138 @@ class EmailService {
     `;
 
     const text = `
-      Welcome to Elanorra Newsletter!
+      Welcome to ElanorraLiving Community!
       
-      Subscription Confirmed!
+      ${displayName ? `Hello ${displayName}! ` : ''}Your journey to luxury living begins now!
       
-      Thank you for subscribing to the Elanorra newsletter! You'll now receive exclusive offers, design inspiration, and the latest updates on luxury home living.
+      🎁 EXCLUSIVE WELCOME OFFER - 15% OFF
+      Use code WELCOME15 on your first purchase
+      Shop now: ${process.env.NEXTAUTH_URL}/shop?utm_source=email&utm_medium=welcome&utm_campaign=new_subscriber
       
-      What to Expect:
-      - Exclusive Offers: Be the first to know about sales, discounts, and special promotions
-      - Design Inspiration: Get curated home décor ideas and styling tips from our design experts
-      - New Arrivals: Discover the latest additions to our premium furniture collection
+      Your Weekly Luxury Living Updates Include:
       
-      Start shopping: ${process.env.NEXTAUTH_URL}/shop
+      🎁 Exclusive Offers & Flash Sales
+      Be the first to access special discounts, early bird sales, member-only promotions, and limited-time flash deals on premium furniture.
       
-      You can unsubscribe from these emails at any time by clicking the unsubscribe link in any newsletter email.
+      ✨ Design Inspiration & Trends
+      Get curated home décor ideas, styling tips, seasonal trends, and interior design insights from our expert team and industry professionals.
+      
+      🏡 New Product Launches
+      Discover the latest in premium furniture, luxury décor, and lifestyle products before they're available to the general public.
+      
+      📚 Home Styling Guides & Tips
+      Weekly how-to guides, room makeover ideas, color palette suggestions, and expert advice to transform your living space.
+      
+      Explore Our Premium Collections:
+      Living Room: ${process.env.NEXTAUTH_URL}/categories/living-room?utm_source=email&utm_medium=welcome&utm_campaign=category_living
+      Bedroom: ${process.env.NEXTAUTH_URL}/categories/bedroom?utm_source=email&utm_medium=welcome&utm_campaign=category_bedroom
+      Dining: ${process.env.NEXTAUTH_URL}/categories/dining?utm_source=email&utm_medium=welcome&utm_campaign=category_dining
+      Décor: ${process.env.NEXTAUTH_URL}/categories/decor?utm_source=email&utm_medium=welcome&utm_campaign=category_decor
+      
+      Follow us for daily inspiration:
+      Facebook: ${process.env.NEXTAUTH_URL}/social/facebook?utm_source=email&utm_medium=welcome&utm_campaign=social
+      Instagram: ${process.env.NEXTAUTH_URL}/social/instagram?utm_source=email&utm_medium=welcome&utm_campaign=social
+      Pinterest: ${process.env.NEXTAUTH_URL}/social/pinterest?utm_source=email&utm_medium=welcome&utm_campaign=social
+      YouTube: ${process.env.NEXTAUTH_URL}/social/youtube?utm_source=email&utm_medium=welcome&utm_campaign=social
+      
+      ⭐ What Our Community Says:
+      "ElanorraLiving transformed my home into a luxury sanctuary. The quality and style are unmatched!" - Sarah M.
+      Read more reviews: ${process.env.NEXTAUTH_URL}/reviews?utm_source=email&utm_medium=welcome&utm_campaign=reviews
       
       ---
-      © 2024 Elanorra Living. All rights reserved.
-      This email was sent from Elanorra. Please do not reply to this email.
+      You're receiving this because you subscribed to ElanorraLiving updates.
+      Unsubscribe: ${unsubscribeUrl}
+      Update Preferences: ${process.env.NEXTAUTH_URL}/newsletter/preferences?email=${encodeURIComponent(email)}
+      
+      © 2024 ElanorraLiving. All rights reserved.
+      ElanorraLiving - Premium Home Furniture & Décor
+      Transforming houses into luxury homes since 2024
+      For support, visit: ${process.env.NEXTAUTH_URL}/contact
     `;
 
     return this.sendEmail({
       to: email,
-      subject: 'Welcome to Elanorra Newsletter - Subscription Confirmed!',
+      subject: '🏡 Welcome to ElanorraLiving Community - Your 15% OFF Welcome Gift Inside!',
       html,
       text,
     });
+  }
+
+  async sendNewsletterCampaign(
+    recipients: string[],
+    data: NewsletterCampaignData,
+    newsletterId?: string
+  ): Promise<{ sent: number; failed: number }> {
+    const { subject, htmlContent, textContent, unsubscribeUrl } = data;
+    let sent = 0;
+    let failed = 0;
+
+    // Send emails in batches to avoid overwhelming the SMTP server
+    const batchSize = 10;
+    for (let i = 0; i < recipients.length; i += batchSize) {
+      const batch = recipients.slice(i, i + batchSize);
+      
+      const promises = batch.map(async (email) => {
+        try {
+          // Add tracking pixel and click tracking to HTML content
+          let htmlWithTracking = htmlContent;
+          let textWithUnsubscribe = textContent;
+
+          // Add tracking pixel for opens (only if newsletterId is provided)
+          if (newsletterId) {
+            const trackingPixel = `<img src="${process.env.NEXTAUTH_URL}/api/newsletter/analytics?newsletter=${newsletterId}&subscriber=${encodeURIComponent(email)}" width="1" height="1" style="display:none;" alt="" />`;
+            htmlWithTracking = htmlWithTracking.replace('</body>', `${trackingPixel}</body>`);
+            
+            // If no </body> tag, append at the end
+            if (!htmlWithTracking.includes('</body>')) {
+              htmlWithTracking += trackingPixel;
+            }
+          }
+
+          // Add unsubscribe link to HTML content if not already present
+          const htmlWithUnsubscribe = htmlWithTracking.includes('{{UNSUBSCRIBE_URL}}') 
+            ? htmlWithTracking.replace(/{{UNSUBSCRIBE_URL}}/g, unsubscribeUrl)
+            : htmlWithTracking + `
+        <div style="text-align: center; margin: 30px 0; padding: 20px; background: #f8fafc; border-radius: 8px;">
+          <p style="color: #64748b; font-size: 12px; margin: 0;">
+            <a href="${unsubscribeUrl}" style="color: #dc2626; text-decoration: none;">Unsubscribe</a> from these emails
+          </p>
+        </div>
+      `;
+
+          textWithUnsubscribe = textContent 
+            ? (textContent.includes('{{UNSUBSCRIBE_URL}}') 
+                ? textContent.replace(/{{UNSUBSCRIBE_URL}}/g, unsubscribeUrl)
+                : textContent + `\n\nUnsubscribe: ${unsubscribeUrl}`)
+            : undefined;
+          
+          const success = await this.sendEmail({
+            to: email,
+            subject,
+            html: htmlWithUnsubscribe,
+            text: textWithUnsubscribe,
+          });
+          
+          if (success) {
+            sent++;
+          } else {
+            failed++;
+          }
+        } catch (error) {
+          console.error(`Failed to send newsletter to ${email}:`, error);
+          failed++;
+        }
+      });
+
+      await Promise.all(promises);
+      
+      // Add a small delay between batches
+      if (i + batchSize < recipients.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+
+    return { sent, failed };
   }
 }
 

@@ -2,43 +2,10 @@ import { NextAuthOptions } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-
-// Conditionally import prisma to avoid build-time initialization
-let prisma: any;
-let PrismaAdapter_: any;
-
-if (process.env.DATABASE_URL) {
-  const { prisma: prismaClient } = require("@/lib/prisma");
-  const { PrismaAdapter: PrismaAdapterImport } = require("@next-auth/prisma-adapter");
-  prisma = prismaClient;
-  PrismaAdapter_ = PrismaAdapterImport;
-} else {
-  // Mock adapter for build time
-  PrismaAdapter_ = () => ({
-    createUser: () => Promise.resolve(null),
-    getUser: () => Promise.resolve(null),
-    getUserByEmail: () => Promise.resolve(null),
-    getUserByAccount: () => Promise.resolve(null),
-    updateUser: () => Promise.resolve(null),
-    deleteUser: () => Promise.resolve(null),
-    linkAccount: () => Promise.resolve(null),
-    unlinkAccount: () => Promise.resolve(null),
-    createSession: () => Promise.resolve(null),
-    getSessionAndUser: () => Promise.resolve(null),
-    updateSession: () => Promise.resolve(null),
-    deleteSession: () => Promise.resolve(null),
-    createVerificationToken: () => Promise.resolve(null),
-    useVerificationToken: () => Promise.resolve(null),
-  });
-  prisma = {
-    user: {
-      findUnique: () => Promise.resolve(null),
-    }
-  };
-}
+import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter_(prisma),
+  adapter: process.env.DATABASE_URL ? PrismaAdapter(prisma) : undefined,
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -52,6 +19,12 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
+          // Skip database operations if no DATABASE_URL
+          if (!process.env.DATABASE_URL) {
+            console.warn("⚠️ DATABASE_URL not available, skipping authentication");
+            return null;
+          }
+
           const user = await prisma.user.findUnique({
             where: {
               email: credentials.email
@@ -105,8 +78,7 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production', // Dynamic based on environment
-        domain: process.env.NODE_ENV === 'production' ? process.env.NEXTAUTH_URL?.replace(/https?:\/\//, '') : undefined
+        secure: process.env.NODE_ENV === 'production'
       }
     },
     callbackUrl: {

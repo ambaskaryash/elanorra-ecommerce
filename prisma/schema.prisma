@@ -300,3 +300,36 @@ model ReturnRequestItem {
 
   @@map("return_request_items")
 }
+
+model NewsletterSubscriber {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  firstName     String?
+  lastName      String?
+  isActive      Boolean  @default(true)
+  preferences   Json?    // Store subscription preferences like categories, frequency
+  source        String?  // Track where they subscribed from
+  subscribedAt  DateTime @default(now())
+  unsubscribedAt DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("newsletter_subscribers")
+}
+
+model Newsletter {
+  id          String   @id @default(cuid())
+  subject     String
+  content     String   // HTML content
+  plainText   String?  // Plain text version
+  status      String   @default("draft") // draft, scheduled, sent
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  sentCount   Int      @default(0)
+  openCount   Int      @default(0)
+  clickCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("newsletters")
+}
