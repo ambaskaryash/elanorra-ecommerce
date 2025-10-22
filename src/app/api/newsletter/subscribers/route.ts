@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
       ]);
 
       // Calculate average open rate
-      const totalSent = newsletters.reduce((sum, n) => sum + n.sentCount, 0);
-      const totalOpens = newsletters.reduce((sum, n) => sum + n.openCount, 0);
+      const totalSent = newsletters.reduce((sum: number, n: any) => sum + n.sentCount, 0);
+      const totalOpens = newsletters.reduce((sum: number, n: any) => sum + n.openCount, 0);
       const averageOpenRate = totalSent > 0 ? (totalOpens / totalSent) * 100 : 0;
 
       return NextResponse.json({
