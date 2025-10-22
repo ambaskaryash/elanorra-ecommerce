@@ -74,61 +74,123 @@ class EmailService {
 
     const html = `
       <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Reset Your Password</title>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #f8f9fa; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-            .content { background: white; padding: 30px; border: 1px solid #e9ecef; }
-            .footer { background: #f8f9fa; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #6c757d; }
-            .button { display: inline-block; padding: 12px 24px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0; }
-            .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin: 20px 0; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Password Reset Request</h1>
-            </div>
-            <div class="content">
-              <p>Hello ${firstName || 'there'},</p>
-              
-              <p>We received a request to reset the password for your account associated with <strong>${email}</strong>.</p>
-              
-              <p>Click the button below to reset your password:</p>
-              
-              <div style="text-align: center;">
-                <a href="${resetUrl}" class="button">Reset Password</a>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reset Your Password - Elanorra</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); min-height: 100vh;">
+        <div style="max-width: 600px; margin: 0 auto; background: #ffffff; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); border-radius: 16px; overflow: hidden;">
+          
+          <!-- Header with gradient background -->
+          <div style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); padding: 40px 30px; text-align: center; position: relative;">
+            <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; display: inline-block;">
+              <div style="display: inline-block; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" style="display: block;">
+                  <defs>
+                    <linearGradient id="reset-logo-gradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#dc2626"/>
+                      <stop offset="100%" stop-color="#ef4444"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#reset-logo-gradient)"/>
+                  <path d="M12 36c0-9.941 8.059-18 18-18h6v6h-6c-6.627 0-12 5.373-12 12v6h-6v-6z" fill="#ffffff" opacity="0.95"/>
+                  <rect x="12" y="12" width="18" height="3.75" fill="#ffffff" opacity="0.95"/>
+                  <rect x="12" y="22.125" width="12" height="3.75" fill="#ffffff" opacity="0.95"/>
+                </svg>
               </div>
-              
-              <p>Or copy and paste this link into your browser:</p>
-              <p style="word-break: break-all; background: #f8f9fa; padding: 10px; border-radius: 4px;">
-                ${resetUrl}
+              <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); letter-spacing: -0.5px;">
+                Elanorra
+              </h1>
+              <p style="color: rgba(255, 255, 255, 0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">
+                Password Reset Request
               </p>
-              
-              <div class="warning">
-                <strong>Important:</strong>
-                <ul>
-                  <li>This link will expire in 1 hour for security reasons</li>
-                  <li>If you didn't request this password reset, please ignore this email</li>
-                  <li>Your password will remain unchanged until you create a new one</li>
-                </ul>
-              </div>
-              
-              <p>If you're having trouble clicking the button, copy and paste the URL above into your web browser.</p>
-              
-              <p>Best regards,<br>The Elanorra Team</p>
-            </div>
-            <div class="footer">
-              <p>This is an automated message, please do not reply to this email.</p>
-              <p>If you need help, contact our support team.</p>
             </div>
           </div>
-        </body>
+
+          <!-- Main content -->
+          <div style="padding: 50px 40px;">
+            <div style="text-align: center; margin-bottom: 40px;">
+              <h2 style="color: #1e293b; font-size: 32px; font-weight: 700; margin: 0 0 16px 0; line-height: 1.2;">
+                Reset Your Password
+              </h2>
+              <div style="width: 60px; height: 4px; background: linear-gradient(90deg, #dc2626, #ef4444); margin: 0 auto; border-radius: 2px;"></div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 16px; padding: 30px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+              <p style="color: #475569; font-size: 18px; line-height: 1.6; margin: 0 0 20px 0;">
+                Hello <strong style="color: #1e293b;">${firstName || 'there'}</strong>,
+              </p>
+              <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin: 0;">
+                We received a request to reset the password for your account associated with <strong>${email}</strong>. If you made this request, click the button below to create a new password.
+              </p>
+            </div>
+
+            <!-- CTA Button -->
+            <div style="text-align: center; margin: 40px 0;">
+              <a href="${resetUrl}" 
+                 style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); color: #ffffff; padding: 18px 36px; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 8px 20px rgba(220, 38, 38, 0.3); transition: all 0.3s ease; letter-spacing: 0.5px;">
+                🔒 Reset Password
+              </a>
+            </div>
+
+            <!-- Alternative link -->
+            <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin: 30px 0; border-left: 4px solid #dc2626;">
+              <p style="color: #64748b; font-size: 14px; margin: 0 0 10px 0; font-weight: 600;">
+                Can't click the button? Copy and paste this link:
+              </p>
+              <p style="word-break: break-all; color: #dc2626; font-size: 13px; margin: 0; font-family: 'Courier New', monospace; background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                ${resetUrl}
+              </p>
+            </div>
+
+            <!-- Security notice -->
+            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; padding: 20px; margin: 30px 0; border: 1px solid #f59e0b;">
+              <p style="color: #92400e; font-size: 14px; margin: 0 0 10px 0; display: flex; align-items: center;">
+                <span style="margin-right: 8px; font-size: 16px;">⚠️</span>
+                <strong>Important Security Information:</strong>
+              </p>
+              <ul style="color: #92400e; font-size: 14px; margin: 10px 0 0 0; padding-left: 20px;">
+                <li>This link will expire in 1 hour for security reasons</li>
+                <li>If you didn't request this password reset, please ignore this email</li>
+                <li>Your password will remain unchanged until you create a new one</li>
+              </ul>
+            </div>
+
+            <p style="color: #64748b; font-size: 14px; line-height: 1.5; margin: 30px 0 0 0; text-align: center;">
+              If you're having trouble clicking the button, copy and paste the URL above into your web browser.
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <div style="background: #1e293b; padding: 30px 40px; text-align: center;">
+            <div style="margin-bottom: 20px;">
+              <div style="display: inline-block; background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="display: block;">
+                  <defs>
+                    <linearGradient id="reset-footer-logo-gradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#dc2626"/>
+                      <stop offset="100%" stop-color="#ef4444"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="0" y="0" width="24" height="24" rx="6" fill="url(#reset-footer-logo-gradient)"/>
+                  <path d="M6 18c0-4.971 4.029-9 9-9h3v3h-3c-3.314 0-6 2.686-6 6v3H6v-3z" fill="#ffffff" opacity="0.95"/>
+                  <rect x="6" y="6" width="9" height="1.875" fill="#ffffff" opacity="0.95"/>
+                  <rect x="6" y="11.063" width="6" height="1.875" fill="#ffffff" opacity="0.95"/>
+                </svg>
+              </div>
+            </div>
+            <p style="color: #94a3b8; font-size: 12px; margin: 0 0 10px 0; font-weight: 500;">
+              © 2024 Elanorra Living. All rights reserved.
+            </p>
+            <p style="color: #64748b; font-size: 11px; margin: 0; line-height: 1.4;">
+              This email was sent from Elanorra. Please do not reply to this email.<br>
+              For support, visit our website or contact our customer service team.
+            </p>
+          </div>
+        </div>
+      </body>
       </html>
     `;
 
@@ -168,64 +230,175 @@ class EmailService {
 
     const html = `
       <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Welcome to Elanorra</title>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #f8f9fa; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-            .content { background: white; padding: 30px; border: 1px solid #e9ecef; }
-            .footer { background: #f8f9fa; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #6c757d; }
-            .button { display: inline-block; padding: 12px 24px; background: #28a745; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Welcome to Elanorra!</h1>
-            </div>
-            <div class="content">
-              <p>Hello ${firstName || 'there'},</p>
-              
-              <p>Welcome to Elanorra! We're excited to have you join our community.</p>
-              
-              ${verificationUrl ? `
-                <p>To get started, please verify your email address by clicking the button below:</p>
-                
-                <div style="text-align: center;">
-                  <a href="${verificationUrl}" class="button">Verify Email Address</a>
-                </div>
-                
-                <p>Or copy and paste this link into your browser:</p>
-                <p style="word-break: break-all; background: #f8f9fa; padding: 10px; border-radius: 4px;">
-                  ${verificationUrl}
-                </p>
-              ` : `
-                <p>Your account has been created successfully and you can start shopping right away!</p>
-              `}
-              
-              <p>Here's what you can do with your new account:</p>
-              <ul>
-                <li>Browse our curated collection of premium furniture</li>
-                <li>Save items to your wishlist</li>
-                <li>Track your orders and delivery status</li>
-                <li>Manage your addresses and payment methods</li>
-                <li>Leave reviews and ratings</li>
-              </ul>
-              
-              <p>If you have any questions, our customer support team is here to help.</p>
-              
-              <p>Happy shopping!<br>The Elanorra Team</p>
-            </div>
-            <div class="footer">
-              <p>This is an automated message, please do not reply to this email.</p>
-              <p>If you need help, contact our support team.</p>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Welcome to Elanorra - Your Journey Begins</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); min-height: 100vh;">
+        <div style="max-width: 600px; margin: 0 auto; background: #ffffff; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); border-radius: 16px; overflow: hidden;">
+          
+          <!-- Header with gradient background -->
+          <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 40px 30px; text-align: center; position: relative;">
+            <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; display: inline-block;">
+              <div style="display: inline-block; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" style="display: block;">
+                  <defs>
+                    <linearGradient id="welcome-logo-gradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#059669"/>
+                      <stop offset="100%" stop-color="#10b981"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#welcome-logo-gradient)"/>
+                  <path d="M12 36c0-9.941 8.059-18 18-18h6v6h-6c-6.627 0-12 5.373-12 12v6h-6v-6z" fill="#ffffff" opacity="0.95"/>
+                  <rect x="12" y="12" width="18" height="3.75" fill="#ffffff" opacity="0.95"/>
+                  <rect x="12" y="22.125" width="12" height="3.75" fill="#ffffff" opacity="0.95"/>
+                </svg>
+              </div>
+              <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); letter-spacing: -0.5px;">
+                Elanorra
+              </h1>
+              <p style="color: rgba(255, 255, 255, 0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">
+                Welcome to Premium Living
+              </p>
             </div>
           </div>
-        </body>
+
+          <!-- Main content -->
+          <div style="padding: 50px 40px;">
+            <div style="text-align: center; margin-bottom: 40px;">
+              <h2 style="color: #1e293b; font-size: 32px; font-weight: 700; margin: 0 0 16px 0; line-height: 1.2;">
+                Welcome to Elanorra! 🎉
+              </h2>
+              <div style="width: 60px; height: 4px; background: linear-gradient(90deg, #059669, #10b981); margin: 0 auto; border-radius: 2px;"></div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-radius: 16px; padding: 30px; margin-bottom: 30px; border: 1px solid #bbf7d0;">
+              <p style="color: #475569; font-size: 18px; line-height: 1.6; margin: 0 0 20px 0;">
+                Hello <strong style="color: #1e293b;">${firstName || 'there'}</strong>,
+              </p>
+              <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin: 0;">
+                Thank you for joining Elanorra! We're thrilled to have you as part of our community. Your account has been successfully created and you're ready to explore our premium collection.
+              </p>
+            </div>
+
+            ${verificationUrl ? `
+            <!-- Verification CTA -->
+            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 16px; padding: 30px; margin: 30px 0; border: 1px solid #f59e0b; text-align: center;">
+              <h3 style="color: #92400e; font-size: 20px; font-weight: 600; margin: 0 0 15px 0;">
+                🔐 One More Step to Complete
+              </h3>
+              <p style="color: #92400e; font-size: 14px; margin: 0 0 20px 0;">
+                Please verify your email address to unlock all features and start shopping.
+              </p>
+              <a href="${verificationUrl}" 
+                 style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%); color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px; box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);">
+                ✅ Verify Email Address
+              </a>
+              
+              <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+                <p style="color: #64748b; font-size: 14px; margin: 0 0 10px 0; font-weight: 600;">
+                  Can't click the button? Copy and paste this link:
+                </p>
+                <p style="word-break: break-all; color: #f59e0b; font-size: 13px; margin: 0; font-family: 'Courier New', monospace; background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                  ${verificationUrl}
+                </p>
+              </div>
+            </div>
+            ` : `
+            <div style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-radius: 16px; padding: 30px; margin: 30px 0; border: 1px solid #bbf7d0; text-align: center;">
+              <h3 style="color: #059669; font-size: 20px; font-weight: 600; margin: 0 0 15px 0;">
+                🎉 You're All Set!
+              </h3>
+              <p style="color: #064e3b; font-size: 14px; margin: 0;">
+                Your account has been created successfully and you can start shopping right away!
+              </p>
+            </div>
+            `}
+
+            <!-- Benefits section -->
+            <div style="margin: 40px 0;">
+              <h3 style="color: #1e293b; font-size: 24px; font-weight: 600; margin: 0 0 25px 0; text-align: center;">
+                What's Next? Discover Your Benefits
+              </h3>
+              
+              <div style="display: grid; gap: 20px;">
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+                  <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 24px; margin-right: 12px;">🛍️</span>
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0;">Premium Shopping Experience</h4>
+                  </div>
+                  <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.5;">
+                    Browse our curated collection of premium furniture and save items to your wishlist.
+                  </p>
+                </div>
+
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+                  <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 24px; margin-right: 12px;">🚚</span>
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0;">Fast & Free Shipping</h4>
+                  </div>
+                  <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.5;">
+                    Track your orders and delivery status with our premium shipping service.
+                  </p>
+                </div>
+
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+                  <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 24px; margin-right: 12px;">💎</span>
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0;">Member Benefits</h4>
+                  </div>
+                  <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.5;">
+                    Manage your addresses, payment methods, and leave reviews and ratings.
+                  </p>
+                </div>
+
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+                  <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 24px; margin-right: 12px;">🎯</span>
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0;">24/7 Customer Support</h4>
+                  </div>
+                  <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.5;">
+                    Our dedicated support team is always here to help with any questions or concerns.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <p style="color: #64748b; font-size: 14px; line-height: 1.5; margin: 30px 0 0 0; text-align: center;">
+              Happy shopping! If you have any questions, our customer support team is here to help.
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <div style="background: #1e293b; padding: 30px 40px; text-align: center;">
+            <div style="margin-bottom: 20px;">
+              <div style="display: inline-block; background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="display: block;">
+                  <defs>
+                    <linearGradient id="welcome-footer-logo-gradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#059669"/>
+                      <stop offset="100%" stop-color="#10b981"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="0" y="0" width="24" height="24" rx="6" fill="url(#welcome-footer-logo-gradient)"/>
+                  <path d="M6 18c0-4.971 4.029-9 9-9h3v3h-3c-3.314 0-6 2.686-6 6v3H6v-3z" fill="#ffffff" opacity="0.95"/>
+                  <rect x="6" y="6" width="9" height="1.875" fill="#ffffff" opacity="0.95"/>
+                  <rect x="6" y="11.063" width="6" height="1.875" fill="#ffffff" opacity="0.95"/>
+                </svg>
+              </div>
+            </div>
+            <p style="color: #94a3b8; font-size: 12px; margin: 0 0 10px 0; font-weight: 500;">
+              © 2024 Elanorra Living. All rights reserved.
+            </p>
+            <p style="color: #64748b; font-size: 11px; margin: 0; line-height: 1.4;">
+              This email was sent from Elanorra. Please do not reply to this email.<br>
+              For support, visit our website or contact our customer service team.
+            </p>
+          </div>
+        </div>
+      </body>
       </html>
     `;
 
@@ -322,9 +495,20 @@ export async function sendVerificationEmail(
           <!-- Header with gradient background -->
           <div style="background: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%); padding: 40px 30px; text-align: center; position: relative;">
             <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; display: inline-block;">
-              <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZmF2aWNvbi1ncmFkaWVudCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZjQzZjVlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2ZiNzE4NSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPCEtLSBCYWNrZ3JvdW5kIHdpdGggcm91bmRlZCBjb3JuZXJzIC0tPgogIDxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgcng9IjYiIGZpbGw9InVybCgjZmF2aWNvbi1ncmFkaWVudCkiLz4KICA8IS0tIFNpbXBsaWZpZWQgIkUiIG1vbm9ncmFtIC0tPgogIDxwYXRoIGQ9Ik04IDI0YzAtNi42MjcgNS4zNzMtMTIgMTItMTJoNHYzaC00Yy00LjQxOCAwLTggMy41ODItOCA4djNIOHYtMnoiIGZpbGw9IiNmZmZmZmYiIG9wYWNpdHk9IjAuOTUiLz4KICA8cmVjdCB4PSI4IiB5PSI4IiB3aWR0aD0iMTIiIGhlaWdodD0iMi41IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjk1Ii8+CiAgPHJlY3QgeD0iOCIgeT0iMTQuNzUiIHdpZHRoPSI4IiBoZWlnaHQ9IjIuNSIgZmlsbD0iI2ZmZmZmZiIgb3BhY2l0eT0iMC45NSIvPgo8L3N2Zz4=" 
-                   alt="Elanorra Logo" 
-                   style="width: 48px; height: 48px; margin-bottom: 16px; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));">
+              <div style="display: inline-block; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" style="display: block;">
+                  <defs>
+                    <linearGradient id="logo-gradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#f43f5e"/>
+                      <stop offset="100%" stop-color="#fb7185"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#logo-gradient)"/>
+                  <path d="M12 36c0-9.941 8.059-18 18-18h6v6h-6c-6.627 0-12 5.373-12 12v6h-6v-6z" fill="#ffffff" opacity="0.95"/>
+                  <rect x="12" y="12" width="18" height="3.75" fill="#ffffff" opacity="0.95"/>
+                  <rect x="12" y="22.125" width="12" height="3.75" fill="#ffffff" opacity="0.95"/>
+                </svg>
+              </div>
               <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); letter-spacing: -0.5px;">
                 Elanorra
               </h1>
@@ -386,9 +570,20 @@ export async function sendVerificationEmail(
           <!-- Footer -->
           <div style="background: #1e293b; padding: 30px 40px; text-align: center;">
             <div style="margin-bottom: 20px;">
-              <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZmF2aWNvbi1ncmFkaWVudCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZjQzZjVlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2ZiNzE4NSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPCEtLSBCYWNrZ3JvdW5kIHdpdGggcm91bmRlZCBjb3JuZXJzIC0tPgogIDxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgcng9IjYiIGZpbGw9InVybCgjZmF2aWNvbi1ncmFkaWVudCkiLz4KICA8IS0tIFNpbXBsaWZpZWQgIkUiIG1vbm9ncmFtIC0tPgogIDxwYXRoIGQ9Ik04IDI0YzAtNi42MjcgNS4zNzMtMTIgMTItMTJoNHYzaC00Yy00LjQxOCAwLTggMy41ODItOCA4djNIOHYtMnoiIGZpbGw9IiNmZmZmZmYiIG9wYWNpdHk9IjAuOTUiLz4KICA8cmVjdCB4PSI4IiB5PSI4IiB3aWR0aD0iMTIiIGhlaWdodD0iMi41IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjk1Ii8+CiAgPHJlY3QgeD0iOCIgeT0iMTQuNzUiIHdpZHRoPSI4IiBoZWlnaHQ9IjIuNSIgZmlsbD0iI2ZmZmZmZiIgb3BhY2l0eT0iMC45NSIvPgo8L3N2Zz4=" 
-                   alt="Elanorra" 
-                   style="width: 24px; height: 24px; opacity: 0.8;">
+              <div style="display: inline-block; background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="display: block;">
+                  <defs>
+                    <linearGradient id="footer-logo-gradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#f43f5e"/>
+                      <stop offset="100%" stop-color="#fb7185"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="0" y="0" width="24" height="24" rx="6" fill="url(#footer-logo-gradient)"/>
+                  <path d="M6 18c0-4.971 4.029-9 9-9h3v3h-3c-3.314 0-6 2.686-6 6v3H6v-3z" fill="#ffffff" opacity="0.95"/>
+                  <rect x="6" y="6" width="9" height="1.875" fill="#ffffff" opacity="0.95"/>
+                  <rect x="6" y="11.063" width="6" height="1.875" fill="#ffffff" opacity="0.95"/>
+                </svg>
+              </div>
             </div>
             <p style="color: #94a3b8; font-size: 12px; margin: 0 0 10px 0; font-weight: 500;">
               © 2024 Elanorra Living. All rights reserved.
