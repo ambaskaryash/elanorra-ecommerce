@@ -116,6 +116,14 @@ const nextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
+  // Disable webpack configuration when using Turbopack
+  webpack: (config, { dev, isServer }) => {
+    // Only apply webpack config when not using Turbopack
+    if (!process.env.TURBOPACK) {
+      // Your webpack customizations here if needed
+    }
+    return config;
+  },
 }
 
 module.exports = withPWA(nextConfig)

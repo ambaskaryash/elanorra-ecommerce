@@ -142,7 +142,7 @@ async function sendWelcomeEmail(email: string, firstName?: string | null) {
           </div>
           
           <div style="text-align: center; margin-bottom: 25px;">
-            <a href="${process.env.NEXTAUTH_URL || 'https://elanorra.com'}/shop" 
+            <a href="${process.env.NEXTAUTH_URL}/shop" 
                style="background: #e74c3c; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
               Start Shopping
             </a>
@@ -170,7 +170,7 @@ async function sendWelcomeEmail(email: string, firstName?: string | null) {
         • Latest trends in luxury home living
         • New product announcements
         
-        Start shopping: ${process.env.NEXTAUTH_URL || 'https://elanorra.com'}/shop
+        Start shopping: ${process.env.NEXTAUTH_URL}/shop
         
         You can update your preferences or unsubscribe at any time.
         

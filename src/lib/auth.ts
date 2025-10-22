@@ -5,7 +5,8 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
-  adapter: process.env.DATABASE_URL ? PrismaAdapter(prisma) : undefined,
+  // Temporarily disable adapter to fix session issues
+  // adapter: process.env.DATABASE_URL ? PrismaAdapter(prisma) : undefined,
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -52,15 +53,17 @@ export const authOptions: NextAuthOptions = {
           return {
             id: user.id,
             email: user.email,
-            name: user.name || `${user.firstName} ${user.lastName}`,
+            name: user.name,
             firstName: user.firstName,
             lastName: user.lastName,
-            phone: user.phone,
             isAdmin: user.isAdmin,
-            image: user.image,
+            emailVerified: user.emailVerified,
           };
         } catch (error) {
-          console.error("Auth error:", error);
+          console.error("Authentication error:", error);
+          if (error instanceof Error) {
+            throw error;
+          }
           return null;
         }
       }

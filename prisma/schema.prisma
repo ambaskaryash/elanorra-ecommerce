@@ -333,3 +333,21 @@ model Newsletter {
 
   @@map("newsletters")
 }
+
+model EmailTemplate {
+  id          String   @id @default(cuid())
+  name        String   // Template name for identification
+  description String?  // Optional description
+  category    String   @default("general") // newsletter, promotional, transactional, etc.
+  subject     String?  // Default subject line
+  htmlContent String   // HTML template content
+  textContent String?  // Plain text version
+  variables   Json?    // Template variables/placeholders
+  isActive    Boolean  @default(true)
+  isDefault   Boolean  @default(false) // Mark as default template for category
+  thumbnail   String?  // Preview image URL
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("email_templates")
+}

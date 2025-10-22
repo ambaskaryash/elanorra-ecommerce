@@ -150,7 +150,7 @@ export async function GET(request: NextRequest) {
             <p class="success">✓ You have been unsubscribed from our newsletter</p>
             <p>We're sorry to see you go! You will no longer receive marketing emails from ElanorraLiving.</p>
             <p>If you change your mind, you can always resubscribe on our website.</p>
-            <a href="${process.env.NEXTAUTH_URL || 'https://elanorra.com'}" class="btn">
+            <a href="${process.env.NEXTAUTH_URL}" class="btn">
               Return to ElanorraLiving
             </a>
           </div>

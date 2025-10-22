@@ -26,6 +26,7 @@ interface NewsletterCampaignData {
   htmlContent: string;
   textContent?: string;
   unsubscribeUrl: string;
+  variables?: Record<string, string>;
 }
 
 interface NewsletterWelcomeData {
@@ -73,6 +74,26 @@ interface WeeklyNewsletterData {
     image?: string;
     link: string;
   }>;
+}
+
+// Helper function to replace template variables
+function replaceTemplateVariables(
+  content: string, 
+  variables: Record<string, string> = {}
+): string {
+  let processedContent = content;
+  
+  // Replace all {{VARIABLE}} placeholders with actual values
+  Object.entries(variables).forEach(([key, value]) => {
+    const placeholder = `{{${key}}}`;
+    const regex = new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+    processedContent = processedContent.replace(regex, value || '');
+  });
+  
+  // Remove any remaining unreplaced placeholders (optional - you might want to keep them)
+  // processedContent = processedContent.replace(/\{\{[^}]+\}\}/g, '');
+  
+  return processedContent;
 }
 
 // Email service with nodemailer
@@ -1132,9 +1153,14 @@ class EmailService {
     data: NewsletterCampaignData,
     newsletterId?: string
   ): Promise<{ sent: number; failed: number }> {
-    const { subject, htmlContent, textContent, unsubscribeUrl } = data;
+    const { subject, htmlContent, textContent, unsubscribeUrl, variables = {} } = data;
     let sent = 0;
     let failed = 0;
+
+    // Process template variables in subject and content
+    const processedSubject = replaceTemplateVariables(subject, variables);
+    const processedHtmlContent = replaceTemplateVariables(htmlContent, variables);
+    const processedTextContent = textContent ? replaceTemplateVariables(textContent, variables) : undefined;
 
     // Send emails in batches to avoid overwhelming the SMTP server
     const batchSize = 10;
@@ -1144,8 +1170,8 @@ class EmailService {
       const promises = batch.map(async (email) => {
         try {
           // Add tracking pixel and click tracking to HTML content
-          let htmlWithTracking = htmlContent;
-          let textWithUnsubscribe = textContent;
+          let htmlWithTracking = processedHtmlContent;
+          let textWithUnsubscribe = processedTextContent;
 
           // Add tracking pixel for opens (only if newsletterId is provided)
           if (newsletterId) {
@@ -1169,15 +1195,15 @@ class EmailService {
         </div>
       `;
 
-          textWithUnsubscribe = textContent 
-            ? (textContent.includes('{{UNSUBSCRIBE_URL}}') 
-                ? textContent.replace(/{{UNSUBSCRIBE_URL}}/g, unsubscribeUrl)
-                : textContent + `\n\nUnsubscribe: ${unsubscribeUrl}`)
+          textWithUnsubscribe = textWithUnsubscribe 
+            ? (textWithUnsubscribe.includes('{{UNSUBSCRIBE_URL}}') 
+                ? textWithUnsubscribe.replace(/{{UNSUBSCRIBE_URL}}/g, unsubscribeUrl)
+                : textWithUnsubscribe + `\n\nUnsubscribe: ${unsubscribeUrl}`)
             : undefined;
           
           const success = await this.sendEmail({
             to: email,
-            subject,
+            subject: processedSubject,
             html: htmlWithUnsubscribe,
             text: textWithUnsubscribe,
           });
