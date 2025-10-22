@@ -185,24 +185,6 @@ export default function LoginPage() {
             </div>
           </div>
         </div>
-
-        {/* Create Account Notice */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-8 bg-gray-50 border border-gray-200 rounded-lg p-4 text-center"
-        >
-          <div className="text-sm text-gray-600">
-            <p>Don't have an account yet?</p>
-            <Link
-              href="/auth/register"
-              className="mt-2 text-rose-600 hover:text-rose-700 font-medium"
-            >
-              Create a new account
-            </Link>
-          </div>
-        </motion.div>
       </motion.div>
     </div>
     </Suspense>
