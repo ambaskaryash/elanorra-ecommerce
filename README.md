@@ -151,12 +151,7 @@ interface Product {
 
 ## 🚀 Deployment
 
-This Next.js application can be deployed on various platforms including Netlify, Railway, or any hosting service that supports Node.js applications.
-
-For Netlify deployment:
-1. Connect your repository to Netlify
-2. Set up environment variables in your Netlify dashboard
-3. Deploy with the build command: `npm run build`
+This Next.js application can be deployed on various platforms including Vercel, Railway, or any hosting service that supports Node.js applications.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 

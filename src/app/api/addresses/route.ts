@@ -23,6 +23,12 @@ const addressSchema = z.object({
 // GET /api/addresses - Get all addresses for a user
 export async function GET(request: NextRequest) {
   try {
+    // Check if DATABASE_URL is available (for build-time compatibility)
+    if (!process.env.DATABASE_URL) {
+      console.warn('⚠️ DATABASE_URL not available, returning empty response for build');
+      return NextResponse.json({ addresses: [] });
+    }
+
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -46,6 +52,12 @@ export async function GET(request: NextRequest) {
 // POST /api/addresses - Create a new address
 export async function POST(request: NextRequest) {
   try {
+    // Check if DATABASE_URL is available (for build-time compatibility)
+    if (!process.env.DATABASE_URL) {
+      console.warn('⚠️ DATABASE_URL not available, returning error for build');
+      return NextResponse.json({ error: 'Database not available' }, { status: 503 });
+    }
+
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -91,6 +103,12 @@ export async function POST(request: NextRequest) {
 // PUT /api/addresses/[id] - Update an existing address
 export async function PUT(request: NextRequest) {
   try {
+    // Check if DATABASE_URL is available (for build-time compatibility)
+    if (!process.env.DATABASE_URL) {
+      console.warn('⚠️ DATABASE_URL not available, returning error for build');
+      return NextResponse.json({ error: 'Database not available' }, { status: 503 });
+    }
+
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -138,6 +156,12 @@ export async function PUT(request: NextRequest) {
 // DELETE /api/addresses/[id] - Delete an address
 export async function DELETE(request: NextRequest) {
   try {
+    // Check if DATABASE_URL is available (for build-time compatibility)
+    if (!process.env.DATABASE_URL) {
+      console.warn('⚠️ DATABASE_URL not available, returning error for build');
+      return NextResponse.json({ error: 'Database not available' }, { status: 503 });
+    }
+
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
