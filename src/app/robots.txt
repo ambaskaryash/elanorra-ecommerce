@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /account/
+
+# Allow important pages
+Allow: /products/
+Allow: /shop/
+Allow: /collections/
+Allow: /about
+Allow: /contact
+
+# Sitemap location
+Sitemap: https://elanorraliving.in/sitemap.xml

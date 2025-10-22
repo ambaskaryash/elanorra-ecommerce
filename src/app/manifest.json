@@ -1,0 +1,27 @@
+{
+  "name": "ElanorraLiving - Luxury Home Decor & Lifestyle",
+  "short_name": "ElanorraLiving",
+  "description": "Transform your space with ElanorraLiving's curated collection of premium home decor, furniture, and lifestyle products.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f43f5e",
+  "orientation": "portrait-primary",
+  "categories": ["shopping", "lifestyle", "home"],
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "apple touch icon"
+    }
+  ]
+}
