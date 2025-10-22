@@ -6,7 +6,7 @@ export const razorpayConfig = {
   currency: 'INR',
   name: 'Elanorra Living',
   description: 'Premium Home Decor & Lifestyle',
-  image: '/logo.png', // Your company logo
+  image: '/elanorra-logo.svg', // Your company logo
   order_id: '',
   prefill: {
     name: '',
