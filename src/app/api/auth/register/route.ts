@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     // Send verification email
     try {
-      await sendVerificationEmail(email, firstName, emailVerificationToken);
+      await sendVerificationEmail(email, emailVerificationToken, firstName);
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
       // Continue with registration even if email fails
