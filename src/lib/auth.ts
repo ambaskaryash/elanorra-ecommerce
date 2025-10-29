@@ -33,7 +33,7 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!user || !user.password) {
-            return null;
+            throw new Error("No user found with this email");
           }
 
           // Check if email is verified
@@ -47,7 +47,7 @@ export const authOptions: NextAuthOptions = {
           );
 
           if (!isPasswordValid) {
-            return null;
+            throw new Error("Incorrect password");
           }
 
           return {
@@ -111,20 +111,20 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.isAdmin = (user as any).isAdmin;
-        token.firstName = (user as any).firstName;
-        token.lastName = (user as any).lastName;
-        token.phone = (user as any).phone;
+        token.isAdmin = user.isAdmin;
+        token.firstName = user.firstName;
+        token.lastName = user.lastName;
+        token.phone = user.phone;
       }
       return token;
     },
     async session({ session, token }) {
-      if (token) {
+      if (token && session.user) {
         session.user.id = token.id as string;
-        (session.user as any).isAdmin = token.isAdmin;
-        (session.user as any).firstName = token.firstName;
-        (session.user as any).lastName = token.lastName;
-        (session.user as any).phone = token.phone;
+        session.user.isAdmin = token.isAdmin;
+        session.user.firstName = token.firstName;
+        session.user.lastName = token.lastName;
+        session.user.phone = token.phone;
       }
       return session;
     }

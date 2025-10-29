@@ -1,12 +1,12 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import { signIn, getSession } from 'next-auth/react';
-import { toast } from 'react-hot-toast';
+import { motion } from 'framer-motion';
+import { getSession, signIn } from 'next-auth/react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { toast } from 'react-toastify';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({

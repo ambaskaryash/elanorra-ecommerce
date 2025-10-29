@@ -37,7 +37,7 @@ export function sanitizeHtml(input: string): string {
 export function sanitizeText(input: string): string {
   return input
     .trim()
-    .replace(/[<>]/g, '') // Remove potential HTML tags
+    .replace(/[<>"'`]/g, '') // Remove potential HTML tags and other dangerous characters
     .replace(/javascript:/gi, '') // Remove javascript: protocol
     .replace(/on\w+=/gi, '') // Remove event handlers
     .substring(0, 1000); // Limit length
@@ -55,7 +55,7 @@ export function sanitizeSearchQuery(query: string): string {
 }
 
 // Validation helper functions
-export function validateAndSanitizeUser(data: any) {
+export function validateAndSanitizeUser(data: unknown) {
   const userSchema = z.object({
     email: emailSchema,
     password: passwordSchema,
@@ -80,7 +80,7 @@ export function validateAndSanitizeUser(data: any) {
   };
 }
 
-export function validateAndSanitizeProduct(data: any) {
+export function validateAndSanitizeProduct(data: unknown) {
   const productSchema = z.object({
     name: productNameSchema,
     description: productDescriptionSchema,
@@ -100,7 +100,7 @@ export function validateAndSanitizeProduct(data: any) {
   };
 }
 
-export function validateAndSanitizeReview(data: any) {
+export function validateAndSanitizeReview(data: unknown) {
   const reviewSchema = z.object({
     rating: reviewRatingSchema,
     comment: reviewCommentSchema,
@@ -116,7 +116,7 @@ export function validateAndSanitizeReview(data: any) {
   };
 }
 
-export function validatePagination(data: any) {
+export function validatePagination(data: unknown) {
   const paginationSchema = z.object({
     page: pageSchema.default(1),
     limit: limitSchema.default(10),
@@ -125,7 +125,7 @@ export function validatePagination(data: any) {
   return paginationSchema.parse(data);
 }
 
-export function validateSearch(data: any) {
+export function validateSearch(data: unknown) {
   const searchSchema = z.object({
     query: searchQuerySchema.optional(),
     category: categorySchema.optional(),

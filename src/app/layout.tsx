@@ -1,14 +1,16 @@
 import Cart from '@/components/layout/Cart';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
-import PWAInstaller from '@/components/pwa/PWAInstaller';
-import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 import { SessionProvider } from '@/components/providers/session-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
+import PWAInstaller from '@/components/pwa/PWAInstaller';
+import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 import { AuthProvider } from '@/lib/contexts/auth-context';
 import type { Metadata } from "next";
 import { Instrument_Sans } from "next/font/google";
 import { Suspense } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { Toaster } from 'sonner';
 import "./globals.css";
 
@@ -110,6 +112,10 @@ export default function RootLayout({
               <PWAInstaller />
             </ThemeProvider>
             <Toaster richColors position="bottom-right" />
+            <>
+              {children}
+              <ToastContainer />
+            </>
           </AuthProvider>
         </SessionProvider>
         <ServiceWorkerRegistration />

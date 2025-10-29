@@ -1,6 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
+import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
+
+interface PaymentData {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+  payment_status: string;
+  amount: number;
+  currency: string;
+  method: string;
+  email: string;
+  contact: string | number;
+  created_at: number;
+}
 
 // Initialize Razorpay instance
 const razorpay = new Razorpay({
@@ -63,8 +77,7 @@ export async function POST(request: NextRequest) {
       created_at: payment.created_at,
     };
 
-    // TODO: Save payment data to your database here
-    // await savePaymentToDatabase(paymentData, order_data);
+    await savePaymentToDatabase(paymentData, order_data);
 
     return NextResponse.json({
       success: true,
@@ -72,13 +85,13 @@ export async function POST(request: NextRequest) {
       payment: paymentData,
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Payment verification failed:', error);
     
     return NextResponse.json(
       { 
         error: 'Payment verification failed', 
-        message: error.message,
+        message: error instanceof Error ? error.message : 'An unknown error occurred',
         success: false 
       },
       { status: 500 }
@@ -86,22 +99,15 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Helper function to save payment data (implement according to your database schema)
-async function savePaymentToDatabase(paymentData: any, orderData: any) {
-  // Implementation depends on your database setup
-  // Example with Prisma:
-  /*
-  await prisma.payment.create({
+async function savePaymentToDatabase(paymentData: PaymentData, orderData: { id: string }) {
+  await prisma.order.update({
+    where: {
+      id: orderData.id,
+    },
     data: {
-      razorpayPaymentId: paymentData.razorpay_payment_id,
-      razorpayOrderId: paymentData.razorpay_order_id,
-      razorpaySignature: paymentData.razorpay_signature,
-      status: paymentData.payment_status,
-      amount: paymentData.amount,
-      currency: paymentData.currency,
-      method: paymentData.method,
-      // ... other fields
-    }
+      paymentId: paymentData.razorpay_payment_id,
+      financialStatus: 'paid',
+      paymentMethod: 'razorpay',
+    },
   });
-  */
 }
