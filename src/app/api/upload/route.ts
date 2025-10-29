@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { rateLimit, rateLimitConfigs } from '@/lib/rate-limit';
 import { handleError } from '@/lib/error-handler';
+import { createCSRFProtectedHandler } from '@/lib/csrf';
 
 const limiter = rateLimit(rateLimitConfigs.api);
 
-export async function POST(request: NextRequest) {
+async function handlePOST(request: NextRequest) {
   try {
     // Apply rate limiting
     const rateLimitResult = await limiter(request);
@@ -19,13 +19,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Check authentication
-    const session = await getServerSession(authOptions);
-    console.log('Upload API - Session:', session);
+    const { userId } = await auth();
+    console.log('Upload API - User ID:', userId);
     
     // Enhanced security - require admin access in production
     const isDevelopment = process.env.NODE_ENV === 'development';
     
-    if (!session?.user) {
+    if (!userId) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -95,3 +95,8 @@ export async function POST(request: NextRequest) {
     });
   }
 }
+
+// Export CSRF-protected handler
+export const { POST } = createCSRFProtectedHandler({
+  POST: handlePOST,
+});

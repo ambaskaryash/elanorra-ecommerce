@@ -18,9 +18,9 @@
     "npm": ">=8.0.0"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.34.1",
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
-    "@next-auth/prisma-adapter": "^1.0.7",
     "@next/swc-wasm-nodejs": "^15.5.6",
     "@prisma/client": "^6.18.0",
     "@prisma/extension-accelerate": "^2.0.2",
@@ -51,7 +51,6 @@
     "lucide-react": "^0.546.0",
     "nanoid": "^5.1.6",
     "next": "^15.5.6",
-    "next-auth": "^4.24.11",
     "next-pwa": "^5.6.0",
     "nodemailer": "^7.0.9",
     "prisma": "^6.18.0",

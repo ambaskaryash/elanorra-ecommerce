@@ -11,7 +11,26 @@ import {
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import { z } from 'zod';
 import LiveChat from '@/components/ui/LiveChat';
+
+// Validation schema for contact form
+const contactSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters').regex(/^[a-zA-Z\s'-]+$/, 'Name can only contain letters, spaces, hyphens, and apostrophes'),
+  email: z.string().email('Please enter a valid email address').max(254, 'Email must be less than 254 characters'),
+  phone: z.string().optional().refine((val) => {
+    if (!val || val.trim() === '') return true;
+    return /^\+?[\d\s\-\(\)]+$/.test(val) && val.length >= 10 && val.length <= 20;
+  }, {
+    message: "Phone number must be 10-20 characters and contain only digits, spaces, hyphens, parentheses, and optional + prefix"
+  }),
+  subject: z.string().min(1, 'Subject is required').max(200, 'Subject must be less than 200 characters'),
+  message: z.string().min(10, 'Message must be at least 10 characters').max(2000, 'Message must be less than 2000 characters'),
+  service: z.string().optional(),
+});
+
+type ContactFormData = z.infer<typeof contactSchema>;
+type FormErrors = Partial<Record<keyof ContactFormData, string>>;
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -39,7 +58,7 @@ const contactInfo = [
   {
     icon: EnvelopeIcon,
     title: 'Email Us',
-    info: 'hello@elanorraliving.in',
+    info: 'info@elanorraliving.in',
     subInfo: 'We reply within 24 hours',
   },
   {
@@ -63,7 +82,7 @@ const contactInfo = [
 ];
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ContactFormData>({
     name: '',
     email: '',
     phone: '',
@@ -72,19 +91,64 @@ export default function ContactPage() {
     service: '',
   });
 
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
+  const validateForm = (): boolean => {
+    try {
+      contactSchema.parse(formData);
+      setErrors({});
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: FormErrors = {};
+        error.errors.forEach((err) => {
+          const field = err.path[0] as keyof ContactFormData;
+          newErrors[field] = err.message;
+        });
+        setErrors(newErrors);
+      }
+      return false;
+    }
+  };
+
+  const validateField = (name: keyof ContactFormData, value: string) => {
+    try {
+      const fieldSchema = contactSchema.shape[name];
+      fieldSchema.parse(value);
+      setErrors(prev => ({ ...prev, [name]: undefined }));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setErrors(prev => ({ ...prev, [name]: error.errors[0]?.message }));
+      }
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    const fieldName = name as keyof ContactFormData;
+    
     setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
+
+    // Real-time validation
+    if (value.trim() !== '' || errors[fieldName]) {
+      validateField(fieldName, value);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      toast.error('Please fix the errors in the form before submitting.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -175,9 +239,14 @@ export default function ContactPage() {
                         required
                         value={formData.name}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors"
+                        className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors ${
+                          errors.name ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         placeholder="Your full name"
                       />
+                      {errors.name && (
+                        <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                      )}
                     </div>
                     
                     <div>
@@ -191,9 +260,14 @@ export default function ContactPage() {
                         required
                         value={formData.email}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors"
+                        className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors ${
+                          errors.email ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         placeholder="your.email@example.com"
                       />
+                      {errors.email && (
+                        <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                      )}
                     </div>
                   </div>
 
@@ -208,9 +282,14 @@ export default function ContactPage() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors"
+                        className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors ${
+                          errors.phone ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         placeholder="+91 9876543210"
                       />
+                      {errors.phone && (
+                        <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                      )}
                     </div>
                     
                     <div>
@@ -222,7 +301,9 @@ export default function ContactPage() {
                         name="service"
                         value={formData.service}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors"
+                        className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors ${
+                          errors.service ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       >
                         <option value="">Select a service</option>
                         <option value="consultation">Design Consultation</option>
@@ -232,22 +313,31 @@ export default function ContactPage() {
                         <option value="delivery">White Glove Delivery</option>
                         <option value="support">Ongoing Support</option>
                       </select>
+                      {errors.service && (
+                        <p className="mt-1 text-sm text-red-600">{errors.service}</p>
+                      )}
                     </div>
                   </div>
 
                   <div>
                     <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                      Subject
+                      Subject *
                     </label>
                     <input
                       type="text"
                       id="subject"
                       name="subject"
+                      required
                       value={formData.subject}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors"
+                      className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors ${
+                        errors.subject ? 'border-red-500' : 'border-gray-300'
+                      }`}
                       placeholder="How can we help you?"
                     />
+                    {errors.subject && (
+                      <p className="mt-1 text-sm text-red-600">{errors.subject}</p>
+                    )}
                   </div>
 
                   <div>
@@ -261,9 +351,17 @@ export default function ContactPage() {
                       required
                       value={formData.message}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors resize-none"
+                      className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors resize-none ${
+                        errors.message ? 'border-red-500' : 'border-gray-300'
+                      }`}
                       placeholder="Tell us about your project, questions, or how we can help..."
                     ></textarea>
+                    {errors.message && (
+                      <p className="mt-1 text-sm text-red-600">{errors.message}</p>
+                    )}
+                    <p className="mt-1 text-sm text-gray-500">
+                      {formData.message.length}/2000 characters
+                    </p>
                   </div>
 
                   <button

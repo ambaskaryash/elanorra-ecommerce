@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
+import { createCSRFProtectedHandler } from '@/lib/csrf';
 
 // Schema for address validation
 const addressSchema = z.object({
@@ -20,8 +20,8 @@ const addressSchema = z.object({
   isDefault: z.boolean().optional().default(false),
 });
 
-// GET /api/addresses - Get all addresses for a user
-export async function GET(request: NextRequest) {
+// GET /api/addresses - Get user addresses
+async function handleGET(request: NextRequest) {
   try {
     // Check if DATABASE_URL is available (for build-time compatibility)
     if (!process.env.DATABASE_URL) {
@@ -29,13 +29,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ addresses: [] });
     }
 
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const addresses = await prisma.address.findMany({
-      where: { userId: session.user.id },
+      where: { userId: userId },
       orderBy: { id: 'desc' },
     });
 
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/addresses - Create a new address
-export async function POST(request: NextRequest) {
+async function handlePOST(request: NextRequest) {
   try {
     // Check if DATABASE_URL is available (for build-time compatibility)
     if (!process.env.DATABASE_URL) {
@@ -58,8 +58,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Database not available' }, { status: 503 });
     }
 
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     // Create address data with authenticated user ID
     const addressData = {
       ...validatedData,
-      userId: session.user.id,
+      userId: userId,
     };
 
     // If setting as default, unset previous defaults for this user
@@ -100,8 +100,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT /api/addresses/[id] - Update an existing address
-export async function PUT(request: NextRequest) {
+// PUT /api/addresses - Update an existing address
+async function handlePUT(request: NextRequest) {
   try {
     // Check if DATABASE_URL is available (for build-time compatibility)
     if (!process.env.DATABASE_URL) {
@@ -109,8 +109,8 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Database not available' }, { status: 503 });
     }
 
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -153,8 +153,8 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE /api/addresses/[id] - Delete an address
-export async function DELETE(request: NextRequest) {
+// DELETE /api/addresses - Delete an address
+async function handleDELETE(request: NextRequest) {
   try {
     // Check if DATABASE_URL is available (for build-time compatibility)
     if (!process.env.DATABASE_URL) {
@@ -162,8 +162,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Database not available' }, { status: 503 });
     }
 
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -175,7 +175,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await prisma.address.delete({
-      where: { id, userId: session.user.id },
+      where: { id, userId: userId },
     });
 
     return NextResponse.json({ message: 'Address deleted successfully' });
@@ -187,3 +187,11 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
+// Export CSRF-protected handlers
+export const { GET, POST, PUT, DELETE } = createCSRFProtectedHandler({
+  GET: handleGET,
+  POST: handlePOST,
+  PUT: handlePUT,
+  DELETE: handleDELETE,
+});

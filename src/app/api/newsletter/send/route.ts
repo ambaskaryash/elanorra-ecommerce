@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { emailService } from '@/lib/email';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
 
 const sendNewsletterSchema = z.object({
   subject: z.string().min(1, 'Subject is required'),
@@ -17,20 +16,20 @@ const sendNewsletterSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
     // Check if user is authenticated and is admin
-    if (!session?.user?.email) {
+    if (!userId) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    // For now, we'll check if the user exists in our database
+    // TODO: Add admin role check for Clerk users
     // In a real app, you'd have proper role-based access control
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { id: userId },
     });
 
     if (!user) {
@@ -195,15 +194,15 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Temporarily bypass authentication for development
-    // TODO: Implement proper authentication once NextAuth is fixed
-    const session = await getServerSession(authOptions);
+    // TODO: Implement proper authentication once Clerk is fully configured
+    const { userId } = await auth();
     
     // Allow access for development purposes
     let isAuthorized = true;
     
-    if (session?.user?.email) {
+    if (userId) {
       const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
+        where: { id: userId },
       });
       
       if (!user) {

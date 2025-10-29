@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
 
 // Conditionally import prisma to avoid build-time initialization
 let prisma: any;
@@ -33,9 +32,9 @@ export interface AdminSecurityResult {
 // Enhanced admin authentication check
 export async function verifyAdminAccess(request?: NextRequest): Promise<AdminSecurityResult> {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
-    if (!session?.user?.id) {
+    if (!userId) {
       return {
         success: false,
         error: 'Authentication required',
@@ -44,7 +43,7 @@ export async function verifyAdminAccess(request?: NextRequest): Promise<AdminSec
 
     // Fetch user from database to ensure current admin status
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: {
         id: true,
         email: true,
@@ -86,6 +85,7 @@ export async function verifyAdminAccess(request?: NextRequest): Promise<AdminSec
 // Admin action logging
 export interface AdminAction {
   adminId: string;
+  adminEmail: string;
   action: string;
   resource: string;
   resourceId?: string;
@@ -96,27 +96,33 @@ export interface AdminAction {
 
 export async function logAdminAction(action: AdminAction): Promise<void> {
   try {
-    // In a production environment, you might want to store this in a separate audit log table
-    console.log('Admin Action:', {
-      timestamp: new Date().toISOString(),
-      ...action,
-    });
+    // Log to console for development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Admin Action:', {
+        timestamp: new Date().toISOString(),
+        ...action,
+      });
+    }
     
-    // TODO: Implement proper audit logging to database
-    // await prisma.adminAuditLog.create({
-    //   data: {
-    //     adminId: action.adminId,
-    //     action: action.action,
-    //     resource: action.resource,
-    //     resourceId: action.resourceId,
-    //     details: action.details,
-    //     ipAddress: action.ipAddress,
-    //     userAgent: action.userAgent,
-    //     timestamp: new Date(),
-    //   },
-    // });
+    // Store in database if available
+    if (process.env.DATABASE_URL && prisma) {
+      await prisma.adminAuditLog.create({
+        data: {
+          adminId: action.adminId,
+          adminEmail: action.adminEmail,
+          action: action.action,
+          resource: action.resource,
+          resourceId: action.resourceId,
+          details: action.details,
+          ipAddress: action.ipAddress,
+          userAgent: action.userAgent,
+          timestamp: new Date(),
+        },
+      });
+    }
   } catch (error) {
     console.error('Failed to log admin action:', error);
+    // Don't throw error to avoid breaking the main operation
   }
 }
 
@@ -207,6 +213,99 @@ export function getAdminSecurityHeaders() {
     'X-Admin-Access': 'true',
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
-    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'X-XSS-Protection': '1; mode=block',
   };
+}
+
+// Audit log retrieval functions
+export interface AuditLogFilter {
+  adminId?: string;
+  action?: string;
+  resource?: string;
+  startDate?: Date;
+  endDate?: Date;
+  page?: number;
+  limit?: number;
+}
+
+export async function getAuditLogs(filter: AuditLogFilter = {}) {
+  if (!process.env.DATABASE_URL || !prisma) {
+    return { logs: [], total: 0, page: 1, totalPages: 0 };
+  }
+
+  try {
+    const {
+      adminId,
+      action,
+      resource,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 50
+    } = filter;
+
+    const where: any = {};
+
+    if (adminId) where.adminId = adminId;
+    if (action) where.action = { contains: action, mode: 'insensitive' };
+    if (resource) where.resource = { contains: resource, mode: 'insensitive' };
+    if (startDate || endDate) {
+      where.timestamp = {};
+      if (startDate) where.timestamp.gte = startDate;
+      if (endDate) where.timestamp.lte = endDate;
+    }
+
+    const [logs, total] = await Promise.all([
+      prisma.adminAuditLog.findMany({
+        where,
+        include: {
+          admin: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+            }
+          }
+        },
+        orderBy: { timestamp: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.adminAuditLog.count({ where })
+    ]);
+
+    return {
+      logs,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit)
+    };
+  } catch (error) {
+    console.error('Failed to retrieve audit logs:', error);
+    return { logs: [], total: 0, page: 1, totalPages: 0 };
+  }
+}
+
+export async function clearAuditLogs(olderThanDays: number = 90): Promise<boolean> {
+  if (!process.env.DATABASE_URL || !prisma) {
+    return false;
+  }
+
+  try {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
+
+    await prisma.adminAuditLog.deleteMany({
+      where: {
+        timestamp: {
+          lt: cutoffDate
+        }
+      }
+    });
+
+    return true;
+  } catch (error) {
+    console.error('Failed to clear audit logs:', error);
+    return false;
+  }
 }

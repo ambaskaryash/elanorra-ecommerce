@@ -176,31 +176,60 @@ export default function CheckoutContent() {
 
   const handlePaymentSuccess = async (response: RazorpayResponse) => {
     try {
+      // Show loading state
+      toast.loading('Verifying payment...', { id: 'payment-verification' });
+
+      // Create order in system first to get order ID
+      const orderResult = await createOrderInSystem();
+      if (!orderResult.success) {
+        throw new Error(orderResult.error || 'Failed to create order');
+      }
+
+      // Verify payment with order data
       const verifyResponse = await fetch('/api/razorpay/verify-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(response),
+        body: JSON.stringify({
+          ...response,
+          order_data: {
+            id: orderResult.orderId,
+            email: user?.email || billingAddress.email || '',
+            amount: totalPrice,
+          },
+        }),
       });
 
-      if (verifyResponse.ok) {
-        await createOrderInSystem(response);
+      const verifyResult = await verifyResponse.json();
+
+      if (verifyResponse.ok && verifyResult.success) {
+        // Payment verified successfully
+        clearCart();
+        toast.success('Payment successful! Order placed.', { id: 'payment-verification' });
+        router.push(`/order-confirmation/${orderResult.orderId}`);
       } else {
-        throw new Error('Payment verification failed');
+        throw new Error(verifyResult.message || 'Payment verification failed');
       }
     } catch (error) {
       console.error('Payment verification error:', error);
-      toast.error('Payment verification failed. Please contact support.');
+      toast.error(
+        error instanceof Error ? error.message : 'Payment verification failed. Please contact support.',
+        { id: 'payment-verification' }
+      );
       setIsProcessing(false);
     }
   };
 
   const processOnlinePayment = async () => {
     try {
+      // Load Razorpay script
+      toast.loading('Loading payment gateway...', { id: 'payment-loading' });
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
-        throw new Error('Failed to load payment gateway');
+        throw new Error('Failed to load payment gateway. Please check your internet connection.');
       }
 
+      // Create Razorpay order
+      toast.loading('Creating payment order...', { id: 'payment-loading' });
       const orderResponse = await fetch('/api/razorpay/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -212,18 +241,31 @@ export default function CheckoutContent() {
             email: user?.email || billingAddress.email || '',
             contact: billingAddress.phone,
           },
+          notes: {
+            order_type: 'ecommerce',
+            delivery_option: selectedDelivery,
+            payment_method: selectedPayment,
+          },
         }),
       });
 
-      if (!orderResponse.ok) {
-        const errorData = await orderResponse.json();
-        throw new Error(errorData.error || 'Failed to create payment order');
+      const orderData = await orderResponse.json();
+
+      if (!orderResponse.ok || !orderData.success) {
+        throw new Error(orderData.message || orderData.error || 'Failed to create payment order');
       }
 
-      const orderData: RazorpayOrderData = await orderResponse.json();
+      // Dismiss loading toast
+      toast.dismiss('payment-loading');
 
+      // Create Razorpay options
       const options = createRazorpayOptions(
-        orderData,
+        {
+          id: orderData.id,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          status: orderData.status,
+        },
         {
           name: `${billingAddress.firstName} ${billingAddress.lastName}`,
           email: user?.email || billingAddress.email || '',
@@ -232,21 +274,34 @@ export default function CheckoutContent() {
         handlePaymentSuccess,
         () => {
           setIsProcessing(false);
-          toast.error('Payment cancelled');
+          toast.error('Payment cancelled by user');
         }
       );
 
+      // Open Razorpay checkout
       const razorpay = new window.Razorpay(options);
+      razorpay.on('payment.failed', (response: any) => {
+        console.error('Payment failed:', response.error);
+        toast.error(`Payment failed: ${response.error.description || 'Unknown error'}`);
+        setIsProcessing(false);
+      });
+
       razorpay.open();
     } catch (error) {
       console.error('Payment processing error:', error);
-      toast.error('Payment processing failed. Please try again.');
+      toast.error(
+        error instanceof Error ? error.message : 'Payment processing failed. Please try again.',
+        { id: 'payment-loading' }
+      );
       setIsProcessing(false);
     }
   };
 
   const processCODOrder = async () => {
-    await createOrderInSystem();
+    const result = await createOrderInSystem();
+    if (!result.success) {
+      setIsProcessing(false);
+    }
   };
 
   const handlePlaceOrder = async () => {
@@ -286,7 +341,7 @@ export default function CheckoutContent() {
     }
   };
 
-  const createOrderInSystem = async (paymentResponse?: RazorpayResponse) => {
+  const createOrderInSystem = async (paymentResponse?: RazorpayResponse): Promise<{ success: boolean; orderId?: string; error?: string }> => {
     try {
       const orderData = {
         email: user?.email || billingAddress.email || '',
@@ -333,21 +388,35 @@ export default function CheckoutContent() {
         shipping: shippingAmount,
         totalPrice: totalPrice,
         currency: 'INR',
+        paymentMethod: selectedPayment,
+        deliveryOption: selectedDelivery,
+        orderNotes: orderNotes,
       };
 
       const result = await createOrder(orderData);
       
       if (result.success) {
-        clearCart();
-        toast.success('Order placed successfully!');
-        router.push(`/order-confirmation/${result.orderId}`);
+        // For COD orders, clear cart and redirect immediately
+        if (selectedPayment === 'cod') {
+          clearCart();
+          toast.success('Order placed successfully!');
+          router.push(`/order-confirmation/${result.orderId}`);
+        }
+        return { success: true, orderId: result.orderId };
       } else {
-        throw new Error(result.error || 'Order creation failed');
+        return { success: false, error: result.error || 'Order creation failed' };
       }
       
     } catch (error) {
       console.error('Order creation error:', error);
-      toast.error('Failed to create order. Please contact support.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create order. Please contact support.';
+      
+      // For COD orders, show error immediately
+      if (selectedPayment === 'cod') {
+        toast.error(errorMessage);
+      }
+      
+      return { success: false, error: errorMessage };
     }
   };
 

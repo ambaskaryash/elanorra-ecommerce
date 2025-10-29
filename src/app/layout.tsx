@@ -1,11 +1,9 @@
 import Cart from '@/components/layout/Cart';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
-import { SessionProvider } from '@/components/providers/session-provider';
-import { ThemeProvider } from '@/components/providers/theme-provider';
+import { Providers } from '@/components/providers/providers';
 import PWAInstaller from '@/components/pwa/PWAInstaller';
 import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
-import { AuthProvider } from '@/lib/contexts/auth-context';
 import type { Metadata } from "next";
 import { Instrument_Sans } from "next/font/google";
 import { Suspense } from 'react';
@@ -90,7 +88,7 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -98,24 +96,30 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${instrumentSans.className} antialiased`}>
-        <SessionProvider>
-          <AuthProvider>
-            <ThemeProvider>
-              <Header />
-              <main className="min-h-screen">
-                <Suspense fallback={null}>
-                  {children}
-                </Suspense>
-              </main>
-              <Footer />
-              <Cart />
-              <PWAInstaller />
-            </ThemeProvider>
-            <Toaster richColors position="bottom-right" />
-            <ToastContainer />
-          </AuthProvider>
-        </SessionProvider>
-        <ServiceWorkerRegistration />
+        <Providers>
+          <div className="min-h-screen bg-background">
+            <Header />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+            <Cart />
+            <PWAInstaller />
+            <ServiceWorkerRegistration />
+          </div>
+          <Toaster />
+          <ToastContainer
+            position="bottom-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
+        </Providers>
       </body>
     </html>
   );

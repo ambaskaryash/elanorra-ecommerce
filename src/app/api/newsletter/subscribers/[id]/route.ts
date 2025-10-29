@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
@@ -23,12 +22,12 @@ export async function GET(
   try {
     // Temporarily bypass authentication for development
     // TODO: Implement proper admin authentication in production
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
     // Allow access even without session for development
-    if (session?.user?.email) {
+    if (userId) {
       const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
+        where: { id: userId },
       });
 
       if (user && !user.admin) {
@@ -77,12 +76,12 @@ export async function PUT(
   try {
     // Temporarily bypass authentication for development
     // TODO: Implement proper admin authentication in production
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
     // Allow access even without session for development
-    if (session?.user?.email) {
+    if (userId) {
       const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
+        where: { id: userId },
       });
 
       if (user && !user.admin) {
@@ -167,12 +166,12 @@ export async function DELETE(
   try {
     // Temporarily bypass authentication for development
     // TODO: Implement proper admin authentication in production
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
     // Allow access even without session for development
-    if (session?.user?.email) {
+    if (userId) {
       const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
+        where: { id: userId },
       });
 
       if (user && !user.admin) {

@@ -2,7 +2,7 @@
 
 import Image from 'next/image'; // Import Next.js Image component
 import ProductModal from '@/components/admin/ProductModal';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { orderAPI, productAPI, reviewAPI, blogAPI, api, type ApiProduct, type ApiBlogPost, type ApiOrder, type ApiReview, type ApiReturnRequest } from '@/lib/services/api';
 import { useOrderStore } from '@/lib/store/order-store';
 import { useReviewsStore } from '@/lib/store/reviews-store';
@@ -36,12 +36,6 @@ import RichTextEditor from '@/components/admin/RichTextEditor';
 import ImageUpload from '@/components/admin/ImageUpload';
 import { BulkProductUpload } from '@/components/admin/BulkProductUpload'; // Import the new component
 import NewsletterDashboard from '@/components/admin/NewsletterDashboard';
-import { type Session } from 'next-auth'; // Import Session type from next-auth
-
-// Admin check based solely on isAdmin flag (remove brand-specific emails)
-const isAdmin = (sessionUser: Session['user'] | undefined) => {
-  return sessionUser?.isAdmin === true;
-};
 
 interface StatCardProps {
   title: string;
@@ -53,12 +47,13 @@ interface StatCardProps {
 }
 
 export default function AdminDashboard() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const { orders } = useOrderStore();
   const { reviews } = useReviewsStore();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   // Database state
   const [products, setProducts] = useState<ApiProduct[]>([]);
@@ -128,15 +123,40 @@ export default function AdminDashboard() {
     }
   };
 
+  // Check admin status from database
+  const checkAdminStatus = async (clerkId: string) => {
+    try {
+      const response = await fetch('/api/user/profile');
+      if (response.ok) {
+        const userData = await response.json();
+        setIsAdmin(userData.user?.isAdmin === true);
+        return userData.user?.isAdmin === true;
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+    return false;
+  };
+
   useEffect(() => {
-    const sessionUser = session?.user;
-    if (status === 'loading') return;
-    if (status !== 'authenticated' || !isAdmin(sessionUser)) {
-      router.push('/auth/login?redirect=/admin');
+    if (!isLoaded) return;
+    
+    if (!user) {
+      router.push('/sign-in?redirect_url=/admin');
       return;
     }
-    loadData();
-  }, [status, session, router]);
+
+    const initializeAdmin = async () => {
+      const adminStatus = await checkAdminStatus(user.id);
+      if (!adminStatus) {
+        router.push('/sign-in?redirect_url=/admin');
+        return;
+      }
+      loadData();
+    };
+
+    initializeAdmin();
+  }, [isLoaded, user, router]);
 
   // Product management functions
   const handleAddProduct = () => {
@@ -241,7 +261,7 @@ export default function AdminDashboard() {
     }
   };
 
-  if (status === 'loading' || isLoadingData) {
+  if (!isLoaded || isLoadingData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-600"></div>
@@ -249,7 +269,7 @@ export default function AdminDashboard() {
     );
   }
 
-  if (status !== 'authenticated' || !isAdmin(session?.user)) {
+  if (!user || !isAdmin) {
     return null;
   }
 
@@ -396,12 +416,12 @@ export default function AdminDashboard() {
           <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-50">
             <div className="w-10 h-10 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center">
               <span className="text-white font-medium text-sm">
-                {session?.user?.firstName?.charAt(0) || 'A'}
+                {user?.firstName?.charAt(0) || user?.emailAddresses?.[0]?.emailAddress?.charAt(0)?.toUpperCase() || 'A'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">
-                {session?.user?.firstName} {session?.user?.lastName}
+                {user?.firstName} {user?.lastName}
               </p>
               <p className="text-xs text-gray-500 truncate">Administrator</p>
             </div>
@@ -460,7 +480,7 @@ export default function AdminDashboard() {
                     {navigationItems.find(item => item.id === activeTab)?.name || 'Dashboard'}
                   </h1>
                   <p className="text-sm text-gray-600 mt-1">
-                    Welcome back, {session?.user?.firstName}! Here's what's happening today.
+                    Welcome back, {user?.firstName || 'Admin'}! Here's what's happening today.
                   </p>
                 </div>
               </div>

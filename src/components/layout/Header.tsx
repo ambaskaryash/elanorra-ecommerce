@@ -15,7 +15,7 @@ import {
 import { useCartStore } from '@/lib/store/cart-store';
 // Dynamic navigation will be created from database collections
 import SearchBar from '@/components/ui/SearchBar';
-import { useSession, signOut } from 'next-auth/react';
+import { useUser, useClerk } from '@clerk/nextjs';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 
 interface HeaderProps {
@@ -30,9 +30,9 @@ export default function Header({ className }: HeaderProps) {
   const [isMiniCartOpen, setIsMiniCartOpen] = useState(false);
   const [collections, setCollections] = useState<any[]>([]);
   const { totalItems, items, subtotalPrice, totalPrice, toggleCart } = useCartStore();
-  const { data: session, status } = useSession();
-  const user = session?.user;
-  const isAuthenticated = !!session;
+  const { user, isSignedIn } = useUser();
+  const { signOut } = useClerk();
+  const isAuthenticated = isSignedIn;
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const miniCartRef = useRef<HTMLDivElement | null>(null);
 
@@ -425,7 +425,7 @@ export default function Header({ className }: HeaderProps) {
                     className="flex items-center space-x-2 p-2 text-gray-700 hover:text-gray-900 rounded-md"
                   >
                     <div className="w-8 h-8 bg-rose-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                      {user?.name?.[0] || user?.email?.[0]?.toUpperCase()}
+                      {user?.firstName?.[0] || user?.emailAddresses?.[0]?.emailAddress?.[0]?.toUpperCase()}
                     </div>
                     <ChevronDownIcon className="h-4 w-4" />
                   </button>
@@ -438,9 +438,9 @@ export default function Header({ className }: HeaderProps) {
                     >
                       <div className="px-4 py-2 border-b border-gray-100">
                         <p className="text-sm font-medium text-gray-900">
-                          {user?.name || `${(user as any)?.firstName} ${(user as any)?.lastName}`}
+                          {user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
                         </p>
-                        <p className="text-sm text-gray-500">{user?.email}</p>
+                        <p className="text-sm text-gray-500">{user?.emailAddresses?.[0]?.emailAddress}</p>
                       </div>
                       <Link
                         href="/account"
@@ -465,7 +465,7 @@ export default function Header({ className }: HeaderProps) {
                       </Link>
                       <button
                         onClick={() => {
-                          signOut({ callbackUrl: '/' });
+                          signOut(() => window.location.href = '/');
                           setShowUserMenu(false);
                         }}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -477,7 +477,7 @@ export default function Header({ className }: HeaderProps) {
                 </div>
               ) : (
                 <Link
-                  href="/auth/login"
+                  href="/sign-in"
                   className="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                 >
                   <UserIcon className="h-5 w-5" />

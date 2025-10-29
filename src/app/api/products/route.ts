@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
 
 // GET /api/products - Get all products with optional filters
 export async function GET(request: NextRequest) {
@@ -150,8 +149,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user || !session.user.isAdmin) {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get user from database and check admin privileges
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+      select: { id: true, isAdmin: true }
+    });
+
+    if (!user || !user.isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

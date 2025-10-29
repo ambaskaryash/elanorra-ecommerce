@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { rateLimit, rateLimitConfigs } from '@/lib/rate-limit';
+import { prisma } from '@/lib/prisma';
 
 // Admin-specific rate limiter with stricter limits
 const adminLimiter = rateLimit({
@@ -34,18 +34,31 @@ export async function adminMiddleware(
     }
 
     // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
+    // Get user from database to check admin privileges
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+      select: { id: true, isAdmin: true, email: true }
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
     // Check admin privileges
-    if (!session.user.isAdmin) {
+    if (!user.isAdmin) {
       // Log unauthorized access attempt
-      console.warn(`Unauthorized admin access attempt by user ${session.user.id} at ${new Date().toISOString()}`);
+      console.warn(`Unauthorized admin access attempt by user ${user.id} at ${new Date().toISOString()}`);
       return NextResponse.json(
         { error: 'Admin privileges required' },
         { status: 403 }
@@ -60,7 +73,7 @@ export async function adminMiddleware(
 
     // Log admin action if specified
     if (options.logAction) {
-      console.log(`Admin Action: ${session.user.id} - ${options.logAction} - IP: ${ip} - UA: ${userAgent} - ${new Date().toISOString()}`);
+      console.log(`Admin Action: ${user.id} - ${options.logAction} - IP: ${ip} - UA: ${userAgent} - ${new Date().toISOString()}`);
     }
 
     // Check for suspicious patterns
@@ -118,26 +131,33 @@ export function addAdminSecurityHeaders(response: NextResponse): NextResponse {
 // Admin session validation
 export async function validateAdminSession(request: NextRequest): Promise<{
   valid: boolean;
-  session?: any;
+  user?: any;
   error?: string;
 }> {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
-    if (!session?.user) {
+    if (!userId) {
       return { valid: false, error: 'No session found' };
     }
 
-    if (!session.user.isAdmin) {
-      return { valid: false, error: 'Not an admin user' };
+    // Get user from database to check admin privileges
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+      select: { id: true, isAdmin: true, email: true }
+    });
+
+    if (!user) {
+      return { valid: false, error: 'User not found' };
     }
 
-    // Additional session validation can be added here
-    // e.g., check session expiry, user status, etc.
+    if (!user.isAdmin) {
+      return { valid: false, error: 'Admin privileges required' };
+    }
 
-    return { valid: true, session };
+    return { valid: true, user };
   } catch (error) {
-    console.error('Session validation error:', error);
+    console.error('Admin session validation error:', error);
     return { valid: false, error: 'Session validation failed' };
   }
 }

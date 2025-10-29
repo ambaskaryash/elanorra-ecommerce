@@ -4,7 +4,7 @@ import { api, ApiOrder } from '@/lib/services/api';
 import { formatPrice } from '@/lib/utils/index';
 import { ArrowRightIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -38,16 +38,16 @@ const getFulfillmentStatusColor = (status: string) => {
 
 
 export default function OrderHistoryPage() {
-  const { data: session } = useSession();
+  const { user, isLoaded } = useUser();
   const [orders, setOrders] = useState<ApiOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchOrders = async () => {
-      if (!session?.user?.id) return;
+      if (!user?.id) return;
       setIsLoading(true);
       try {
-        const response = await api.orders.getOrders({ userId: session.user.id });
+        const response = await api.orders.getOrders({ userId: user.id });
         if (response.orders) {
           setOrders(response.orders);
         } else {
@@ -61,10 +61,10 @@ export default function OrderHistoryPage() {
       }
     };
 
-    if (session) {
+    if (user && isLoaded) {
       fetchOrders();
     }
-  }, [session]);
+  }, [user, isLoaded]);
 
   return (
     <div className="bg-white">

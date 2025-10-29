@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useUser, useClerk } from '@clerk/nextjs';
 import Link from 'next/link';
 import {
   ArrowRightOnRectangleIcon,
@@ -57,11 +57,20 @@ export default function AccountPage() {
   const [isAddingAddress, setIsAddingAddress] = useState(false);
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [currentAddressToEdit, setCurrentAddressToEdit] = useState<Address | null>(null);
-  const { data: session, status } = useSession();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
   const router = useRouter();
   // const pathname = usePathname(); // Removed as it's unused
 
-  const sessionUser = (session?.user || null) as User | null;
+  const sessionUser = user ? {
+    id: user.id,
+    firstName: user.firstName || '',
+    lastName: user.lastName || '',
+    email: user.emailAddresses?.[0]?.emailAddress || '',
+    phone: user.phoneNumbers?.[0]?.phoneNumber || '',
+  } as User : null;
+  
   const [editableProfile, setEditableProfile] = useState({
     firstName: sessionUser?.firstName || '',
     lastName: sessionUser?.lastName || '',
@@ -111,10 +120,10 @@ export default function AccountPage() {
   }, [sessionUser?.id]);
 
   const fetchAddresses = useCallback(async () => {
-    if (session?.user?.id) {
+    if (user?.id) {
       setAddressesLoading(true);
       try {
-        const response = await api.addresses.getAddresses(session.user.id);
+        const response = await api.addresses.getAddresses(user.id);
         setAddresses(response.addresses);
       } catch (error: unknown) {
         console.error('Error fetching addresses:', error);
@@ -124,12 +133,14 @@ export default function AccountPage() {
         setAddressesLoading(false);
       }
     }
-  }, [session?.user?.id]);
+  }, [user?.id]);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('auth/login');
-    } else if (status === 'authenticated') {
+    if (!isLoaded) return; // Wait for Clerk to load
+    
+    if (!user) {
+      router.push('/sign-in');
+    } else {
       fetchOrders();
       fetchAddresses();
     }
@@ -317,7 +328,7 @@ export default function AccountPage() {
                 />
                 <span className="truncate">Sign Out</span>
               </a>
-              {session?.user?.isAdmin && (
+              {isAdmin && (
                 <Link href="/admin" className="group flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                   <HomeModernIcon
                     className="mr-3 h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500"

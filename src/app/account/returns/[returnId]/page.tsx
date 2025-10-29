@@ -1,20 +1,20 @@
 'use client';
 
 import { api, ApiReturnRequest } from '@/lib/services/api';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function ReturnRequestDetailsPage() {
-  const { data: session } = useSession();
+  const { user, isLoaded } = useUser();
   const params = useParams();
   const [returnRequest, setReturnRequest] = useState<ApiReturnRequest | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchReturnRequest() {
-      if (!session || !params.returnId) return;
+      if (!isLoaded || !user || !params.returnId) return;
       try {
         const request = await api.returns.getReturnRequest(params.returnId as string);
         setReturnRequest(request);
@@ -26,7 +26,7 @@ export default function ReturnRequestDetailsPage() {
     }
 
     fetchReturnRequest();
-  }, [session, params.returnId]);
+  }, [isLoaded, user, params.returnId]);
 
   if (isLoading) {
     return <p>Loading...</p>;

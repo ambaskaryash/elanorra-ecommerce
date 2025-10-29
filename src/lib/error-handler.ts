@@ -126,19 +126,275 @@ export class Logger {
       });
     }
 
-    // In production, you might want to send logs to external services
-    // like Sentry, LogRocket, or your own logging service
+    // In production, send logs to external services asynchronously
+    // Don't await to avoid blocking the main thread
     if (process.env.NODE_ENV === 'production') {
-      this.sendToExternalLogger(error);
+      this.sendToExternalLogger(error).catch((err) => {
+        console.error('Failed to send error to external logger:', err);
+      });
     }
   }
 
-  private sendToExternalLogger(error: ErrorLog): void {
-    // TODO: Implement external logging service integration
-    // Examples:
-    // - Sentry.captureException(error)
-    // - Send to CloudWatch, DataDog, etc.
-    // - Store in database for analysis
+  private async sendToExternalLogger(error: ErrorLog): Promise<void> {
+    try {
+      // Send to multiple external logging services based on environment configuration
+      const promises: Promise<void>[] = [];
+
+      // 1. Send to Sentry (if configured)
+      if (process.env.SENTRY_DSN) {
+        promises.push(this.sendToSentry(error));
+      }
+
+      // 2. Send to DataDog (if configured)
+      if (process.env.DATADOG_API_KEY) {
+        promises.push(this.sendToDataDog(error));
+      }
+
+      // 3. Send to CloudWatch (if configured)
+      if (process.env.AWS_REGION && process.env.AWS_ACCESS_KEY_ID) {
+        promises.push(this.sendToCloudWatch(error));
+      }
+
+      // 4. Send to custom webhook (if configured)
+      if (process.env.ERROR_WEBHOOK_URL) {
+        promises.push(this.sendToWebhook(error));
+      }
+
+      // 5. Store in database for analysis (always enabled in production)
+      if (process.env.NODE_ENV === 'production') {
+        promises.push(this.storeInDatabase(error));
+      }
+
+      // Execute all logging operations in parallel
+      await Promise.allSettled(promises);
+    } catch (logError) {
+      // Fallback: log to console if external logging fails
+      console.error('Failed to send error to external logger:', logError);
+      console.error('Original error:', error);
+    }
+  }
+
+  private async sendToSentry(error: ErrorLog): Promise<void> {
+    try {
+      // Dynamic import to avoid bundling Sentry if not used
+      const sentryModule = await this.dynamicImport('@sentry/nextjs');
+      if (!sentryModule) {
+        console.warn('Sentry not installed. Install @sentry/nextjs to enable Sentry logging.');
+        return;
+      }
+
+      sentryModule.withScope((scope: any) => {
+        scope.setTag('errorType', error.type);
+        scope.setLevel(this.getSentryLevel(error.statusCode));
+        scope.setContext('errorDetails', {
+          statusCode: error.statusCode,
+          userId: error.userId,
+          requestId: error.requestId,
+          url: error.url,
+          method: error.method,
+          userAgent: error.userAgent,
+          ip: error.ip,
+        });
+        
+        if (error.userId) {
+          scope.setUser({ id: error.userId });
+        }
+
+        const sentryError = new Error(error.message);
+        sentryError.stack = error.stack;
+        sentryModule.captureException(sentryError);
+      });
+    } catch (err) {
+      console.error('Failed to send error to Sentry:', err);
+    }
+  }
+
+  private async sendToDataDog(error: ErrorLog): Promise<void> {
+    try {
+      const response = await fetch('https://http-intake.logs.datadoghq.com/v1/input/' + process.env.DATADOG_API_KEY, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'DD-API-KEY': process.env.DATADOG_API_KEY!,
+        },
+        body: JSON.stringify({
+          ddsource: 'nodejs',
+          ddtags: `env:${process.env.NODE_ENV},service:elanorra-ecommerce,error_type:${error.type}`,
+          hostname: process.env.HOSTNAME || 'unknown',
+          message: error.message,
+          level: this.getDataDogLevel(error.statusCode),
+          timestamp: error.timestamp.toISOString(),
+          attributes: {
+            error: {
+              type: error.type,
+              statusCode: error.statusCode,
+              stack: error.stack,
+              details: error.details,
+            },
+            request: {
+              userId: error.userId,
+              requestId: error.requestId,
+              url: error.url,
+              method: error.method,
+              userAgent: error.userAgent,
+              ip: error.ip,
+            },
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`DataDog API responded with status: ${response.status}`);
+      }
+    } catch (err) {
+      console.error('Failed to send error to DataDog:', err);
+    }
+  }
+
+  private async sendToCloudWatch(error: ErrorLog): Promise<void> {
+    try {
+      // Dynamic import to avoid bundling AWS SDK if not used
+      const awsModule = await this.dynamicImport('@aws-sdk/client-cloudwatch-logs');
+      if (!awsModule) {
+        console.warn('AWS SDK not installed. Install @aws-sdk/client-cloudwatch-logs to enable CloudWatch logging.');
+        return;
+      }
+
+      const { CloudWatchLogsClient, PutLogEventsCommand } = awsModule;
+
+      const client = new CloudWatchLogsClient({
+        region: process.env.AWS_REGION,
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+        },
+      });
+
+      const logGroupName = process.env.CLOUDWATCH_LOG_GROUP || '/aws/lambda/elanorra-errors';
+      const logStreamName = `${process.env.NODE_ENV}-${new Date().toISOString().split('T')[0]}`;
+
+      const command = new PutLogEventsCommand({
+        logGroupName,
+        logStreamName,
+        logEvents: [
+          {
+            timestamp: error.timestamp.getTime(),
+            message: JSON.stringify({
+              level: 'ERROR',
+              message: error.message,
+              type: error.type,
+              statusCode: error.statusCode,
+              stack: error.stack,
+              details: error.details,
+              userId: error.userId,
+              requestId: error.requestId,
+              url: error.url,
+              method: error.method,
+              userAgent: error.userAgent,
+              ip: error.ip,
+            }),
+          },
+        ],
+      });
+
+      await client.send(command);
+    } catch (err) {
+      console.error('Failed to send error to CloudWatch:', err);
+    }
+  }
+
+  private async sendToWebhook(error: ErrorLog): Promise<void> {
+    try {
+      const response = await fetch(process.env.ERROR_WEBHOOK_URL!, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'Elanorra-ErrorLogger/1.0',
+        },
+        body: JSON.stringify({
+          timestamp: error.timestamp.toISOString(),
+          level: 'error',
+          service: 'elanorra-ecommerce',
+          environment: process.env.NODE_ENV,
+          error: {
+            type: error.type,
+            message: error.message,
+            statusCode: error.statusCode,
+            stack: error.stack,
+            details: error.details,
+          },
+          request: {
+            userId: error.userId,
+            requestId: error.requestId,
+            url: error.url,
+            method: error.method,
+            userAgent: error.userAgent,
+            ip: error.ip,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Webhook responded with status: ${response.status}`);
+      }
+    } catch (err) {
+      console.error('Failed to send error to webhook:', err);
+    }
+  }
+
+  private async storeInDatabase(error: ErrorLog): Promise<void> {
+    try {
+      // Dynamic import to avoid bundling Prisma if not needed
+      const prismaModule = await this.dynamicImport('@prisma/client');
+      if (!prismaModule) {
+        console.warn('Prisma client not available for database logging.');
+        return;
+      }
+
+      const { PrismaClient } = prismaModule;
+      const prisma = new PrismaClient();
+      
+      await prisma.errorLog.create({
+        data: {
+          timestamp: error.timestamp,
+          type: error.type,
+          message: error.message,
+          statusCode: error.statusCode,
+          stack: error.stack,
+          details: error.details ? JSON.stringify(error.details) : null,
+          userId: error.userId,
+          requestId: error.requestId,
+          userAgent: error.userAgent,
+          ip: error.ip,
+          url: error.url,
+          method: error.method,
+        },
+      });
+
+      await prisma.$disconnect();
+    } catch (err) {
+      console.error('Failed to store error in database:', err);
+    }
+  }
+
+  private async dynamicImport(moduleName: string): Promise<any> {
+    try {
+      return await import(moduleName);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  private getSentryLevel(statusCode: number): 'error' | 'warning' | 'info' {
+    if (statusCode >= 500) return 'error';
+    if (statusCode >= 400) return 'warning';
+    return 'info';
+  }
+
+  private getDataDogLevel(statusCode: number): 'error' | 'warn' | 'info' {
+    if (statusCode >= 500) return 'error';
+    if (statusCode >= 400) return 'warn';
+    return 'info';
   }
 
   public getLogs(): ErrorLog[] {

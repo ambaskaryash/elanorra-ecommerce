@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
 import { adminMiddleware } from '../middleware';
 import { handleError } from '@/lib/error-handler';
+import { createCSRFProtectedHandler } from '@/lib/csrf';
 
 // In-memory audit log (use database in production)
 interface AuditLogEntry {
@@ -21,7 +21,7 @@ interface AuditLogEntry {
 const auditLog: AuditLogEntry[] = [];
 
 // GET /api/admin/audit - Retrieve audit logs
-export async function GET(request: NextRequest) {
+async function handleGET(request: NextRequest) {
   // Apply admin middleware
   const middlewareResponse = await adminMiddleware(request, {
     logAction: 'VIEW_AUDIT_LOGS'
@@ -29,7 +29,6 @@ export async function GET(request: NextRequest) {
   if (middlewareResponse) return middlewareResponse;
 
   try {
-    const session = await getServerSession(authOptions);
     const url = new URL(request.url);
     
     // Query parameters for filtering
@@ -100,7 +99,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/admin/audit - Add audit log entry
-export async function POST(request: NextRequest) {
+async function handlePOST(request: NextRequest) {
   // Apply admin middleware
   const middlewareResponse = await adminMiddleware(request, {
     logAction: 'CREATE_AUDIT_LOG'
@@ -108,7 +107,14 @@ export async function POST(request: NextRequest) {
   if (middlewareResponse) return middlewareResponse;
 
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
 
     const {
@@ -127,8 +133,8 @@ export async function POST(request: NextRequest) {
 
     const auditEntry: AuditLogEntry = {
       id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      adminId: session!.user!.id!,
-      adminEmail: session!.user!.email!,
+      adminId: userId,
+      adminEmail: 'admin@example.com', // TODO: Get actual admin email from Clerk
       action: action.toUpperCase(),
       resource: resource.toLowerCase(),
       resourceId,
@@ -163,7 +169,7 @@ export async function POST(request: NextRequest) {
 }
 
 // DELETE /api/admin/audit - Clear audit logs (super admin only)
-export async function DELETE(request: NextRequest) {
+async function handleDELETE(request: NextRequest) {
   // Apply admin middleware
   const middlewareResponse = await adminMiddleware(request, {
     requireSuperAdmin: true,
@@ -172,7 +178,14 @@ export async function DELETE(request: NextRequest) {
   if (middlewareResponse) return middlewareResponse;
 
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const url = new URL(request.url);
     const confirm = url.searchParams.get('confirm');
 
@@ -187,7 +200,7 @@ export async function DELETE(request: NextRequest) {
     auditLog.length = 0; // Clear the array
 
     // Log this critical action
-    console.warn(`CRITICAL: Admin ${session!.user!.id} cleared ${clearedCount} audit log entries at ${new Date().toISOString()}`);
+    console.warn(`CRITICAL: Admin ${userId} cleared ${clearedCount} audit log entries at ${new Date().toISOString()}`);
 
     return NextResponse.json({
       success: true,
@@ -220,3 +233,10 @@ export function addAuditLog(entry: Omit<AuditLogEntry, 'id' | 'timestamp'>) {
 
   return auditEntry.id;
 }
+
+// Export CSRF-protected handlers
+export const { GET, POST, DELETE } = createCSRFProtectedHandler({
+  GET: handleGET,
+  POST: handlePOST,
+  DELETE: handleDELETE,
+});

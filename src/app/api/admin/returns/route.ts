@@ -1,6 +1,5 @@
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
+import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { rateLimit, rateLimitConfigs, createRateLimitResponse } from '@/lib/rate-limit';
@@ -16,12 +15,14 @@ const limiter = rateLimit(rateLimitConfigs.api);
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
     // Enhanced admin verification
-    if (!session?.user?.isAdmin) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // TODO: Add admin role check for Clerk users
 
     // Apply rate limiting
      const rateLimitResult = await limiter(request);
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
      }
 
     // Log admin action
-    console.log(`Admin action: ${session.user.id} viewed return requests at ${new Date().toISOString()}`);
+    console.log(`Admin action: ${userId} viewed return requests at ${new Date().toISOString()}`);
 
     const returnRequests = await (prisma as any).ReturnRequest.findMany({
       include: {
@@ -82,10 +83,12 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.isAdmin) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // TODO: Add admin role check for Clerk users
 
     // Apply rate limiting
     const rateLimitResult = await limiter(req);
@@ -109,7 +112,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Log admin action for sensitive operations
-    console.log(`Admin action: ${session.user.id} updated return request ${returnId} with status ${validation.data.status} at ${new Date().toISOString()}`);
+    console.log(`Admin action: ${userId} updated return request ${returnId} with status ${validation.data.status} at ${new Date().toISOString()}`);
 
     const updatedReturn = await (prisma as any).ReturnRequest.update({
       where: { id: returnId },

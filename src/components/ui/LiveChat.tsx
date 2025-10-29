@@ -65,7 +65,7 @@ const LiveChat: React.FC<LiveChatProps> = ({ isOpen, onClose }) => {
       } else if (lowerMessage.includes('help') || lowerMessage.includes('support')) {
         response = 'I\'m here to help! You can ask me about our products, shipping, returns, or any other questions. What would you like to know?';
       } else {
-        response = 'Thank you for your message. Let me connect you with one of our specialists who can provide more detailed assistance. In the meantime, you can also email us at hello@elanorraliving.in or call +91 9876543210.';
+        response = 'Thank you for your message. Let me connect you with one of our specialists who can provide more detailed assistance. In the meantime, you can also email us at info@elanorraliving.in or call +91 9876543210.';
       }
 
       const agentMessage: Message = {

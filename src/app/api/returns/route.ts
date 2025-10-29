@@ -1,6 +1,5 @@
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
+import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -14,13 +13,23 @@ const returnRequestSchema = z.object({
 });
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
+  const { userId } = await auth();
+  if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Get user from database
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: { id: true }
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  }
+
   const returnRequests = await (prisma as any).ReturnRequest.findMany({
-    where: { order: { userId: session.user.id } },
+    where: { order: { userId: user.id } },
     include: { order: true, items: { include: { orderItem: { include: { product: true } } } } },
     orderBy: { createdAt: 'desc' },
   });
@@ -29,9 +38,19 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
+  const { userId } = await auth();
+  if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Get user from database
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: { id: true }
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
   const body = await req.json();

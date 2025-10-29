@@ -1,13 +1,13 @@
 'use client';
 
 import { api, ApiOrder } from '@/lib/services/api';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function NewReturnRequestPage() {
-  const { data: session } = useSession();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
   const [orders, setOrders] = useState<ApiOrder[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<ApiOrder | null>(null);
@@ -17,7 +17,7 @@ export default function NewReturnRequestPage() {
 
   useEffect(() => {
     async function fetchOrders() {
-      if (!session) return;
+      if (!isLoaded || !user) return;
       try {
         const userOrders = await api.orders.getOrders();
         setOrders(userOrders.orders.filter((order: ApiOrder) => order.fulfillmentStatus === 'fulfilled'));
@@ -27,7 +27,7 @@ export default function NewReturnRequestPage() {
     }
 
     fetchOrders();
-  }, [session]);
+  }, [isLoaded, user]);
 
   const handleItemQuantityChange = (itemId: string, quantity: number) => {
     setSelectedItems(prev => ({ ...prev, [itemId]: quantity }));

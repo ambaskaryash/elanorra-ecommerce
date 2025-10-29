@@ -76,6 +76,113 @@ interface WeeklyNewsletterData {
   }>;
 }
 
+interface OrderConfirmationEmailData {
+  email: string;
+  orderNumber: string;
+  orderId: string;
+  customerName?: string;
+  totalPrice: number;
+  subtotal: number;
+  taxes: number;
+  shipping: number;
+  discount?: number;
+  currency: string;
+  paymentMethod?: string;
+  createdAt: string;
+  items: Array<{
+    name: string;
+    quantity: number;
+    price: number;
+    image?: string;
+    variants?: Record<string, unknown>;
+  }>;
+  shippingAddress: {
+    firstName: string;
+    lastName: string;
+    company?: string;
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+    phone?: string;
+  };
+  billingAddress?: {
+    firstName: string;
+    lastName: string;
+    company?: string;
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+    phone?: string;
+  };
+}
+
+interface ShippingNotificationEmailData {
+  email: string;
+  orderNumber: string;
+  orderId: string;
+  customerName?: string;
+  trackingNumber?: string;
+  carrier?: string;
+  estimatedDelivery?: string;
+  shippingAddress: {
+    firstName: string;
+    lastName: string;
+    company?: string;
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+    phone?: string;
+  };
+  items: Array<{
+    name: string;
+    quantity: number;
+    image?: string;
+  }>;
+}
+
+interface AbandonedCartItem {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string;
+  slug: string;
+}
+
+interface AbandonedCartEmailData {
+  email: string;
+  cartId: string;
+  customerName?: string;
+  items: AbandonedCartItem[];
+  subtotal: number;
+  cartUrl: string;
+  abandonedAt: Date;
+}
+
+interface PromotionalEmailData {
+  email: string;
+  customerName?: string;
+  subject: string;
+  templateData: {
+    offer?: string;
+    message?: string;
+    ctaText?: string;
+    ctaUrl?: string;
+    discount_code?: string;
+    [key: string]: any;
+  };
+  campaignId?: string;
+}
+
 // Helper function to replace template variables
 function replaceTemplateVariables(
   content: string, 
@@ -873,16 +980,454 @@ class EmailService {
     });
   }
 
-  async sendOrderConfirmationEmail(orderData: any): Promise<boolean> {
-    // TODO: Implement order confirmation email
-    console.log('Order confirmation email would be sent for order:', orderData.orderNumber);
-    return true;
+  async sendOrderConfirmationEmail(orderData: OrderConfirmationEmailData): Promise<boolean> {
+    try {
+      const customerName = orderData.customerName || 
+        `${orderData.shippingAddress.firstName} ${orderData.shippingAddress.lastName}`;
+      
+      const orderDate = new Date(orderData.createdAt).toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-IN', {
+          style: 'currency',
+          currency: orderData.currency || 'INR'
+        }).format(amount);
+      };
+
+      const formatAddress = (address: any) => {
+        const parts = [
+          address.firstName + ' ' + address.lastName,
+          address.company,
+          address.address1,
+          address.address2,
+          `${address.city}, ${address.state} ${address.zipCode}`,
+          address.country,
+          address.phone
+        ].filter(Boolean);
+        return parts.join('<br>');
+      };
+
+      const itemsHtml = orderData.items.map(item => {
+        const variantsText = item.variants && Object.keys(item.variants).length > 0
+          ? `<br><small style="color: #666;">${Object.entries(item.variants)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join(', ')}</small>`
+          : '';
+        
+        return `
+          <tr>
+            <td style="padding: 15px; border-bottom: 1px solid #eee;">
+              <div style="display: flex; align-items: center;">
+                ${item.image ? `<img src="${item.image}" alt="${item.name}" style="width: 60px; height: 60px; object-fit: cover; margin-right: 15px; border-radius: 8px;">` : ''}
+                <div>
+                  <strong>${item.name}</strong>
+                  ${variantsText}
+                </div>
+              </div>
+            </td>
+            <td style="padding: 15px; border-bottom: 1px solid #eee; text-align: center;">
+              ${item.quantity}
+            </td>
+            <td style="padding: 15px; border-bottom: 1px solid #eee; text-align: right;">
+              ${formatCurrency(item.price)}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Order Confirmation - ${orderData.orderNumber}</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #e11d48 0%, #be185d 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">
+                Order Confirmed!
+              </h1>
+              <p style="color: #fecaca; margin: 10px 0 0 0; font-size: 16px;">
+                Thank you for your purchase, ${customerName}
+              </p>
+            </div>
+
+            <!-- Order Details -->
+            <div style="padding: 30px;">
+              <div style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                <h2 style="margin: 0 0 15px 0; color: #1e293b; font-size: 20px;">Order Details</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                  <div>
+                    <strong style="color: #475569;">Order Number:</strong><br>
+                    <span style="color: #e11d48; font-weight: 600;">${orderData.orderNumber}</span>
+                  </div>
+                  <div>
+                    <strong style="color: #475569;">Order Date:</strong><br>
+                    ${orderDate}
+                  </div>
+                  <div>
+                    <strong style="color: #475569;">Payment Method:</strong><br>
+                    ${orderData.paymentMethod || 'Online Payment'}
+                  </div>
+                  <div>
+                    <strong style="color: #475569;">Total Amount:</strong><br>
+                    <span style="color: #059669; font-weight: 600; font-size: 18px;">${formatCurrency(orderData.totalPrice)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Items -->
+              <h3 style="color: #1e293b; margin-bottom: 20px;">Items Ordered</h3>
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                <thead>
+                  <tr style="background-color: #f8fafc;">
+                    <th style="padding: 15px; text-align: left; color: #475569; font-weight: 600;">Product</th>
+                    <th style="padding: 15px; text-align: center; color: #475569; font-weight: 600;">Quantity</th>
+                    <th style="padding: 15px; text-align: right; color: #475569; font-weight: 600;">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsHtml}
+                </tbody>
+              </table>
+
+              <!-- Order Summary -->
+              <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                <h3 style="margin: 0 0 15px 0; color: #1e293b;">Order Summary</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                  <span>Subtotal:</span>
+                  <span>${formatCurrency(orderData.subtotal)}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                  <span>Shipping:</span>
+                  <span>${formatCurrency(orderData.shipping)}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                  <span>Taxes:</span>
+                  <span>${formatCurrency(orderData.taxes)}</span>
+                </div>
+                ${orderData.discount && orderData.discount > 0 ? `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #059669;">
+                  <span>Discount:</span>
+                  <span>-${formatCurrency(orderData.discount)}</span>
+                </div>
+                ` : ''}
+                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 15px 0;">
+                <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 18px; color: #1e293b;">
+                  <span>Total:</span>
+                  <span style="color: #059669;">${formatCurrency(orderData.totalPrice)}</span>
+                </div>
+              </div>
+
+              <!-- Shipping Address -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                <div>
+                  <h3 style="color: #1e293b; margin-bottom: 15px;">Shipping Address</h3>
+                  <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; line-height: 1.6;">
+                    ${formatAddress(orderData.shippingAddress)}
+                  </div>
+                </div>
+                <div>
+                  <h3 style="color: #1e293b; margin-bottom: 15px;">Billing Address</h3>
+                  <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; line-height: 1.6;">
+                    ${formatAddress(orderData.billingAddress || orderData.shippingAddress)}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Track Order Button -->
+              <div style="text-align: center; margin-bottom: 30px;">
+                <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/order-confirmation/${orderData.orderId}" 
+                   style="display: inline-block; background: linear-gradient(135deg, #e11d48 0%, #be185d 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                  Track Your Order
+                </a>
+              </div>
+
+              <!-- What's Next -->
+              <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                <h3 style="color: #1e40af; margin: 0 0 10px 0;">What's Next?</h3>
+                <ul style="color: #1e40af; margin: 0; padding-left: 20px;">
+                  <li>We'll send you a shipping confirmation email with tracking details once your order ships</li>
+                  <li>You can track your order status anytime using the link above</li>
+                  <li>Expected delivery: 3-7 business days</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="background-color: #1f2937; padding: 30px; text-align: center;">
+              <h3 style="color: #ffffff; margin: 0 0 15px 0;">Elanorra</h3>
+              <p style="color: #9ca3af; margin: 0 0 15px 0; font-size: 14px;">
+                Premium Home Decor & Lifestyle Products
+              </p>
+              <p style="color: #6b7280; margin: 0; font-size: 12px;">
+                If you have any questions, please contact us at 
+                <a href="mailto:support@elanorra.com" style="color: #e11d48;">support@elanorra.com</a>
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const textContent = `
+Order Confirmation - ${orderData.orderNumber}
+
+Dear ${customerName},
+
+Thank you for your order! We're excited to confirm that we've received your order and it's being processed.
+
+Order Details:
+- Order Number: ${orderData.orderNumber}
+- Order Date: ${orderDate}
+- Total Amount: ${formatCurrency(orderData.totalPrice)}
+
+Items Ordered:
+${orderData.items.map(item => `- ${item.name} (Qty: ${item.quantity}) - ${formatCurrency(item.price)}`).join('\n')}
+
+Shipping Address:
+${orderData.shippingAddress.firstName} ${orderData.shippingAddress.lastName}
+${orderData.shippingAddress.address1}
+${orderData.shippingAddress.address2 ? orderData.shippingAddress.address2 + '\n' : ''}${orderData.shippingAddress.city}, ${orderData.shippingAddress.state} ${orderData.shippingAddress.zipCode}
+${orderData.shippingAddress.country}
+
+Track your order: ${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/order-confirmation/${orderData.orderId}
+
+We'll send you a shipping confirmation email with tracking details once your order ships.
+
+Thank you for choosing Elanorra!
+
+Best regards,
+The Elanorra Team
+      `;
+
+      return await this.sendEmail({
+        to: orderData.email,
+        subject: `Order Confirmation - ${orderData.orderNumber}`,
+        html: htmlContent,
+        text: textContent
+      });
+    } catch (error) {
+      console.error('Failed to send order confirmation email:', error);
+      return false;
+    }
   }
 
-  async sendShippingNotificationEmail(orderData: any): Promise<boolean> {
-    // TODO: Implement shipping notification email
-    console.log('Shipping notification email would be sent for order:', orderData.orderNumber);
-    return true;
+  async sendShippingNotificationEmail(orderData: ShippingNotificationEmailData): Promise<boolean> {
+    try {
+      const customerName = orderData.customerName || 
+        `${orderData.shippingAddress.firstName} ${orderData.shippingAddress.lastName}`;
+
+      const formatAddress = (address: any) => {
+        const parts = [
+          address.firstName + ' ' + address.lastName,
+          address.company,
+          address.address1,
+          address.address2,
+          `${address.city}, ${address.state} ${address.zipCode}`,
+          address.country,
+          address.phone
+        ].filter(Boolean);
+        return parts.join('<br>');
+      };
+
+      const itemsHtml = orderData.items.map(item => `
+        <tr>
+          <td style="padding: 15px; border-bottom: 1px solid #eee;">
+            <div style="display: flex; align-items: center;">
+              ${item.image ? `<img src="${item.image}" alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 15px; border-radius: 6px;">` : ''}
+              <div>
+                <strong>${item.name}</strong>
+              </div>
+            </div>
+          </td>
+          <td style="padding: 15px; border-bottom: 1px solid #eee; text-align: center;">
+            ${item.quantity}
+          </td>
+        </tr>
+      `).join('');
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Your Order Has Shipped - ${orderData.orderNumber}</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">
+                📦 Your Order Has Shipped!
+              </h1>
+              <p style="color: #a7f3d0; margin: 10px 0 0 0; font-size: 16px;">
+                Great news, ${customerName}! Your order is on its way.
+              </p>
+            </div>
+
+            <!-- Shipping Details -->
+            <div style="padding: 30px;">
+              <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #059669;">
+                <h2 style="margin: 0 0 15px 0; color: #1e293b; font-size: 20px;">Shipping Information</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                  <div>
+                    <strong style="color: #475569;">Order Number:</strong><br>
+                    <span style="color: #e11d48; font-weight: 600;">${orderData.orderNumber}</span>
+                  </div>
+                  ${orderData.trackingNumber ? `
+                  <div>
+                    <strong style="color: #475569;">Tracking Number:</strong><br>
+                    <span style="color: #059669; font-weight: 600;">${orderData.trackingNumber}</span>
+                  </div>
+                  ` : ''}
+                  ${orderData.carrier ? `
+                  <div>
+                    <strong style="color: #475569;">Carrier:</strong><br>
+                    ${orderData.carrier}
+                  </div>
+                  ` : ''}
+                  ${orderData.estimatedDelivery ? `
+                  <div>
+                    <strong style="color: #475569;">Estimated Delivery:</strong><br>
+                    <span style="color: #059669; font-weight: 600;">${orderData.estimatedDelivery}</span>
+                  </div>
+                  ` : ''}
+                </div>
+              </div>
+
+              <!-- Items Shipped -->
+              <h3 style="color: #1e293b; margin-bottom: 20px;">Items Shipped</h3>
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                <thead>
+                  <tr style="background-color: #f8fafc;">
+                    <th style="padding: 15px; text-align: left; color: #475569; font-weight: 600;">Product</th>
+                    <th style="padding: 15px; text-align: center; color: #475569; font-weight: 600;">Quantity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsHtml}
+                </tbody>
+              </table>
+
+              <!-- Shipping Address -->
+              <div style="margin-bottom: 30px;">
+                <h3 style="color: #1e293b; margin-bottom: 15px;">Shipping To</h3>
+                <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; line-height: 1.6;">
+                  ${formatAddress(orderData.shippingAddress)}
+                </div>
+              </div>
+
+              <!-- Track Package Button -->
+              ${orderData.trackingNumber ? `
+              <div style="text-align: center; margin-bottom: 30px;">
+                <a href="${this.getTrackingUrl(orderData.carrier, orderData.trackingNumber)}" 
+                   style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                  Track Your Package
+                </a>
+              </div>
+              ` : ''}
+
+              <!-- Delivery Information -->
+              <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                <h3 style="color: #1e40af; margin: 0 0 10px 0;">Delivery Information</h3>
+                <ul style="color: #1e40af; margin: 0; padding-left: 20px;">
+                  <li>Your package is on its way and will be delivered to the address above</li>
+                  ${orderData.estimatedDelivery ? `<li>Expected delivery: ${orderData.estimatedDelivery}</li>` : '<li>Expected delivery: 3-7 business days</li>'}
+                  ${orderData.trackingNumber ? '<li>You can track your package using the tracking number above</li>' : ''}
+                  <li>Someone should be available to receive the package</li>
+                  <li>If you're not available, the carrier may leave a delivery notice</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="background-color: #1f2937; padding: 30px; text-align: center;">
+              <h3 style="color: #ffffff; margin: 0 0 15px 0;">Elanorra</h3>
+              <p style="color: #9ca3af; margin: 0 0 15px 0; font-size: 14px;">
+                Premium Home Decor & Lifestyle Products
+              </p>
+              <p style="color: #6b7280; margin: 0; font-size: 12px;">
+                If you have any questions about your shipment, please contact us at 
+                <a href="mailto:support@elanorra.com" style="color: #e11d48;">support@elanorra.com</a>
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const textContent = `
+Your Order Has Shipped - ${orderData.orderNumber}
+
+Dear ${customerName},
+
+Great news! Your order has been shipped and is on its way to you.
+
+Shipping Information:
+- Order Number: ${orderData.orderNumber}
+${orderData.trackingNumber ? `- Tracking Number: ${orderData.trackingNumber}` : ''}
+${orderData.carrier ? `- Carrier: ${orderData.carrier}` : ''}
+${orderData.estimatedDelivery ? `- Estimated Delivery: ${orderData.estimatedDelivery}` : '- Expected delivery: 3-7 business days'}
+
+Items Shipped:
+${orderData.items.map(item => `- ${item.name} (Qty: ${item.quantity})`).join('\n')}
+
+Shipping Address:
+${orderData.shippingAddress.firstName} ${orderData.shippingAddress.lastName}
+${orderData.shippingAddress.address1}
+${orderData.shippingAddress.address2 ? orderData.shippingAddress.address2 + '\n' : ''}${orderData.shippingAddress.city}, ${orderData.shippingAddress.state} ${orderData.shippingAddress.zipCode}
+${orderData.shippingAddress.country}
+
+${orderData.trackingNumber ? `Track your package: ${this.getTrackingUrl(orderData.carrier, orderData.trackingNumber)}` : ''}
+
+Thank you for choosing Elanorra!
+
+Best regards,
+The Elanorra Team
+      `;
+
+      return await this.sendEmail({
+        to: orderData.email,
+        subject: `Your Order Has Shipped - ${orderData.orderNumber}`,
+        html: htmlContent,
+        text: textContent
+      });
+    } catch (error) {
+      console.error('Failed to send shipping notification email:', error);
+      return false;
+    }
+  }
+
+  private getTrackingUrl(carrier?: string, trackingNumber?: string): string {
+    if (!trackingNumber) return '#';
+    
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    
+    // Return a generic tracking page or carrier-specific URLs
+    switch (carrier?.toLowerCase()) {
+      case 'fedex':
+        return `https://www.fedex.com/fedextrack/?trknbr=${trackingNumber}`;
+      case 'ups':
+        return `https://www.ups.com/track?tracknum=${trackingNumber}`;
+      case 'dhl':
+        return `https://www.dhl.com/en/express/tracking.html?AWB=${trackingNumber}`;
+      case 'bluedart':
+        return `https://www.bluedart.com/web/guest/trackdartresult?trackFor=0&trackNo=${trackingNumber}`;
+      case 'dtdc':
+        return `https://www.dtdc.in/tracking/tracking_results.asp?Ttype=awb_no&strTrkNo=${trackingNumber}`;
+      default:
+        // Return a generic order tracking page
+        return `${baseUrl}/order-confirmation/${trackingNumber}`;
+    }
   }
 
   async sendNewsletterWelcomeEmail(data: NewsletterWelcomeData): Promise<boolean> {
@@ -1229,6 +1774,346 @@ class EmailService {
 
     return { sent, failed };
   }
+
+  async sendAbandonedCartEmail(data: AbandonedCartEmailData): Promise<boolean> {
+    const customerName = data.customerName || 'Valued Customer';
+    const storeName = process.env.NEXT_PUBLIC_STORE_NAME || 'ElanorraLiving';
+    const storeUrl = process.env.NEXTAUTH_URL || 'https://elanorraliving.in';
+    
+    // Generate cart items HTML
+    const cartItemsHtml = data.items.map(item => `
+      <tr>
+        <td style="padding: 15px; border-bottom: 1px solid #e2e8f0;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            ${item.image ? `
+              <img src="${item.image}" alt="${item.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;">
+            ` : `
+              <div style="width: 60px; height: 60px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 12px;">No Image</div>
+            `}
+            <div style="flex: 1;">
+              <h4 style="margin: 0 0 5px 0; color: #1e293b; font-size: 16px; font-weight: 600;">${item.name}</h4>
+              <p style="margin: 0; color: #64748b; font-size: 14px;">Quantity: ${item.quantity}</p>
+              <p style="margin: 5px 0 0 0; color: #dc2626; font-size: 16px; font-weight: 600;">$${item.price.toFixed(2)}</p>
+            </div>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Don't forget your items at ${storeName}!</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); min-height: 100vh;">
+        <div style="max-width: 650px; margin: 0 auto; background: #ffffff; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); border-radius: 16px; overflow: hidden;">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); padding: 30px; text-align: center; position: relative;">
+            <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0 0 10px 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+              🛒 Don't Forget Your Items!
+            </h1>
+            <p style="color: #fecaca; font-size: 16px; margin: 0; font-weight: 500;">
+              Your cart is waiting for you at ${storeName}
+            </p>
+          </div>
+
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h2 style="color: #1e293b; font-size: 24px; font-weight: 600; margin: 0 0 15px 0;">
+                Hi ${customerName}! 👋
+              </h2>
+              <p style="color: #64748b; font-size: 16px; margin: 0; line-height: 1.6;">
+                You left some amazing items in your cart. Don't let them slip away!
+              </p>
+            </div>
+
+            <!-- Cart Items -->
+            <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin: 30px 0;">
+              <h3 style="color: #1e293b; font-size: 20px; font-weight: 600; margin: 0 0 20px 0; text-align: center;">
+                Your Cart Items
+              </h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                ${cartItemsHtml}
+              </table>
+              
+              <div style="text-align: right; margin-top: 20px; padding-top: 15px; border-top: 2px solid #dc2626;">
+                <p style="color: #1e293b; font-size: 20px; font-weight: 700; margin: 0;">
+                  Subtotal: $${data.subtotal.toFixed(2)}
+                </p>
+              </div>
+            </div>
+
+            <!-- CTA Button -->
+            <div style="text-align: center; margin: 40px 0;">
+              <a href="${data.cartUrl}" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 50px; font-size: 18px; font-weight: 600; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3); transition: all 0.3s ease;">
+                Complete Your Purchase 🛍️
+              </a>
+            </div>
+
+            <!-- Urgency Message -->
+            <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 30px 0; text-align: center;">
+              <p style="color: #92400e; font-size: 16px; margin: 0; font-weight: 600;">
+                ⏰ Limited Stock Alert: Some items in your cart are running low!
+              </p>
+            </div>
+
+            <!-- Benefits -->
+            <div style="margin: 40px 0;">
+              <h3 style="color: #1e293b; font-size: 20px; font-weight: 600; margin: 0 0 20px 0; text-align: center;">
+                Why Shop With Us?
+              </h3>
+              <div style="display: grid; gap: 15px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                  <span style="font-size: 24px;">🚚</span>
+                  <div>
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0;">Free Shipping</h4>
+                    <p style="color: #64748b; font-size: 14px; margin: 0;">On orders over $99</p>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                  <span style="font-size: 24px;">🔒</span>
+                  <div>
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0;">Secure Checkout</h4>
+                    <p style="color: #64748b; font-size: 14px; margin: 0;">Your payment is safe with us</p>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                  <span style="font-size: 24px;">↩️</span>
+                  <div>
+                    <h4 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0;">Easy Returns</h4>
+                    <p style="color: #64748b; font-size: 14px; margin: 0;">30-day return policy</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Need Help -->
+            <div style="text-align: center; margin: 30px 0;">
+              <p style="color: #64748b; font-size: 14px; margin: 0 0 10px 0;">
+                Need help with your order?
+              </p>
+              <a href="${storeUrl}/contact" style="color: #dc2626; text-decoration: none; font-weight: 600;">
+                Contact our support team
+              </a>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="background: #f8fafc; padding: 25px; text-align: center; border-top: 1px solid #e2e8f0;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0 0 8px 0; font-weight: 500;">
+              © 2024 ${storeName}. All rights reserved.
+            </p>
+            <p style="color: #64748b; font-size: 11px; margin: 0; line-height: 1.4;">
+              ${storeName} - Premium Home Furniture & Décor<br>
+              Transforming houses into luxury homes since 2024
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+      Don't forget your items at ${storeName}!
+      
+      Hi ${customerName}!
+      
+      You left some amazing items in your cart. Don't let them slip away!
+      
+      Your Cart Items:
+      ${data.items.map(item => `- ${item.name} (Qty: ${item.quantity}) - $${item.price.toFixed(2)}`).join('\n')}
+      
+      Subtotal: $${data.subtotal.toFixed(2)}
+      
+      Complete your purchase: ${data.cartUrl}
+      
+      Why shop with us?
+      🚚 Free shipping on orders over $99
+      🔒 Secure checkout
+      ↩️ Easy 30-day returns
+      
+      Need help? Contact us at ${storeUrl}/contact
+      
+      © 2024 ${storeName}. All rights reserved.
+    `;
+
+    return this.sendEmail({
+      to: data.email,
+      subject: `🛒 Don't forget your items at ${storeName}!`,
+      html,
+      text,
+    });
+  }
+
+  async sendPromotionalEmail(data: PromotionalEmailData): Promise<boolean> {
+    const customerName = data.customerName || 'Valued Customer';
+    const storeName = process.env.NEXT_PUBLIC_STORE_NAME || 'ElanorraLiving';
+    const storeUrl = process.env.NEXTAUTH_URL || 'https://elanorraliving.in';
+    
+    const {
+      offer = 'Special Offer',
+      message = 'Don\'t miss out on this amazing deal!',
+      ctaText = 'Shop Now',
+      ctaUrl = storeUrl,
+      discount_code
+    } = data.templateData;
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${data.subject}</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); min-height: 100vh;">
+        <div style="max-width: 650px; margin: 0 auto; background: #ffffff; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); border-radius: 16px; overflow: hidden;">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); padding: 40px 30px; text-align: center; position: relative;">
+            <h1 style="color: #ffffff; font-size: 32px; font-weight: 700; margin: 0 0 15px 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+              ${offer}
+            </h1>
+            <p style="color: #fecaca; font-size: 18px; margin: 0; font-weight: 500;">
+              Exclusive offer just for you!
+            </p>
+          </div>
+
+          <!-- Content -->
+          <div style="padding: 50px 30px;">
+            <div style="text-align: center; margin-bottom: 40px;">
+              <h2 style="color: #1e293b; font-size: 24px; font-weight: 600; margin: 0 0 20px 0;">
+                Hi ${customerName}! 👋
+              </h2>
+              <p style="color: #64748b; font-size: 18px; margin: 0; line-height: 1.6;">
+                ${message}
+              </p>
+            </div>
+
+            ${discount_code ? `
+            <!-- Discount Code -->
+            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px dashed #f59e0b; border-radius: 12px; padding: 30px; margin: 40px 0; text-align: center;">
+              <h3 style="color: #92400e; font-size: 20px; font-weight: 600; margin: 0 0 15px 0;">
+                🎉 Your Exclusive Code
+              </h3>
+              <div style="background: #ffffff; border-radius: 8px; padding: 15px; margin: 15px 0;">
+                <code style="color: #dc2626; font-size: 24px; font-weight: 700; letter-spacing: 2px;">
+                  ${discount_code}
+                </code>
+              </div>
+              <p style="color: #92400e; font-size: 14px; margin: 0;">
+                Copy this code and use it at checkout
+              </p>
+            </div>
+            ` : ''}
+
+            <!-- CTA Button -->
+            <div style="text-align: center; margin: 50px 0;">
+              <a href="${ctaUrl}" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); color: #ffffff; text-decoration: none; padding: 20px 40px; border-radius: 50px; font-size: 20px; font-weight: 600; box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3); transition: all 0.3s ease;">
+                ${ctaText} 🛍️
+              </a>
+            </div>
+
+            <!-- Features -->
+            <div style="margin: 50px 0;">
+              <h3 style="color: #1e293b; font-size: 22px; font-weight: 600; margin: 0 0 25px 0; text-align: center;">
+                Why Choose ${storeName}?
+              </h3>
+              <div style="display: grid; gap: 20px;">
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+                  <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 28px;">🏆</span>
+                    <div>
+                      <h4 style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0;">Premium Quality</h4>
+                      <p style="color: #64748b; font-size: 15px; margin: 5px 0 0 0;">Handpicked furniture and décor items</p>
+                    </div>
+                  </div>
+                </div>
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+                  <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 28px;">🚚</span>
+                    <div>
+                      <h4 style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0;">Fast Delivery</h4>
+                      <p style="color: #64748b; font-size: 15px; margin: 5px 0 0 0;">Free shipping on orders over $99</p>
+                    </div>
+                  </div>
+                </div>
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+                  <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 28px;">💎</span>
+                    <div>
+                      <h4 style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0;">Customer Support</h4>
+                      <p style="color: #64748b; font-size: 15px; margin: 5px 0 0 0;">24/7 support for all your needs</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Social Links -->
+            <div style="text-align: center; margin: 40px 0;">
+              <h4 style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0 0 20px 0;">
+                Follow Us for More Deals
+              </h4>
+              <div style="display: flex; justify-content: center; gap: 20px;">
+                <a href="${storeUrl}/social/facebook" style="color: #1877f2; text-decoration: none; font-size: 24px;">📘</a>
+                <a href="${storeUrl}/social/instagram" style="color: #e4405f; text-decoration: none; font-size: 24px;">📷</a>
+                <a href="${storeUrl}/social/pinterest" style="color: #bd081c; text-decoration: none; font-size: 24px;">📌</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="background: #f8fafc; padding: 25px; text-align: center; border-top: 1px solid #e2e8f0;">
+            <p style="color: #94a3b8; font-size: 12px; margin: 0 0 8px 0; font-weight: 500;">
+              © 2024 ${storeName}. All rights reserved.
+            </p>
+            <p style="color: #64748b; font-size: 11px; margin: 0; line-height: 1.4;">
+              ${storeName} - Premium Home Furniture & Décor<br>
+              Transforming houses into luxury homes since 2024
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+      ${offer}
+      
+      Hi ${customerName}!
+      
+      ${message}
+      
+      ${discount_code ? `Your exclusive code: ${discount_code}` : ''}
+      
+      ${ctaText}: ${ctaUrl}
+      
+      Why choose ${storeName}?
+      🏆 Premium Quality - Handpicked furniture and décor items
+      🚚 Fast Delivery - Free shipping on orders over $99
+      💎 Customer Support - 24/7 support for all your needs
+      
+      Follow us:
+      Facebook: ${storeUrl}/social/facebook
+      Instagram: ${storeUrl}/social/instagram
+      Pinterest: ${storeUrl}/social/pinterest
+      
+      © 2024 ${storeName}. All rights reserved.
+    `;
+
+    return this.sendEmail({
+      to: data.email,
+      subject: data.subject,
+      html,
+      text,
+    });
+  }
 }
 
 // Export singleton instance
@@ -1413,4 +2298,95 @@ export async function sendWelcomeEmail(
     firstName,
     verificationUrl,
   });
+}
+
+export async function sendOrderConfirmationEmail(
+  orderData: OrderConfirmationEmailData
+): Promise<boolean> {
+  return emailService.sendOrderConfirmationEmail(orderData);
+}
+
+export async function sendShippingNotificationEmail(
+  orderData: ShippingNotificationEmailData
+): Promise<boolean> {
+  return emailService.sendShippingNotificationEmail(orderData);
+}
+
+// New Nodemailer-based email functions
+export async function sendAbandonedCartEmail(
+  data: AbandonedCartEmailData
+): Promise<boolean> {
+  return emailService.sendAbandonedCartEmail(data);
+}
+
+export async function sendPromotionalEmail(
+  data: PromotionalEmailData
+): Promise<boolean> {
+  return emailService.sendPromotionalEmail(data);
+}
+
+// Bulk promotional campaign function
+export async function sendPromotionalCampaign(
+  recipients: string[],
+  subject: string,
+  templateData: {
+    offer?: string;
+    message?: string;
+    ctaText?: string;
+    ctaUrl?: string;
+    discount_code?: string;
+    [key: string]: any;
+  },
+  campaignId?: string
+): Promise<{ sent: number; failed: number }> {
+  let sent = 0;
+  let failed = 0;
+
+  // Send emails in batches to avoid overwhelming the SMTP server
+  const batchSize = 10;
+  for (let i = 0; i < recipients.length; i += batchSize) {
+    const batch = recipients.slice(i, i + batchSize);
+    
+    const promises = batch.map(async (email) => {
+      try {
+        const success = await sendPromotionalEmail({
+          email,
+          subject,
+          templateData,
+          campaignId,
+        });
+        
+        if (success) {
+          sent++;
+        } else {
+          failed++;
+        }
+      } catch (error) {
+        console.error(`Failed to send promotional email to ${email}:`, error);
+        failed++;
+      }
+    });
+
+    await Promise.all(promises);
+    
+    // Add a small delay between batches
+    if (i + batchSize < recipients.length) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+
+  return { sent, failed };
+}
+
+// Cart abandonment tracking function
+export async function trackCartAbandonment(data: AbandonedCartEmailData): Promise<void> {
+  try {
+    console.log(`Tracking cart abandonment for ${data.email}`);
+    
+    // Send abandoned cart email immediately or schedule it
+    // In a real implementation, you might want to schedule this with a delay
+    await sendAbandonedCartEmail(data);
+  } catch (error) {
+    console.error('Failed to track cart abandonment:', error);
+  }
 }

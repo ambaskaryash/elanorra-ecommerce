@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-// Temporarily comment out useSession to bypass NextAuth issues
-// import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { 
   TrashIcon, 
   PencilIcon, 
@@ -80,9 +79,7 @@ interface EmailTemplate {
 }
 
 export default function NewsletterDashboard() {
-  // Temporarily bypass useSession to fix NextAuth issues
-  // const { data: session } = useSession();
-  const session = useMemo(() => ({ user: { email: 'kimetsu119@gmail.com', isAdmin: true } }), []); // Stable mock session
+  const { user, isLoaded } = useUser();
   const [activeTab, setActiveTab] = useState<'overview' | 'subscribers' | 'campaigns' | 'compose' | 'analytics'>('overview');
   const [stats, setStats] = useState<NewsletterStats | null>(null);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
@@ -171,7 +168,7 @@ export default function NewsletterDashboard() {
   }, []);
 
   const fetchAllData = useCallback(async () => {
-    if (!session?.user) return;
+    if (!user) return;
     
     setLoading(true);
     try {
@@ -186,13 +183,13 @@ export default function NewsletterDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [session?.user]);
+  }, [user]);
 
   useEffect(() => {
-    if (session?.user) {
+    if (user) {
       fetchAllData();
     }
-  }, [session?.user]);
+  }, [user]);
 
   // Filter subscribers based on search and status
   useEffect(() => {
@@ -513,7 +510,7 @@ export default function NewsletterDashboard() {
     }
   };
 
-  if (!session?.user) {
+  if (!isLoaded || !user) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">

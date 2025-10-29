@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import DOMPurify from 'isomorphic-dompurify';
+import crypto from 'crypto';
 
 // Common validation schemas
 export const emailSchema = z.string().email().max(254);
@@ -187,7 +188,42 @@ export function generateRateLimitKey(identifier: string, endpoint: string): stri
 }
 
 // CSRF token validation (for future implementation)
-export function validateCSRFToken(token: string, sessionToken: string): boolean {
-  // This is a placeholder - implement proper CSRF validation
-  return token === sessionToken;
+// CSRF Token Management
+export function generateCSRFToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+export function createCSRFTokenHash(token: string, secret: string): string {
+  return crypto.createHmac('sha256', secret).update(token).digest('hex');
+}
+
+export function validateCSRFToken(token: string, sessionToken: string, secret?: string): boolean {
+  if (!token || !sessionToken) {
+    return false;
+  }
+
+  // If no secret provided, use simple comparison (fallback for basic validation)
+  if (!secret) {
+    return token === sessionToken;
+  }
+
+  try {
+    // Use HMAC-based validation for enhanced security
+    const expectedHash = createCSRFTokenHash(token, secret);
+    const providedHash = createCSRFTokenHash(sessionToken, secret);
+    
+    // Use timing-safe comparison to prevent timing attacks
+    return crypto.timingSafeEqual(
+      Buffer.from(expectedHash, 'hex'),
+      Buffer.from(providedHash, 'hex')
+    );
+  } catch (error) {
+    console.error('CSRF token validation error:', error);
+    return false;
+  }
+}
+
+export function isCSRFTokenExpired(tokenTimestamp: number, maxAgeMs: number = 3600000): boolean {
+  // Default max age is 1 hour (3600000 ms)
+  return Date.now() - tokenTimestamp > maxAgeMs;
 }

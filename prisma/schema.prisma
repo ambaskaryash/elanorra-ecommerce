@@ -47,6 +47,7 @@ model VerificationToken {
 
 model User {
   id                     String         @id @default(cuid())
+  clerkId                String?        @unique
   name                   String?
   email                  String         @unique
   emailVerified          DateTime?
@@ -63,6 +64,7 @@ model User {
   emailVerificationToken String?
   accounts               Account[]
   addresses              Address[]
+  adminAuditLogs         AdminAuditLog[]
   blogPosts              BlogPost[]
   orders                 Order[]
   reviews                Review[]
@@ -350,4 +352,49 @@ model EmailTemplate {
   updatedAt   DateTime @updatedAt
 
   @@map("email_templates")
+}
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  adminEmail String
+  action     String   // Action performed (e.g., CREATE_PRODUCT, DELETE_USER)
+  resource   String   // Resource type (e.g., product, user, order)
+  resourceId String?  // ID of the affected resource
+  details    Json?    // Additional details about the action
+  ipAddress  String?  // IP address of the admin
+  userAgent  String?  // User agent string
+  timestamp  DateTime @default(now())
+  
+  // Relation to User model
+  admin      User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  
+  @@index([adminId])
+  @@index([action])
+  @@index([resource])
+  @@index([timestamp])
+  @@map("admin_audit_logs")
+}
+
+model ErrorLog {
+  id          String   @id @default(cuid())
+  timestamp   DateTime @default(now())
+  type        String   // Error type (VALIDATION_ERROR, AUTHENTICATION_ERROR, etc.)
+  message     String   // Error message
+  statusCode  Int      // HTTP status code
+  stack       String?  // Stack trace
+  details     String?  // Additional error details as JSON string
+  userId      String?  // User ID if available
+  requestId   String?  // Request ID for tracing
+  userAgent   String?  // User agent string
+  ip          String?  // IP address
+  url         String?  // Request URL
+  method      String?  // HTTP method
+  createdAt   DateTime @default(now())
+  
+  @@index([type])
+  @@index([statusCode])
+  @@index([timestamp])
+  @@index([userId])
+  @@map("error_logs")
 }

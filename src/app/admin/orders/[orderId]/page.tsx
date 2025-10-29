@@ -10,7 +10,7 @@ import {
   TruckIcon
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, useRouter } from 'next/navigation';
@@ -28,18 +28,40 @@ const isAdmin = (user: any) => {
 };
 
 export default function AdminOrderDetailPage({ params }: Props) {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
   const [order, setOrder] = useState<ApiOrder | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
-    if (status === 'loading') return;
-    if (status !== 'authenticated' || !isAdmin(session?.user)) {
-      router.push('/auth/login?redirect=/admin');
-    }
-  }, [status, session, router]);
+    const checkAdminStatus = async () => {
+      if (!isLoaded) return;
+      
+      if (!user) {
+        router.push('/sign-in?redirect_url=/admin');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/user/profile');
+        if (!response.ok) {
+          router.push('/sign-in?redirect_url=/admin');
+          return;
+        }
+        
+        const userData = await response.json();
+        if (!userData.isAdmin) {
+          router.push('/sign-in?redirect_url=/admin');
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        router.push('/sign-in?redirect_url=/admin');
+      }
+    };
+
+    checkAdminStatus();
+  }, [isLoaded, user, router]);
 
   useEffect(() => {
     const fetchOrder = async () => {

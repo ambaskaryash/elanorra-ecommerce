@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
@@ -14,13 +13,13 @@ const updateProfileSchema = z.object({
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const { userId } = auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { clerkId: userId },
       select: {
         id: true,
         email: true,
@@ -34,7 +33,33 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      // If user doesn't exist in our database, create them from Clerk data
+      const clerkUser = await currentUser();
+      if (!clerkUser) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      const newUser = await prisma.user.create({
+        data: {
+          clerkId: userId,
+          email: clerkUser.emailAddresses[0]?.emailAddress || '',
+          firstName: clerkUser.firstName || '',
+          lastName: clerkUser.lastName || '',
+          image: clerkUser.imageUrl || null,
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          image: true,
+          isAdmin: true,
+          createdAt: true,
+        },
+      });
+
+      return NextResponse.json({ user: newUser });
     }
 
     return NextResponse.json({ user });
@@ -46,24 +71,33 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const { userId } = auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
     const data = updateProfileSchema.parse(body);
 
+    // Find user by clerkId
+    const existingUser = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!existingUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     // If changing email, ensure uniqueness
     if (data.email) {
       const existing = await prisma.user.findUnique({ where: { email: data.email } });
-      if (existing && existing.id !== session.user.id) {
+      if (existing && existing.id !== existingUser.id) {
         return NextResponse.json({ error: 'Email already in use' }, { status: 409 });
       }
     }
 
     const updated = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { clerkId: userId },
       data,
       select: {
         id: true,

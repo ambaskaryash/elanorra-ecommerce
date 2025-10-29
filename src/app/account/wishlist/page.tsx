@@ -1,6 +1,5 @@
 'use client';
 
-import { useAuth } from '@/lib/contexts/auth-context';
 import { useCartStore } from '@/lib/store/cart-store';
 import { useWishlistStore } from '@/lib/store/wishlist-store';
 import { formatPrice } from '@/lib/utils';
@@ -16,8 +15,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { useSession } from 'next-auth/react';
 import type { Product } from '@/types';
+import { useUser } from '@clerk/nextjs';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -48,25 +47,24 @@ function isProductWithFlags(p: unknown): p is Product {
 export default function WishlistPage() {
   const { items: wishlistItems, removeFromWishlist, clearWishlist } = useWishlistStore();
   const { addItem } = useCartStore();
-  const { isAuthenticated, isLoading } = useAuth();
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
   const [isClearing, setIsClearing] = useState(false);
 
-  // Check if user is admin (using NextAuth session)
-  const isAdmin = session?.user?.isAdmin === true;
+  // Check if user is authenticated (using Clerk)
+  const isAuthenticated = !!user;
 
-  // Redirect to login if not authenticated and not admin
+  // Redirect to login if not authenticated
   useEffect(() => {
-    // Only redirect if we're sure the user is not authenticated and not an admin
-    // (i.e., loading is complete and user is still not authenticated and not admin)
-    if (!isLoading && status !== 'loading' && !isAuthenticated && !isAdmin) {
-      router.push('/auth/login?redirect=/account/wishlist');
+    // Only redirect if we're sure the user is not authenticated
+    // (i.e., loading is complete and user is still not authenticated)
+    if (isLoaded && !isAuthenticated) {
+      router.push('/sign-in?redirect_url=/account/wishlist');
     }
-  }, [isAuthenticated, isLoading, isAdmin, status, router]);
+  }, [isAuthenticated, isLoaded, router]);
 
   // Show loading state
-  if (isLoading || status === 'loading') {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-600"></div>
@@ -74,8 +72,8 @@ export default function WishlistPage() {
     );
   }
 
-  // Don't render if not authenticated and not admin (will redirect)
-  if (!isAuthenticated && !isAdmin) {
+  // Don't render if not authenticated (will redirect)
+  if (!isAuthenticated) {
     return null;
   }
 

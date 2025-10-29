@@ -22,6 +22,7 @@ async function main() {
         phone: '+91 9876543210',
         isAdmin: true,
         password: adminPasswordHash,
+        emailVerified: new Date(),
       },
     }),
     prisma.user.upsert({
@@ -34,6 +35,7 @@ async function main() {
         phone: '+91 9876543211',
         isAdmin: true,
         password: demoPasswordHash,
+        emailVerified: new Date(),
       },
     }),
     prisma.user.upsert({
@@ -46,6 +48,7 @@ async function main() {
         phone: '+91 9876543212',
         isAdmin: false,
         password: testPasswordHash,
+        emailVerified: new Date(),
       },
     }),
   ]);
