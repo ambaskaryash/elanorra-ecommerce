@@ -112,10 +112,7 @@ export default function RootLayout({
               <PWAInstaller />
             </ThemeProvider>
             <Toaster richColors position="bottom-right" />
-            <>
-              {children}
-              <ToastContainer />
-            </>
+            <ToastContainer />
           </AuthProvider>
         </SessionProvider>
         <ServiceWorkerRegistration />
