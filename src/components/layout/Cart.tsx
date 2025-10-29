@@ -13,8 +13,8 @@ import { toast } from 'react-hot-toast';
 export default function Cart() {
   const { 
     items, 
-    isOpen, 
-    totalPrice, 
+    isOpen,
+    totalPrice,
     subtotalPrice,
     discountAmount,
     taxAmount,

@@ -1,116 +1,61 @@
-// Cloudinary image mappings to replace Unsplash images
-// These are sample Cloudinary URLs following the proper structure
-// In production, these would be actual uploaded images
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'demo';
 
-export const cloudinaryImageMap: Record<string, string> = {
+function buildCloudinaryUrl(path: string, width: number, height: number) {
+  return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/w_${width},h_${height},c_fill/${path}`;
+}
+
+const imageMappings = {
   // Hero Carousel Images
-  'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/vasant-collection_hero1': 
-    'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/vasant-collection_hero1',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/anaar-collection_hero2': 
-    'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/anaar-collection_hero2',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/gulistan-collection_hero3': 
-    'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/gulistan-collection_hero3',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/kids-victoria_hero4': 
-    'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/kids-victoria_hero4',
+  'ecommerce/hero/vasant-collection_hero1': { width: 1600, height: 900 },
+  'ecommerce/hero/anaar-collection_hero2': { width: 1600, height: 900 },
+  'ecommerce/hero/gulistan-collection_hero3': { width: 1600, height: 900 },
+  'ecommerce/hero/kids-victoria_hero4': { width: 1600, height: 900 },
 
-  // Product Images (800x600)
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-cup-set': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-cup-set',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/anaar-dinner-plates': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/anaar-dinner-plates',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-serving-set': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-serving-set',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-victoria-meal-set': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-victoria-meal-set',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-victoria-special': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-victoria-special',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/pondicherry-coastal': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/pondicherry-coastal',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/floral-paradise-notebook': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/floral-paradise-notebook',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/sundarbans-coffee-mug': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/sundarbans-coffee-mug',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vintage-garden-tray': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vintage-garden-tray',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-rose-plates': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-rose-plates',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-tea-set': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/gulistan-tea-set',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/pondicherry-bowls': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/pondicherry-bowls',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/le-jardin-bleu-cups': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/le-jardin-bleu-cups',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-art-supply-box': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/kids-art-supply-box',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/executive-pen-collection': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/executive-pen-collection',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/garden-bloom-candles': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/garden-bloom-candles',
+  // Product Images
+  'ecommerce/products/vasant-tea-cup-set': { width: 800, height: 600 },
+  'ecommerce/products/anaar-dinner-plates': { width: 800, height: 600 },
+  'ecommerce/products/gulistan-serving-set': { width: 800, height: 600 },
+  'ecommerce/products/kids-victoria-meal-set': { width: 800, height: 600 },
+  'ecommerce/products/kids-victoria-special': { width: 800, height: 600 },
+  'ecommerce/products/pondicherry-coastal': { width: 800, height: 600 },
+  'ecommerce/products/floral-paradise-notebook': { width: 800, height: 600 },
+  'ecommerce/products/sundarbans-coffee-mug': { width: 800, height: 600 },
+  'ecommerce/products/vintage-garden-tray': { width: 800, height: 600 },
+  'ecommerce/products/gulistan-rose-plates': { width: 800, height: 600 },
+  'ecommerce/products/gulistan-tea-set': { width: 800, height: 600 },
+  'ecommerce/products/pondicherry-bowls': { width: 800, height: 600 },
+  'ecommerce/products/le-jardin-bleu-cups': { width: 800, height: 600 },
+  'ecommerce/products/kids-art-supply-box': { width: 800, height: 600 },
+  'ecommerce/products/executive-pen-collection': { width: 800, height: 600 },
+  'ecommerce/products/garden-bloom-candles': { width: 800, height: 600 },
+  'ecommerce/products/vasant-tea-detail-1': { width: 800, height: 600 },
 
-  // Category/Collection Images (600x400)
-  'https://res.cloudinary.com/demo/image/upload/w_600,h_400,c_fill/ecommerce/categories/stationery-category': 
-    'https://res.cloudinary.com/demo/image/upload/w_600,h_400,c_fill/ecommerce/categories/stationery-category',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_600,h_400,c_fill/ecommerce/categories/dining-category': 
-    'https://res.cloudinary.com/demo/image/upload/w_600,h_400,c_fill/ecommerce/categories/dining-category',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_600,h_600,c_fill/ecommerce/categories/featured-collection': 
-    'https://res.cloudinary.com/demo/image/upload/w_600,h_600,c_fill/ecommerce/categories/featured-collection',
+  // Category/Collection Images
+  'ecommerce/categories/stationery-category': { width: 600, height: 400 },
+  'ecommerce/categories/dining-category': { width: 600, height: 400 },
+  'ecommerce/categories/featured-collection': { width: 600, height: 600 },
 
-  // About Page Images (400x400 and 400x300)
-  'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/team/sarah-mitchell': 
-    'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/team/sarah-mitchell',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/team/david-chen': 
-    'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/team/david-chen',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/team/maya-patel': 
-    'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/team/maya-patel',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_400,h_300,c_fill/ecommerce/about/studio-workspace-1': 
-    'https://res.cloudinary.com/demo/image/upload/w_400,h_300,c_fill/ecommerce/about/studio-workspace-1',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/about/studio-workspace-2': 
-    'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/about/studio-workspace-2',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/about/studio-workspace-3': 
-    'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/about/studio-workspace-3',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_400,h_300,c_fill/ecommerce/about/studio-workspace-4': 
-    'https://res.cloudinary.com/demo/image/upload/w_400,h_300,c_fill/ecommerce/about/studio-workspace-4',
+  // About Page Images
+  'ecommerce/team/sarah-mitchell': { width: 400, height: 400 },
+  'ecommerce/team/david-chen': { width: 400, height: 400 },
+  'ecommerce/team/maya-patel': { width: 400, height: 400 },
+  'ecommerce/about/studio-workspace-1': { width: 400, height: 300 },
+  'ecommerce/about/studio-workspace-2': { width: 400, height: 400 },
+  'ecommerce/about/studio-workspace-3': { width: 400, height: 400 },
+  'ecommerce/about/studio-workspace-4': { width: 400, height: 300 },
 
-  // Large banner images (1600x900)
-  'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/banners/about-hero': 
-    'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/banners/about-hero',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/banners/about-story': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/banners/about-story',
-  
-  'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/banners/contact-hero': 
-    'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/banners/contact-hero',
-
-  // Additional product detail images
-  'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-detail-1': 
-    'https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/products/vasant-tea-detail-1',
+  // Large banner images
+  'ecommerce/banners/about-hero': { width: 1600, height: 900 },
+  'ecommerce/banners/about-story': { width: 800, height: 600 },
+  'ecommerce/banners/contact-hero': { width: 1600, height: 900 },
 };
+
+export const cloudinaryImageMap: Record<string, string> = Object.entries(imageMappings).reduce((acc, [path, dims]) => {
+  const originalUrl = `https://res.cloudinary.com/demo/image/upload/w_${dims.width},h_${dims.height},c_fill/${path}`;
+  acc[originalUrl] = buildCloudinaryUrl(path, dims.width, dims.height);
+  return acc;
+}, {} as Record<string, string>);
+
 
 // Helper function to get Cloudinary URL for an Unsplash URL
 export function getCloudinaryUrl(unsplashUrl: string): string {

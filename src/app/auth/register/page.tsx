@@ -1,12 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import { signIn } from 'next-auth/react';
-import { toast } from 'react-hot-toast';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { validateAndSanitizeUser } from '@/lib/validation';
 
@@ -386,3 +385,13 @@ export default function RegisterPage() {
     </div>
   );
 }
+
+const handleRegister = async (formData) => {
+  // ... your register logic ...
+  if (success) {
+    toast.success(`Welcome, ${username}! Your account has been created.`);
+    // ...redirect or other logic...
+  } else {
+    toast.error('Registration failed. Please try again.');
+  }
+};
