@@ -119,13 +119,12 @@ export default async function RootLayout({
             draggable
             pauseOnHover
           />
-          <Script
-            src="/api/script.js"
-            data-site-id="af2ffdb21c7c"
-            strategy="afterInteractive"
-          />
         </Providers>
-        
+        <Script
+          src="/api/script.js"
+          data-site-id="af2ffdb21c7c"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
