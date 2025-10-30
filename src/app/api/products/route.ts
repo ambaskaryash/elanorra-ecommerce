@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
+import { Product, Review } from '@prisma/client';
+
+type ProductWithReviews = Product & {
+  reviews: Review[];
+  _count: { reviews: number };
+};
 
 // GET /api/products - Get all products with optional filters
 export async function GET(request: NextRequest) {
@@ -75,10 +81,10 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Calculate average ratings
-    const productsWithRatings = products.map(product => {
-      const ratings = product.reviews.map(r => r.rating);
+    const productsWithRatings = products.map((product: ProductWithReviews) => {
+      const ratings = product.reviews.map((r: Review) => r.rating);
       const avgRating = ratings.length > 0 
-        ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length 
+        ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length 
         : 0;
       
       return {

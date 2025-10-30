@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     await subscribeToNewsletter(email);
 
     // Send confirmation email
-    await emailService.sendNewsletterSubscriptionConfirmation(email);
+    await emailService.sendWelcomeEmail({ email });
 
     return NextResponse.json({ message: 'Successfully subscribed to newsletter!' }, { status: 200 });
   } catch (error: unknown) {
