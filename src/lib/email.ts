@@ -6,6 +6,11 @@ interface EmailOptions {
   subject: string;
   html: string;
   text?: string;
+  attachments?: Array<{
+    filename: string;
+    path: string;
+    contentType: string;
+  }>;
 }
 
 interface PasswordResetEmailData {
@@ -181,6 +186,17 @@ interface PromotionalEmailData {
     [key: string]: any;
   };
   campaignId?: string;
+}
+
+interface InvoiceEmailData {
+  email: string;
+  customerName?: string;
+  orderNumber: string;
+  invoiceNumber: string;
+  totalAmount: number;
+  currency: string;
+  invoiceFilePath: string;
+  createdAt: string;
 }
 
 // Helper function to replace template variables
@@ -593,13 +609,18 @@ class EmailService {
     }
 
     try {
-      const mailOptions = {
+      const mailOptions: any = {
         from: `"Elanorra Living" <info@elanorraliving.in>`,
         to: options.to,
         subject: options.subject,
         html: options.html,
         text: options.text,
       };
+
+      // Add attachments if provided
+      if (options.attachments && options.attachments.length > 0) {
+        mailOptions.attachments = options.attachments;
+      }
 
       const result = await this.transporter.sendMail(mailOptions);
       console.log('✅ Email sent successfully:', result.messageId);
@@ -2114,6 +2135,168 @@ The Elanorra Team
       text,
     });
   }
+
+  async sendInvoiceEmail(data: InvoiceEmailData): Promise<boolean> {
+    try {
+      const storeName = 'Elanorra Living';
+      const storeUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://elanorraliving.in';
+      const customerName = data.customerName || 'Valued Customer';
+      const { formatPrice } = await import('./utils');
+
+      const html = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Invoice - ${data.invoiceNumber}</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8f9fa; }
+            .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+            .header h1 { margin: 0; font-size: 28px; font-weight: 300; }
+            .content { padding: 40px 30px; }
+            .invoice-details { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .invoice-details h2 { margin: 0 0 15px 0; color: #333; font-size: 20px; }
+            .detail-row { display: flex; justify-content: space-between; margin: 8px 0; }
+            .detail-label { font-weight: 600; color: #666; }
+            .detail-value { color: #333; }
+            .total-amount { font-size: 24px; font-weight: bold; color: #667eea; text-align: center; margin: 20px 0; }
+            .cta-button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: 600; margin: 20px 0; }
+            .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #666; font-size: 14px; }
+            .social-links { margin: 20px 0; }
+            .social-links a { color: #667eea; text-decoration: none; margin: 0 10px; }
+            @media (max-width: 600px) {
+              .container { width: 100% !important; }
+              .content { padding: 20px !important; }
+              .header { padding: 20px !important; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>${storeName}</h1>
+              <p style="margin: 10px 0 0 0; opacity: 0.9;">Your Invoice is Ready</p>
+            </div>
+            
+            <div class="content">
+              <h2 style="color: #333; margin-bottom: 20px;">Hello ${customerName}!</h2>
+              
+              <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
+                Thank you for your purchase! Your invoice for order <strong>${data.orderNumber}</strong> is now ready. 
+                Please find the invoice attached to this email for your records.
+              </p>
+
+              <div class="invoice-details">
+                <h2>Invoice Details</h2>
+                <div class="detail-row">
+                  <span class="detail-label">Invoice Number:</span>
+                  <span class="detail-value">${data.invoiceNumber}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Order Number:</span>
+                  <span class="detail-value">${data.orderNumber}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Invoice Date:</span>
+                  <span class="detail-value">${new Date(data.createdAt).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}</span>
+                </div>
+              </div>
+
+              <div class="total-amount">
+                Total Amount: ${formatPrice(data.totalAmount, { currency: data.currency as 'INR' | 'USD' })}
+              </div>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${storeUrl}/profile/orders" class="cta-button">View Order Details</a>
+              </div>
+
+              <div style="background-color: #e3f2fd; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                <h3 style="color: #1976d2; margin: 0 0 10px 0;">Need Help?</h3>
+                <p style="color: #666; margin: 0; line-height: 1.6;">
+                  If you have any questions about your invoice or order, please don't hesitate to contact our customer support team at 
+                  <a href="mailto:info@elanorraliving.in" style="color: #1976d2;">info@elanorraliving.in</a>
+                </p>
+              </div>
+
+              <p style="color: #666; line-height: 1.6; margin-top: 30px;">
+                Thank you for choosing ${storeName}. We appreciate your business and look forward to serving you again!
+              </p>
+            </div>
+
+            <div class="footer">
+              <div class="social-links">
+                <a href="${storeUrl}/social/facebook">Facebook</a>
+                <a href="${storeUrl}/social/instagram">Instagram</a>
+                <a href="${storeUrl}/social/pinterest">Pinterest</a>
+              </div>
+              <p style="margin: 15px 0 5px 0;">
+                <strong>${storeName}</strong><br>
+                Premium Furniture & Home Décor
+              </p>
+              <p style="margin: 5px 0;">
+                © 2024 ${storeName}. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const text = `
+        ${storeName} - Invoice ${data.invoiceNumber}
+        
+        Hello ${customerName}!
+        
+        Thank you for your purchase! Your invoice for order ${data.orderNumber} is now ready.
+        
+        Invoice Details:
+        - Invoice Number: ${data.invoiceNumber}
+        - Order Number: ${data.orderNumber}
+        - Invoice Date: ${new Date(data.createdAt).toLocaleDateString()}
+        - Total Amount: ${formatPrice(data.totalAmount, { currency: data.currency as 'INR' | 'USD' })}
+        
+        Please find the invoice attached to this email for your records.
+        
+        View your order details: ${storeUrl}/profile/orders
+        
+        Need help? Contact us at info@elanorraliving.in
+        
+        Thank you for choosing ${storeName}!
+        
+        © 2024 ${storeName}. All rights reserved.
+      `;
+
+      // Send email with invoice attachment
+      const fs = await import('fs');
+      const path = await import('path');
+      
+      let attachments = [];
+      if (data.invoiceFilePath && fs.existsSync(data.invoiceFilePath)) {
+        attachments.push({
+          filename: `Invoice-${data.invoiceNumber}.pdf`,
+          path: data.invoiceFilePath,
+          contentType: 'application/pdf'
+        });
+      }
+
+      return this.sendEmail({
+        to: data.email,
+        subject: `Invoice ${data.invoiceNumber} - ${storeName}`,
+        html,
+        text,
+        attachments
+      });
+    } catch (error) {
+      console.error('Error sending invoice email:', error);
+      return false;
+    }
+  }
 }
 
 // Export singleton instance
@@ -2323,6 +2506,12 @@ export async function sendPromotionalEmail(
   data: PromotionalEmailData
 ): Promise<boolean> {
   return emailService.sendPromotionalEmail(data);
+}
+
+export async function sendInvoiceEmail(
+  data: InvoiceEmailData
+): Promise<boolean> {
+  return emailService.sendInvoiceEmail(data);
 }
 
 // Bulk promotional campaign function

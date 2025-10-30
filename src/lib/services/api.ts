@@ -54,6 +54,11 @@ export interface ApiOrder {
   paymentId?: string;
   couponCode?: string;
   notes?: string;
+  // Invoice related fields
+  invoiceNumber?: string;
+  invoiceGenerated: boolean;
+  invoiceFilePath?: string;
+  invoiceEmailSent: boolean;
   createdAt: string;
   updatedAt: string;
   items: Array<{

@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
+import type { Permission } from '@prisma/client';
 
 // Types for better type safety
 export type UserWithRole = {
@@ -370,13 +371,13 @@ export async function getAllPermissions() {
     });
 
     // Group by category
-    const groupedPermissions = permissions.reduce((acc: Record<string, typeof permissions>, permission) => {
+    const groupedPermissions = permissions.reduce((acc: Record<string, Permission[]>, permission: Permission) => {
       if (!acc[permission.category]) {
         acc[permission.category] = [];
       }
       acc[permission.category].push(permission);
       return acc;
-    }, {} as Record<string, typeof permissions>);
+    }, {} as Record<string, Permission[]>);
 
     return {
       success: true,

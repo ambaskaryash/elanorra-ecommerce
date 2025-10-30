@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
+import { RolePermission, Permission } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const permissions = user.role.permissions.map(rp => rp.permission.name);
+    const permissions = user.role.permissions.map((rp: RolePermission & { permission: Permission }) => rp.permission.name);
     
     return NextResponse.json({
       canManageUsers: permissions.includes('MANAGE_USERS'),

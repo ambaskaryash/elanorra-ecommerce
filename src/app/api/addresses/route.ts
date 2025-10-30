@@ -133,7 +133,7 @@ async function handlePUT(request: NextRequest) {
     }
 
     const address = await prisma.address.update({
-      where: { id, userId: session.user.id },
+      where: { id, userId: userId },
       data: validatedData,
     });
 

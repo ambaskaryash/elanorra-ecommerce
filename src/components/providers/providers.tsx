@@ -1,6 +1,7 @@
 'use client';
 
 import { ClerkProvider } from '@clerk/nextjs';
+import { AuthProvider } from '@/lib/contexts/auth-context';
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -9,7 +10,9 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <ClerkProvider>
-      {children}
+      <AuthProvider>
+        {children}
+      </AuthProvider>
     </ClerkProvider>
   );
 }

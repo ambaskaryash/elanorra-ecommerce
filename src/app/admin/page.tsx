@@ -38,6 +38,7 @@ import RichTextEditor from '@/components/admin/RichTextEditor';
 import ImageUpload from '@/components/admin/ImageUpload';
 import { BulkProductUpload } from '@/components/admin/BulkProductUpload'; // Import the new component
 import NewsletterDashboard from '@/components/admin/NewsletterDashboard';
+import UserManagement from '@/components/admin/UserManagement';
 
 interface StatCardProps {
   title: string;
@@ -439,6 +440,7 @@ export default function AdminDashboard() {
     { id: 'products', name: 'Products', icon: CurrencyRupeeIcon, color: 'purple' },
     { id: 'bulk-upload', name: 'Bulk Upload', icon: ArrowPathIcon, color: 'indigo' },
     { id: 'returns', name: 'Returns', icon: ArrowPathIcon, color: 'orange' },
+    { id: 'users', name: 'Users', icon: UsersIcon, color: 'cyan' },
     { id: 'blog', name: 'Blog', icon: DocumentTextIcon, color: 'pink' },
     { id: 'newsletter', name: 'Newsletter', icon: EnvelopeIcon, color: 'teal' },
     { id: 'reviews', name: 'Reviews', icon: StarIcon, color: 'yellow' },
@@ -456,6 +458,7 @@ export default function AdminDashboard() {
         pink: 'bg-gradient-to-r from-pink-500 to-pink-600',
         teal: 'bg-gradient-to-r from-teal-500 to-teal-600',
         yellow: 'bg-gradient-to-r from-yellow-500 to-yellow-600',
+        cyan: 'bg-gradient-to-r from-cyan-500 to-cyan-600',
       };
       return colorMap[color] || 'bg-gradient-to-r from-blue-500 to-blue-600';
     };
@@ -1220,6 +1223,30 @@ export default function AdminDashboard() {
             </div>
           </motion.div>
         )}
+
+          {/* Users Management */}
+          {activeTab === 'users' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
+            >
+              <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-cyan-50 to-blue-50">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-cyan-500 rounded-lg">
+                    <UsersIcon className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">User Management</h3>
+                    <p className="text-sm text-gray-600">Manage user accounts, roles, and permissions</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6">
+                <UserManagement userCapabilities={userCapabilities} />
+              </div>
+            </motion.div>
+          )}
 
           {/* Newsletter Management */}
           {activeTab === 'newsletter' && (

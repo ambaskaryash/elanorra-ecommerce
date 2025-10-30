@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
+import { Review, User } from '@prisma/client';
 
 // GET /api/reviews - Get reviews with optional filters
 export async function GET(request: NextRequest) {
@@ -70,7 +71,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Format reviews
-    const formattedReviews = reviews.map(review => ({
+    const formattedReviews = reviews.map((review: Review & { user?: User }) => ({
       ...review,
       userName: review.user 
         ? `${review.user.firstName} ${review.user.lastName}`
@@ -113,6 +114,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Get user data for review
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, firstName: true, lastName: true }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     const body = await request.json();
     const validatedData = createReviewSchema.parse(body);
 
@@ -129,8 +140,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Ensure review is tied to the authenticated user
-    validatedData.userId = session.user.id;
-    validatedData.userName = validatedData.userName || `${session.user.firstName ?? ''} ${session.user.lastName ?? ''}`.trim();
+    validatedData.userId = user.id;
+    validatedData.userName = validatedData.userName || `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
 
     // Check if user already reviewed this product
     if (validatedData.userId) {
@@ -160,7 +171,7 @@ export async function POST(request: NextRequest) {
       select: { rating: true },
     });
 
-    const totalRating = productReviews.reduce((sum, r) => sum + r.rating, 0);
+    const totalRating = productReviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0);
     const newReviewCount = productReviews.length;
     const newAvgRating = newReviewCount > 0 ? totalRating / newReviewCount : 0;
 

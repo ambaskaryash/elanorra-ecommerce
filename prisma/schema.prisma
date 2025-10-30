@@ -167,6 +167,11 @@ model Order {
   paymentId         String?
   couponCode        String?
   notes             String?
+  // Invoice related fields
+  invoiceNumber     String?         @unique
+  invoiceGenerated  Boolean         @default(false)
+  invoiceFilePath   String?
+  invoiceEmailSent  Boolean         @default(false)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   shippingAddressId String?

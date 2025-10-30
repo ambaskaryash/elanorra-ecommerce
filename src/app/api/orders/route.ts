@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import type { Product, ProductVariant } from '@prisma/client';
 
 // GET /api/orders - Get all orders with optional filters
 export async function GET(request: NextRequest) {
@@ -135,7 +136,9 @@ export async function POST(request: NextRequest) {
       where: { id: { in: productIds } },
       include: { variants: true },
     });
-    const productMap = new Map(products.map(p => [p.id, p]));
+    const productMap = new Map<string, Product & { variants: ProductVariant[] }>(
+      products.map((p: Product & { variants: ProductVariant[] }) => [p.id, p])
+    );
 
     // Compute item prices and subtotal securely
     let subtotal = 0;
@@ -327,6 +330,24 @@ export async function POST(request: NextRequest) {
         where: { id: appliedCouponId },
         data: { usageCount: { increment: 1 } },
       });
+    }
+
+    // Generate invoice asynchronously (don't wait for it to complete)
+    try {
+      const invoiceResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/invoices/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderId: order.id }),
+      });
+      
+      if (!invoiceResponse.ok) {
+        console.error('Failed to generate invoice:', await invoiceResponse.text());
+      }
+    } catch (invoiceError) {
+      console.error('Error triggering invoice generation:', invoiceError);
+      // Don't fail the order creation if invoice generation fails
     }
 
     return NextResponse.json({ order }, { status: 201 });

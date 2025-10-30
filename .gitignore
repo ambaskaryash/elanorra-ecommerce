@@ -61,4 +61,11 @@ check-user-permissions.cjs
 debug-admin-access.js
 debug-user-role-query.cjs
 fix-admin-role.cjs
-.gitignore
+test-admin-access.cjs
+test-api-capabilities.js
+test-current-user.js
+check-user.js
+
+fix-admin.js
+fix-super-admin.js
+check-orders.js
