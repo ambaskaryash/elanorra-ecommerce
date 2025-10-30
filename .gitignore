@@ -55,3 +55,10 @@ HOSTINGER_STATIC_DEPLOYMENT.md
 HOSTINGER_DEPLOYMENT_GUIDE.md
 HOSTINGER_PREMIUM_SOLUTION.md
 envvv.production
+ADMIN_MANAGEMENT.md
+check-role-permissions.cjs
+check-user-permissions.cjs
+debug-admin-access.js
+debug-user-role-query.cjs
+fix-admin-role.cjs
+.gitignore

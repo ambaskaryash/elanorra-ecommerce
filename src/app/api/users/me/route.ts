@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
+import { syncUserFromClerk } from '@/lib/rbac';
 import { z } from 'zod';
 
 const updateProfileSchema = z.object({
@@ -13,7 +14,7 @@ const updateProfileSchema = z.object({
 
 export async function GET() {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -33,20 +34,19 @@ export async function GET() {
     });
 
     if (!user) {
-      // If user doesn't exist in our database, create them from Clerk data
+      // If user doesn't exist in our database, sync them properly with role assignment
       const clerkUser = await currentUser();
       if (!clerkUser) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
       }
 
-      const newUser = await prisma.user.create({
-        data: {
-          clerkId: userId,
-          email: clerkUser.emailAddresses[0]?.emailAddress || '',
-          firstName: clerkUser.firstName || '',
-          lastName: clerkUser.lastName || '',
-          image: clerkUser.imageUrl || null,
-        },
+      const syncResult = await syncUserFromClerk(clerkUser);
+      if (!syncResult.success) {
+        return NextResponse.json({ error: 'Failed to sync user' }, { status: 500 });
+      }
+
+      const newUser = await prisma.user.findUnique({
+        where: { clerkId: userId },
         select: {
           id: true,
           email: true,
@@ -71,7 +71,7 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

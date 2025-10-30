@@ -7,6 +7,7 @@ import { orderAPI, productAPI, reviewAPI, blogAPI, api, type ApiProduct, type Ap
 import { useOrderStore } from '@/lib/store/order-store';
 import { useReviewsStore } from '@/lib/store/reviews-store';
 import { formatPrice } from '@/lib/utils';
+import { checkAdminAccess } from '@/lib/actions/rbac-actions';
 import {
   ChartBarIcon,
   CheckCircleIcon,
@@ -27,6 +28,7 @@ import {
   ArrowTrendingUpIcon,
   Bars3Icon,
   XMarkIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -54,6 +56,8 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userCapabilities, setUserCapabilities] = useState<any>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
   
   // Database state
   const [products, setProducts] = useState<ApiProduct[]>([]);
@@ -90,7 +94,8 @@ export default function AdminDashboard() {
   const loadData = async () => {
     setIsLoadingData(true);
     try {
-      const [productsRes, ordersRes, reviewsRes, blogsRes, returnsRes] = await Promise.all([
+      // Use Promise.allSettled instead of Promise.all to handle individual failures
+      const [productsRes, ordersRes, reviewsRes, blogsRes, returnsRes] = await Promise.allSettled([
         productAPI.getProducts({ limit: 100 }),
         orderAPI.getOrders({ limit: 100 }),
         reviewAPI.getReviews({ limit: 100 }),
@@ -98,22 +103,61 @@ export default function AdminDashboard() {
         api.returns.getAllReturnRequests(),
       ]);
       
-      console.log('Admin loadData - Products response:', productsRes);
-      console.log('Admin loadData - Products count:', productsRes.products.length);
+      // Handle products
+      if (productsRes.status === 'fulfilled') {
+        console.log('Admin loadData - Products response:', productsRes.value);
+        console.log('Admin loadData - Products count:', productsRes.value.products.length);
+        setProducts(productsRes.value.products);
+      } else {
+        console.error('Failed to load products:', productsRes.reason);
+        setProducts([]);
+      }
+
+      // Handle orders
+      if (ordersRes.status === 'fulfilled') {
+        setDbOrders(ordersRes.value.orders);
+      } else {
+        console.error('Failed to load orders:', ordersRes.reason);
+        setDbOrders([]);
+      }
+
+      // Handle reviews
+      if (reviewsRes.status === 'fulfilled') {
+        setDbReviews(reviewsRes.value.reviews);
+      } else {
+        console.error('Failed to load reviews:', reviewsRes.reason);
+        setDbReviews([]);
+      }
+
+      // Handle blog posts
+      if (blogsRes.status === 'fulfilled') {
+        setBlogPosts(blogsRes.value.posts);
+      } else {
+        console.error('Failed to load blog posts:', blogsRes.reason);
+        setBlogPosts([]);
+      }
+
+      // Handle return requests
+      if (returnsRes.status === 'fulfilled') {
+        setReturnRequests(returnsRes.value.returnRequests);
+      } else {
+        console.error('Failed to load return requests:', returnsRes.reason);
+        setReturnRequests([]);
+        // Show a toast for this specific failure since it's likely a permissions issue
+        toast.error('Unable to load return requests. Check admin permissions.');
+      }
       
-      setProducts(productsRes.products);
-      setDbOrders(ordersRes.orders);
-      setDbReviews(reviewsRes.reviews);
-      setBlogPosts(blogsRes.posts);
-      setReturnRequests(returnsRes.returnRequests);
+      // Calculate stats using the successfully loaded data
+      const orders = ordersRes.status === 'fulfilled' ? ordersRes.value.orders : [];
+      const products = productsRes.status === 'fulfilled' ? productsRes.value.products : [];
+      const reviews = reviewsRes.status === 'fulfilled' ? reviewsRes.value.reviews : [];
       
-      // Calculate stats
       setStats({
-        totalOrders: ordersRes.orders.length,
-        totalRevenue: ordersRes.orders.reduce((sum, order) => sum + order.totalPrice, 0),
-        pendingOrders: ordersRes.orders.filter(order => order.financialStatus === 'pending').length,
-        totalProducts: productsRes.products.length,
-        totalReviews: reviewsRes.reviews.length,
+        totalOrders: orders.length,
+        totalRevenue: orders.reduce((sum, order) => sum + order.totalPrice, 0),
+        pendingOrders: orders.filter(order => order.financialStatus === 'pending').length,
+        totalProducts: products.length,
+        totalReviews: reviews.length,
       });
     } catch (error: unknown) {
       console.error('Error loading admin data:', error);
@@ -123,19 +167,34 @@ export default function AdminDashboard() {
     }
   };
 
-  // Check admin status from database
-  const checkAdminStatus = async (clerkId: string) => {
+  // Check admin status using new RBAC system
+  const checkAdminAccessStatus = async () => {
     try {
-      const response = await fetch('/api/user/profile');
-      if (response.ok) {
-        const userData = await response.json();
-        setIsAdmin(userData.user?.isAdmin === true);
-        return userData.user?.isAdmin === true;
+      const response = await fetch('/api/user/capabilities');
+      if (!response.ok) {
+        throw new Error('Failed to fetch user capabilities');
       }
+      
+      const capabilities = await response.json();
+      setUserCapabilities(capabilities);
+      
+      // Check if user has admin-level access (level 1 or 2)
+      const hasAdminAccess = capabilities.userLevel <= 2;
+      
+      if (!hasAdminAccess) {
+        setAccessDenied(true);
+        toast.error('Access denied. Admin privileges required.');
+        return false;
+      }
+      
+      setIsAdmin(true);
+      setAccessDenied(false);
+      return true;
     } catch (error) {
-      console.error('Error checking admin status:', error);
+      console.error('Error checking admin access:', error);
+      setAccessDenied(true);
+      return false;
     }
-    return false;
   };
 
   useEffect(() => {
@@ -147,9 +206,12 @@ export default function AdminDashboard() {
     }
 
     const initializeAdmin = async () => {
-      const adminStatus = await checkAdminStatus(user.id);
-      if (!adminStatus) {
-        router.push('/sign-in?redirect_url=/admin');
+      const hasAccess = await checkAdminAccessStatus();
+      if (!hasAccess) {
+        // Redirect User Level profiles to home page
+        setTimeout(() => {
+          router.push('/?error=admin_access_denied');
+        }, 2000);
         return;
       }
       loadData();
@@ -265,6 +327,43 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-600"></div>
+      </div>
+    );
+  }
+
+  // Show access denied for User Level profiles
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+          <ExclamationTriangleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+          <p className="text-gray-600 mb-4">
+            You don't have permission to access the admin dashboard. 
+            {userCapabilities?.userRole && (
+              <span className="block mt-2 text-sm">
+                Current role: <span className="font-semibold">{userCapabilities.userRole}</span>
+              </span>
+            )}
+          </p>
+          <div className="space-y-3">
+            <button
+              onClick={() => router.push('/')}
+              className="w-full bg-rose-600 text-white px-4 py-2 rounded-md hover:bg-rose-700 transition-colors"
+            >
+              Go to Home
+            </button>
+            <button
+              onClick={() => router.push('/account')}
+              className="w-full bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Go to My Account
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mt-4">
+            If you believe this is an error, please contact support.
+          </p>
+        </div>
       </div>
     );
   }

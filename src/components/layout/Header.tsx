@@ -16,7 +16,6 @@ import { useCartStore } from '@/lib/store/cart-store';
 // Dynamic navigation will be created from database collections
 import SearchBar from '@/components/ui/SearchBar';
 import { useUser, useClerk } from '@clerk/nextjs';
-import ThemeToggle from '@/components/ui/ThemeToggle';
 
 interface HeaderProps {
   className?: string;
@@ -413,9 +412,6 @@ export default function Header({ className }: HeaderProps) {
               )}
             </div>
 
-            {/* Theme */}
-            <ThemeToggle className="hidden md:inline-flex" />
-
             {/* Account */}
             <div className="relative">
               {isAuthenticated ? (
@@ -464,8 +460,9 @@ export default function Header({ className }: HeaderProps) {
                         Wishlist
                       </Link>
                       <button
-                        onClick={() => {
-                          signOut(() => window.location.href = '/');
+                        onClick={async () => {
+                          await signOut();
+                          window.location.href = '/';
                           setShowUserMenu(false);
                         }}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"

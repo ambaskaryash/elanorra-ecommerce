@@ -55,7 +55,8 @@ model User {
   firstName              String?
   lastName               String?
   phone                  String?
-  isAdmin                Boolean        @default(false)
+  isAdmin                Boolean        @default(false) // Keep for backward compatibility
+  roleId                 String?        // New role-based system
   password               String?
   createdAt              DateTime       @default(now())
   updatedAt              DateTime       @updatedAt
@@ -70,6 +71,7 @@ model User {
   reviews                Review[]
   sessions               Session[]
   wishlist               WishlistItem[]
+  role                   Role?          @relation(fields: [roleId], references: [id])
 
   @@map("users")
 }
@@ -397,4 +399,46 @@ model ErrorLog {
   @@index([timestamp])
   @@index([userId])
   @@map("error_logs")
+}
+
+// Role-based Permission System
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique // SUPER_ADMIN, ADMIN, USER
+  displayName String           // Super Admin, Admin, User
+  description String?
+  level       Int              @unique // 1 = Super Admin, 2 = Admin, 3 = User (lower number = higher privilege)
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  users       User[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  name        String           @unique // MANAGE_USERS, MANAGE_PRODUCTS, VIEW_ANALYTICS, etc.
+  displayName String           // Manage Users, Manage Products, View Analytics
+  description String?
+  category    String           // USER_MANAGEMENT, PRODUCT_MANAGEMENT, ANALYTICS, etc.
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  grantedAt    DateTime   @default(now())
+  grantedBy    String?    // User ID who granted this permission
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
 }
