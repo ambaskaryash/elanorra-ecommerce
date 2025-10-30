@@ -6,10 +6,10 @@ import PWAInstaller from '@/components/pwa/PWAInstaller';
 import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 import type { Metadata } from "next";
 import { Instrument_Sans } from "next/font/google";
-import { Suspense } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Toaster } from 'sonner';
+import Script from 'next/script';
 import "./globals.css";
 
 const instrumentSans = Instrument_Sans({
@@ -119,7 +119,13 @@ export default async function RootLayout({
             draggable
             pauseOnHover
           />
+          <Script
+            src="https://tracking.anifun.store/api/script.js"
+            data-site-id="af2ffdb21c7c"
+            strategy="afterInteractive"
+          />
         </Providers>
+        
       </body>
     </html>
   );
