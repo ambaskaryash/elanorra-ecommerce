@@ -22,7 +22,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // TODO: Add admin role check for Clerk users
+    // Check admin permissions using RBAC system
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+      include: { role: true }
+    });
+
+    if (!user || !user.role || user.role.userLevel > 2) {
+      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
+    }
 
     // Apply rate limiting
      const rateLimitResult = await limiter(request);
