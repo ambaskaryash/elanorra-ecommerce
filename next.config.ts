@@ -64,11 +64,11 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://js.stripe.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://js.stripe.com https://tracking.anifun.store",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
+              "connect-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://tracking.anifun.store",
               "frame-src 'self' https://checkout.razorpay.com https://js.stripe.com",
               "object-src 'none'",
               "base-uri 'self'",
@@ -78,6 +78,18 @@ const nextConfig: NextConfig = {
             ].join('; ')
           }
         ],
+      },
+    ];
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/script.js",
+        destination: `${process.env.NEXT_PUBLIC_RYBBIT_HOST}/api/script.js`,
+      },
+      {
+        source: "/api/track",
+        destination: `${process.env.NEXT_PUBLIC_RYBBIT_HOST}/api/track`,
       },
     ];
   },

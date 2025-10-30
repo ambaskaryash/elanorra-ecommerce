@@ -120,7 +120,7 @@ export default async function RootLayout({
             pauseOnHover
           />
           <Script
-            src="https://tracking.anifun.store/api/script.js"
+            src="/api/script.js"
             data-site-id="af2ffdb21c7c"
             strategy="afterInteractive"
           />
