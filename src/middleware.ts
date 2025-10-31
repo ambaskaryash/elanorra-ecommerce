@@ -3,6 +3,28 @@ import type { NextRequest } from 'next/server';
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { applySecurityHeaders, applyRateLimit, configureCORS, defaultSecurityConfig } from '@/lib/security';
 
+// Session timeout configuration (context-aware for e-commerce)
+const SESSION_TIMEOUTS = {
+  DEFAULT: 2 * 60 * 60 * 1000,      // 2 hours for regular browsing
+  CHECKOUT: 15 * 60 * 1000,         // 15 minutes for checkout pages
+  ADMIN: 30 * 60 * 1000,            // 30 minutes for admin panel
+  CART: 60 * 60 * 1000,             // 1 hour for cart pages
+} as const;
+
+// Helper function to get timeout based on pathname
+function getSessionTimeout(pathname: string): number {
+  if (pathname.startsWith('/checkout')) {
+    return SESSION_TIMEOUTS.CHECKOUT;
+  }
+  if (pathname.startsWith('/admin')) {
+    return SESSION_TIMEOUTS.ADMIN;
+  }
+  if (pathname.includes('/cart') || pathname.includes('/account/orders')) {
+    return SESSION_TIMEOUTS.CART;
+  }
+  return SESSION_TIMEOUTS.DEFAULT;
+}
+
 // Define protected routes that require authentication
 const isProtectedRoute = createRouteMatcher([
   '/account(.*)',
@@ -38,10 +60,24 @@ export default clerkMiddleware(async (auth, req) => {
 
   // Protect routes that require authentication
   if (isProtectedRoute(req)) {
-    const { userId } = await auth();
+    const { userId, sessionClaims } = await auth();
     
     if (!userId) {
       return NextResponse.redirect(new URL('/sign-in', req.url));
+    }
+
+    // Check session timeout
+    if (sessionClaims) {
+      const sessionCreatedAt = sessionClaims.iat ? sessionClaims.iat * 1000 : Date.now();
+      const sessionAge = Date.now() - sessionCreatedAt;
+      const currentTimeout = getSessionTimeout(req.nextUrl.pathname);
+      
+      if (sessionAge > currentTimeout) {
+        // Session has expired, redirect to sign-in with a message
+        const signInUrl = new URL('/sign-in', req.url);
+        signInUrl.searchParams.set('session_expired', 'true');
+        return NextResponse.redirect(signInUrl);
+      }
     }
     
     // Admin route protection - redirect to home with error message
