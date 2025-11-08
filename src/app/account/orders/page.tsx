@@ -2,7 +2,7 @@
 
 import { api, ApiOrder } from '@/lib/services/api';
 import { formatPrice } from '@/lib/utils/index';
-import { ArrowRightIcon, ShoppingBagIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
+import { ArrowRightIcon, ShoppingBagIcon, DocumentArrowDownIcon, TruckIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
@@ -96,6 +96,24 @@ export default function OrderHistoryPage() {
     }
   };
 
+  const getTrackingUrl = (carrier?: string, trackingNumber?: string) => {
+    if (!trackingNumber) return '#';
+    switch (carrier?.toLowerCase()) {
+      case 'fedex':
+        return `https://www.fedex.com/fedextrack/?trknbr=${trackingNumber}`;
+      case 'ups':
+        return `https://www.ups.com/track?tracknum=${trackingNumber}`;
+      case 'dhl':
+        return `https://www.dhl.com/en/express/tracking.html?AWB=${trackingNumber}`;
+      case 'bluedart':
+        return `https://www.bluedart.com/web/guest/trackdartresult?trackFor=0&trackNo=${trackingNumber}`;
+      case 'dtdc':
+        return `https://www.dtdc.in/tracking/tracking_results.asp?Ttype=awb_no&strTrkNo=${trackingNumber}`;
+      default:
+        return `/account/orders`;
+    }
+  };
+
   return (
     <div className="bg-white">
       <main className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
@@ -142,6 +160,17 @@ export default function OrderHistoryPage() {
                           Download Invoice
                         </button>
                       )}
+                      {order.trackingNumber && (
+                        <a
+                          href={getTrackingUrl(order.carrier, order.trackingNumber)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-2 border border-green-600 text-green-700 shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        >
+                          <TruckIcon className="h-4 w-4 mr-2" />
+                          Track Package
+                        </a>
+                      )}
                       <Link href={`/order-confirmation/${order.id}`} className="text-rose-600 hover:text-rose-500 font-medium flex items-center">
                         View Details
                         <ArrowRightIcon className="ml-2 h-4 w-4" />
@@ -181,6 +210,11 @@ export default function OrderHistoryPage() {
                       <div className="mt-2 sm:mt-0 flex items-center space-x-2">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getFinancialStatusColor(order.financialStatus)}`}>{order.financialStatus}</span>
                         <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getFulfillmentStatusColor(order.fulfillmentStatus)}`}>{order.fulfillmentStatus}</span>
+                        {order.trackingNumber && (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            {order.carrier ? `${order.carrier} ` : ''}#{order.trackingNumber}
+                          </span>
+                        )}
                       </div>
                   </div>
                 </div>

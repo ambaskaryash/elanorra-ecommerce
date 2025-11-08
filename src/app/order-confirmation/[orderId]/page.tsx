@@ -88,6 +88,24 @@ export default function OrderConfirmationPage({ params }: Props) {
   const PaymentStatusIcon = getStatusIcon(order.financialStatus);
   const FulfillmentStatusIcon = getStatusIcon(order.fulfillmentStatus);
 
+  const getTrackingUrl = (carrier?: string, trackingNumber?: string) => {
+    if (!trackingNumber) return '#';
+    switch (carrier?.toLowerCase()) {
+      case 'fedex':
+        return `https://www.fedex.com/fedextrack/?trknbr=${trackingNumber}`;
+      case 'ups':
+        return `https://www.ups.com/track?tracknum=${trackingNumber}`;
+      case 'dhl':
+        return `https://www.dhl.com/en/express/tracking.html?AWB=${trackingNumber}`;
+      case 'bluedart':
+        return `https://www.bluedart.com/web/guest/trackdartresult?trackFor=0&trackNo=${trackingNumber}`;
+      case 'dtdc':
+        return `https://www.dtdc.in/tracking/tracking_results.asp?Ttype=awb_no&strTrkNo=${trackingNumber}`;
+      default:
+        return `/account/orders`;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -146,6 +164,28 @@ export default function OrderConfirmationPage({ params }: Props) {
                   </div>
                 </div>
               </div>
+
+              {order.trackingNumber && (
+                <div className="mt-6 flex items-center justify-between rounded-md border border-green-200 bg-green-50 p-4">
+                  <div className="flex items-center">
+                    <TruckIcon className="h-6 w-6 text-green-600 mr-2" />
+                    <div>
+                      <p className="text-sm text-gray-600">Tracking Number</p>
+                      <p className="text-base font-medium text-gray-900">
+                        {order.carrier ? `${order.carrier} ` : ''}#{order.trackingNumber}
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={getTrackingUrl(order.carrier, order.trackingNumber)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-3 py-2 border border-green-600 text-green-700 shadow-sm text-sm font-medium rounded-md bg-white hover:bg-green-50"
+                  >
+                    Track Package
+                  </a>
+                </div>
+              )}
             </motion.div>
           </div>
 
@@ -275,6 +315,16 @@ export default function OrderConfirmationPage({ params }: Props) {
               >
                 View Order History
               </Link>
+              {order.trackingNumber && (
+                <a
+                  href={getTrackingUrl(order.carrier, order.trackingNumber)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-white border border-green-600 text-green-700 py-3 px-4 rounded-md font-medium hover:bg-green-50 transition-colors text-center block"
+                >
+                  Track Package
+                </a>
+              )}
               
               <button className="w-full bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-md font-medium hover:bg-gray-50 transition-colors flex items-center justify-center">
                 <ArrowDownTrayIcon className="h-5 w-5 mr-2" />

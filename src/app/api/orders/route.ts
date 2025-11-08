@@ -114,6 +114,11 @@ const createOrderSchema = z.object({
     country: z.string().default('India'),
     phone: z.string().optional(),
   }).optional(),
+  // Optional shipment tracking fields
+  trackingNumber: z.string().optional(),
+  carrier: z.string().optional(),
+  shippedAt: z.string().optional(),
+  estimatedDelivery: z.string().optional(),
   subtotal: z.number().positive(),
   taxes: z.number().min(0).optional(),
   shipping: z.number().min(0).optional(),
@@ -274,6 +279,10 @@ export async function POST(request: NextRequest) {
         orderNumber,
         userId: validatedData.userId || null,
         email: validatedData.email,
+        trackingNumber: validatedData.trackingNumber || null,
+        carrier: validatedData.carrier || null,
+        shippedAt: validatedData.shippedAt ? new Date(validatedData.shippedAt) : null,
+        estimatedDelivery: validatedData.estimatedDelivery ? new Date(validatedData.estimatedDelivery) : null,
         subtotal,
         taxes,
         shipping,
@@ -365,5 +374,55 @@ export async function POST(request: NextRequest) {
       { error: 'Failed to create order' },
       { status: 500 }
     );
+  }
+}
+
+// PATCH /api/orders - Update order tracking fields
+const updateTrackingSchema = z.object({
+  orderId: z.string(),
+  trackingNumber: z.string().optional(),
+  carrier: z.string().optional(),
+  shippedAt: z.string().optional(),
+  estimatedDelivery: z.string().optional(),
+  fulfillmentStatus: z.string().optional(),
+});
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const data = updateTrackingSchema.parse(body);
+
+    const updated = await prisma.order.update({
+      where: { id: data.orderId },
+      data: {
+        trackingNumber: data.trackingNumber ?? undefined,
+        carrier: data.carrier ?? undefined,
+        shippedAt: data.shippedAt ? new Date(data.shippedAt) : undefined,
+        estimatedDelivery: data.estimatedDelivery ? new Date(data.estimatedDelivery) : undefined,
+        fulfillmentStatus: data.fulfillmentStatus ?? undefined,
+      },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: { name: true, slug: true, images: { take: 1 } }
+            }
+          }
+        },
+        shippingAddress: true,
+        billingAddress: true,
+      }
+    });
+
+    return NextResponse.json({ order: updated });
+  } catch (error) {
+    console.error('Error updating order tracking:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.issues },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
   }
 }

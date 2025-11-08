@@ -44,6 +44,11 @@ export interface ApiOrder {
   email: string;
   financialStatus: string;
   fulfillmentStatus: string;
+  // Shipment tracking
+  trackingNumber?: string;
+  carrier?: string;
+  shippedAt?: string;
+  estimatedDelivery?: string;
   subtotal: number;
   taxes: number;
   shipping: number;

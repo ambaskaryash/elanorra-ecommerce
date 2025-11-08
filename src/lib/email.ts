@@ -1446,8 +1446,8 @@ The Elanorra Team
       case 'dtdc':
         return `https://www.dtdc.in/tracking/tracking_results.asp?Ttype=awb_no&strTrkNo=${trackingNumber}`;
       default:
-        // Return a generic order tracking page
-        return `${baseUrl}/order-confirmation/${trackingNumber}`;
+        // Return a generic orders page when carrier-specific is unavailable
+        return `${baseUrl}/account/orders`;
     }
   }
 
