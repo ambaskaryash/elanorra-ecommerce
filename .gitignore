@@ -62,3 +62,9 @@ debug-admin-access.js
 debug-user-role-query.cjs
 fix-admin-role.cjs
 .gitignore
+
+# Local dev/test scripts (root)
+/check-*.js
+/fix-*.js
+/test-*.js
+/test-*.cjs
