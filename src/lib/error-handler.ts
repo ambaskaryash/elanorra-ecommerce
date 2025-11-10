@@ -344,6 +344,11 @@ export class Logger {
 
   private async storeInDatabase(error: ErrorLog): Promise<void> {
     try {
+      // Skip database logging if DATABASE_URL is not available
+      if (!process.env.DATABASE_URL) {
+        console.warn('DATABASE_URL not set; skipping error DB logging');
+        return;
+      }
       // Dynamic import to avoid bundling Prisma if not needed
       const prismaModule = await this.dynamicImport('@prisma/client');
       if (!prismaModule) {

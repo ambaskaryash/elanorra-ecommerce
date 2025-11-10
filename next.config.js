@@ -4,10 +4,10 @@ const withPWA = nextPWA({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  // Temporarily disable PWA on Vercel to avoid Next 15 build errors
+  // Temporarily disable PWA to avoid Next 15 build errors
   // related to missing .next/browser/default-stylesheet.css.
   // Re-enable once next-pwa supports Next 15/Turbopack fully.
-  disable: process.env.NODE_ENV === 'development' || process.env.VERCEL === '1',
+  disable: true,
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -102,6 +102,9 @@ const withPWA = nextPWA({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    optimizeCss: false,
+  },
   images: {
     remotePatterns: [
       {
