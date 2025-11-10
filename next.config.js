@@ -143,14 +143,19 @@ const nextConfig = {
     return config;
   },
   async rewrites() {
+    const base = process.env.NEXT_PUBLIC_RYBBIT_HOST;
+    // Guard against undefined or invalid base; Next.js requires destination to start with /, http://, or https://
+    if (!base || !(base.startsWith('http://') || base.startsWith('https://'))) {
+      return [];
+    }
     return [
       {
         source: "/api/script.js",
-        destination: `${process.env.NEXT_PUBLIC_RYBBIT_HOST}/api/script.js`,
+        destination: `${base}/api/script.js`,
       },
       {
         source: "/api/track",
-        destination: `${process.env.NEXT_PUBLIC_RYBBIT_HOST}/api/track`,
+        destination: `${base}/api/track`,
       },
     ];
   },

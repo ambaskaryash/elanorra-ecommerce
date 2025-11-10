@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+// Local types used to ensure strong typing for Prisma results in this route
+type ProductVariantForPricing = {
+  name: string;
+  value: string;
+  priceAdjustment: number | null;
+};
+
+type ProductWithVariants = {
+  id: string;
+  name: string;
+  price: number;
+  inventory: number | null;
+  inStock: boolean;
+  variants: ProductVariantForPricing[];
+};
+
 // GET /api/orders - Get all orders with optional filters
 export async function GET(request: NextRequest) {
   try {
@@ -134,8 +150,8 @@ export async function POST(request: NextRequest) {
     const products = await prisma.product.findMany({
       where: { id: { in: productIds } },
       include: { variants: true },
-    });
-    const productMap = new Map(products.map(p => [p.id, p]));
+    }) as ProductWithVariants[];
+    const productMap = new Map<string, ProductWithVariants>(products.map((p) => [p.id, p]));
 
     // Compute item prices and subtotal securely
     let subtotal = 0;
@@ -173,7 +189,7 @@ export async function POST(request: NextRequest) {
       let unitPrice = Number(product.price);
       if (item.variants) {
         for (const [variantName, variantValue] of Object.entries(item.variants)) {
-          const match = product.variants.find(v => v.name === variantName && v.value === String(variantValue));
+          const match = product.variants.find((v: ProductVariantForPricing) => v.name === variantName && v.value === String(variantValue));
           if (match && typeof match.priceAdjustment === 'number') {
             unitPrice += match.priceAdjustment;
           }

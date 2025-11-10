@@ -64,12 +64,12 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://js.stripe.com https://tracking.anifun.store",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://js.stripe.com https://tracking.anifun.store https://clerk.com https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://cdn.jsdelivr.net",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://tracking.anifun.store",
-              "frame-src 'self' https://checkout.razorpay.com https://js.stripe.com",
+              "connect-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://tracking.anifun.store https://api.clerk.com https://clerk.com https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://cdn.jsdelivr.net",
+              "frame-src 'self' https://checkout.razorpay.com https://js.stripe.com https://clerk.com https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
@@ -82,14 +82,18 @@ const nextConfig: NextConfig = {
     ];
   },
   async rewrites() {
+    const base = process.env.NEXT_PUBLIC_RYBBIT_HOST;
+    if (!base || !(base.startsWith('http://') || base.startsWith('https://'))) {
+      return [];
+    }
     return [
       {
         source: "/api/script.js",
-        destination: `${process.env.NEXT_PUBLIC_RYBBIT_HOST}/api/script.js`,
+        destination: `${base}/api/script.js`,
       },
       {
         source: "/api/track",
-        destination: `${process.env.NEXT_PUBLIC_RYBBIT_HOST}/api/track`,
+        destination: `${base}/api/track`,
       },
     ];
   },

@@ -120,11 +120,13 @@ export default async function RootLayout({
             pauseOnHover
           />
         </Providers>
-        <Script
-          src="/api/script.js"
-          data-site-id="af2ffdb21c7c"
-          strategy="afterInteractive"
-        />
+        {process.env.NEXT_PUBLIC_RYBBIT_HOST && (
+          <Script
+            src="/api/script.js"
+            data-site-id="af2ffdb21c7c"
+            strategy="afterInteractive"
+          />
+        )}
       </body>
     </html>
   );
