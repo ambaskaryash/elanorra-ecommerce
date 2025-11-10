@@ -67,6 +67,7 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://js.stripe.com https://tracking.anifun.store https://clerk.com https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://cdn.jsdelivr.net",
+              "worker-src 'self'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com",

@@ -8,6 +8,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Toaster } from 'sonner';
 import Script from 'next/script';
 import "./globals.css";
+import PWAInstaller from '@/components/pwa/PWAInstaller';
+import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 
 
 export const metadata: Metadata = {
@@ -97,9 +99,9 @@ export default async function RootLayout({
             </main>
             <Footer />
             <Cart />
-            {/* PWA temporarily disabled on Vercel/Next 15 */}
-            {/* <PWAInstaller /> */}
+            <PWAInstaller />
           </div>
+          <ServiceWorkerRegistration />
           <Toaster />
           <ToastContainer
             position="bottom-right"
