@@ -6,6 +6,8 @@ import { createCSRFProtectedHandler } from '@/lib/csrf';
 
 // Ensure this API route is always dynamic and not statically pre-rendered
 export const dynamic = 'force-dynamic';
+// Ensure Node.js runtime to guarantee access to process.env and Prisma
+export const runtime = 'nodejs';
 
 // Schema for address validation
 const addressSchema = z.object({

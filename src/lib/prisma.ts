@@ -37,17 +37,23 @@ let prismaClient: any;
 if (isDatabaseAvailable) {
   // Dynamic imports to avoid loading Prisma during build time
   const { PrismaClient } = require('@prisma/client');
-  const { withAccelerate } = require('@prisma/extension-accelerate');
-  
-  const baseClient = new PrismaClient({
-    log: ['query'],
-  }).$extends(withAccelerate());
-      
-  const optimizeApiKey = process.env.OPTIMIZE_API_KEY;
-  if (optimizeApiKey) {
+  let baseClient: any;
+  try {
+    const { withAccelerate } = require('@prisma/extension-accelerate');
+    baseClient = new PrismaClient({ log: ['query'] }).$extends(withAccelerate());
+  } catch (err) {
+    // If accelerate extension fails to load, fall back to plain PrismaClient
+    console.warn('Prisma Accelerate extension unavailable, using base PrismaClient');
+    baseClient = new PrismaClient({ log: ['query'] });
+  }
+
+  // Temporarily disable Optimize extension to prevent build-time initialization issues
+  // If needed, re-enable behind explicit env flag PRISMA_ENABLE_OPTIMIZE === 'true'
+  const enableOptimize = process.env.PRISMA_ENABLE_OPTIMIZE === 'true';
+  if (enableOptimize && process.env.OPTIMIZE_API_KEY) {
     try {
       const { withOptimize } = require('@prisma/extension-optimize');
-      prismaClient = baseClient.$extends(withOptimize({ apiKey: optimizeApiKey }));
+      prismaClient = baseClient.$extends(withOptimize({ apiKey: process.env.OPTIMIZE_API_KEY }));
     } catch (error) {
       console.warn('Failed to load Prisma Optimize extension:', error);
       prismaClient = baseClient;
