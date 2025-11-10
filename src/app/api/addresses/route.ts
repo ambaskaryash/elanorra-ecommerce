@@ -4,6 +4,9 @@ import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
 import { createCSRFProtectedHandler } from '@/lib/csrf';
 
+// Ensure this API route is always dynamic and not statically pre-rendered
+export const dynamic = 'force-dynamic';
+
 // Schema for address validation
 const addressSchema = z.object({
   userId: z.string().optional(),
@@ -124,16 +127,16 @@ async function handlePUT(request: NextRequest) {
     const body = await request.json();
     const validatedData = addressSchema.partial().parse(body); // Allow partial updates
 
-    // If setting as default, unset previous defaults for this user
-    if (validatedData.isDefault && validatedData.userId) {
+    // If setting as default, unset previous defaults for this authenticated user
+    if (validatedData.isDefault) {
       await prisma.address.updateMany({
-        where: { userId: validatedData.userId, isDefault: true, id: { not: id } },
+        where: { userId, isDefault: true, id: { not: id } },
         data: { isDefault: false },
       });
     }
 
     const address = await prisma.address.update({
-      where: { id, userId: session.user.id },
+      where: { id, userId },
       data: validatedData,
     });
 
