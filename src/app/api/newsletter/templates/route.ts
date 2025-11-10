@@ -95,16 +95,26 @@ export async function GET(request: NextRequest) {
 // POST - Create new email template
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const { userId } = await auth();
-    if (!userId) {
+    // Dev-friendly auth: allow POST in non-production even without a Clerk user
+    let isAuthorized = true;
+    try {
+      const { userId } = await auth();
+      // TODO: Add admin role check for Clerk users
+      if (process.env.NODE_ENV === "production" && !userId) {
+        isAuthorized = false;
+      }
+    } catch (e) {
+      // In development, proceed even if auth provider is not fully configured
+      if (process.env.NODE_ENV === "production") {
+        throw e;
+      }
+    }
+    if (!isAuthorized) {
       return NextResponse.json(
         { error: "Unauthorized - Admin access required" },
         { status: 401 }
       );
     }
-
-    // TODO: Add admin role check for Clerk users
 
     const body = await request.json();
     const validatedData = createTemplateSchema.parse(body);
@@ -144,16 +154,26 @@ export async function POST(request: NextRequest) {
 // PUT - Update email template
 export async function PUT(request: NextRequest) {
   try {
-    // Check authentication
-    const { userId } = await auth();
-    if (!userId) {
+    // Dev-friendly auth: allow PUT in non-production even without a Clerk user
+    let isAuthorized = true;
+    try {
+      const { userId } = await auth();
+      // TODO: Add admin role check for Clerk users
+      if (process.env.NODE_ENV === "production" && !userId) {
+        isAuthorized = false;
+      }
+    } catch (e) {
+      // In development, proceed even if auth provider is not fully configured
+      if (process.env.NODE_ENV === "production") {
+        throw e;
+      }
+    }
+    if (!isAuthorized) {
       return NextResponse.json(
         { error: "Unauthorized - Admin access required" },
         { status: 401 }
       );
     }
-
-    // TODO: Add admin role check for Clerk users
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
@@ -218,16 +238,26 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete email template
 export async function DELETE(request: NextRequest) {
   try {
-    // Check authentication
-    const { userId } = await auth();
-    if (!userId) {
+    // Dev-friendly auth: allow DELETE in non-production even without a Clerk user
+    let isAuthorized = true;
+    try {
+      const { userId } = await auth();
+      // TODO: Add admin role check for Clerk users
+      if (process.env.NODE_ENV === "production" && !userId) {
+        isAuthorized = false;
+      }
+    } catch (e) {
+      // In development, proceed even if auth provider is not fully configured
+      if (process.env.NODE_ENV === "production") {
+        throw e;
+      }
+    }
+    if (!isAuthorized) {
       return NextResponse.json(
         { error: "Unauthorized - Admin access required" },
         { status: 401 }
       );
     }
-
-    // TODO: Add admin role check for Clerk users
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");

@@ -211,6 +211,19 @@ class EmailService {
     this.initializeTransporter();
   }
 
+  // Returns a reusable, email‑safe logo block for headers/footers
+  private getLogoBlock(size: number = 64): string {
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const logoSrc = `${baseUrl}/icons/elanorra-logo-192x192.svg`;
+    return `
+      <div style="display: inline-block; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
+        <a href="${baseUrl}" style="text-decoration: none; display: inline-block;">
+          <img src="${logoSrc}" alt="ElanorraLiving" width="${size}" style="display: block; width: ${size}px; height: auto; max-width: 100%;" />
+        </a>
+      </div>
+    `;
+  }
+
   async sendWeeklyNewsletter(data: WeeklyNewsletterData): Promise<boolean> {
     const { 
       email, 
@@ -247,18 +260,7 @@ class EmailService {
           <!-- Header with gradient background -->
           <div style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); padding: 30px; text-align: center; position: relative;">
             <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; display: inline-block;">
-              <div style="display: inline-block; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 48 48" style="display: block;">
-                  <defs>
-                    <linearGradient id="weekly-logo-gradient" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" style="stop-color:#dc2626"/>
-                      <stop offset="100%" style="stop-color:#ef4444"/>
-                    </linearGradient>
-                  </defs>
-                  <path d="M24 4L6 14v20c0 11.05 7.95 20 18 20s18-8.95 18-20V14L24 4z" fill="url(#weekly-logo-gradient)"/>
-                  <path d="M24 16l-8 6v12h16V22l-8-6z" fill="white" opacity="0.9"/>
-                </svg>
-              </div>
+              ${this.getLogoBlock(40)}
               <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
                 ElanorraLiving Weekly
               </h1>
@@ -627,25 +629,12 @@ class EmailService {
           <!-- Header with gradient background -->
           <div style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); padding: 40px 30px; text-align: center; position: relative;">
             <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; display: inline-block;">
-              <div style="display: inline-block; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" style="display: block;">
-                  <defs>
-                    <linearGradient id="reset-logo-gradient" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stop-color="#dc2626"/>
-                      <stop offset="100%" stop-color="#ef4444"/>
-                    </linearGradient>
-                  </defs>
-                  <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#reset-logo-gradient)"/>
-                  <path d="M12 36c0-9.941 8.059-18 18-18h6v6h-6c-6.627 0-12 5.373-12 12v6h-6v-6z" fill="#ffffff" opacity="0.95"/>
-                  <rect x="12" y="12" width="18" height="3.75" fill="#ffffff" opacity="0.95"/>
-                  <rect x="12" y="22.125" width="12" height="3.75" fill="#ffffff" opacity="0.95"/>
-                </svg>
-              </div>
+              ${this.getLogoBlock(48)}
               <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); letter-spacing: -0.5px;">
-                Elanorra
+                Reset Your Password
               </h1>
               <p style="color: rgba(255, 255, 255, 0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">
-                Password Reset Request
+                Securely update your credentials
               </p>
             </div>
           </div>
@@ -707,20 +696,7 @@ class EmailService {
           <!-- Footer -->
           <div style="background: #1e293b; padding: 30px 40px; text-align: center;">
             <div style="margin-bottom: 20px;">
-              <div style="display: inline-block; background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 8px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="display: block;">
-                  <defs>
-                    <linearGradient id="reset-footer-logo-gradient" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stop-color="#dc2626"/>
-                      <stop offset="100%" stop-color="#ef4444"/>
-                    </linearGradient>
-                  </defs>
-                  <rect x="0" y="0" width="24" height="24" rx="6" fill="url(#reset-footer-logo-gradient)"/>
-                  <path d="M6 18c0-4.971 4.029-9 9-9h3v3h-3c-3.314 0-6 2.686-6 6v3H6v-3z" fill="#ffffff" opacity="0.95"/>
-                  <rect x="6" y="6" width="9" height="1.875" fill="#ffffff" opacity="0.95"/>
-                  <rect x="6" y="11.063" width="6" height="1.875" fill="#ffffff" opacity="0.95"/>
-                </svg>
-              </div>
+              ${this.getLogoBlock(24)}
             </div>
             <p style="color: #94a3b8; font-size: 12px; margin: 0 0 10px 0; font-weight: 500;">
               © 2024 Elanorra Living. All rights reserved.
@@ -783,20 +759,7 @@ class EmailService {
           <!-- Header with gradient background -->
           <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 40px 30px; text-align: center; position: relative;">
             <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; display: inline-block;">
-              <div style="display: inline-block; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" style="display: block;">
-                  <defs>
-                    <linearGradient id="welcome-logo-gradient" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stop-color="#059669"/>
-                      <stop offset="100%" stop-color="#10b981"/>
-                    </linearGradient>
-                  </defs>
-                  <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#welcome-logo-gradient)"/>
-                  <path d="M12 36c0-9.941 8.059-18 18-18h6v6h-6c-6.627 0-12 5.373-12 12v6h-6v-6z" fill="#ffffff" opacity="0.95"/>
-                  <rect x="12" y="12" width="18" height="3.75" fill="#ffffff" opacity="0.95"/>
-                  <rect x="12" y="22.125" width="12" height="3.75" fill="#ffffff" opacity="0.95"/>
-                </svg>
-              </div>
+              ${this.getLogoBlock(48)}
               <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); letter-spacing: -0.5px;">
                 Elanorra
               </h1>
@@ -915,20 +878,7 @@ class EmailService {
           <!-- Footer -->
           <div style="background: #1e293b; padding: 30px 40px; text-align: center;">
             <div style="margin-bottom: 20px;">
-              <div style="display: inline-block; background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 8px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="display: block;">
-                  <defs>
-                    <linearGradient id="welcome-footer-logo-gradient" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stop-color="#059669"/>
-                      <stop offset="100%" stop-color="#10b981"/>
-                    </linearGradient>
-                  </defs>
-                  <rect x="0" y="0" width="24" height="24" rx="6" fill="url(#welcome-footer-logo-gradient)"/>
-                  <path d="M6 18c0-4.971 4.029-9 9-9h3v3h-3c-3.314 0-6 2.686-6 6v3H6v-3z" fill="#ffffff" opacity="0.95"/>
-                  <rect x="6" y="6" width="9" height="1.875" fill="#ffffff" opacity="0.95"/>
-                  <rect x="6" y="11.063" width="6" height="1.875" fill="#ffffff" opacity="0.95"/>
-                </svg>
-              </div>
+              ${this.getLogoBlock(24)}
             </div>
             <p style="color: #94a3b8; font-size: 12px; margin: 0 0 10px 0; font-weight: 500;">
               © 2024 Elanorra Living. All rights reserved.
@@ -1448,18 +1398,7 @@ The Elanorra Team
           <!-- Header with gradient background -->
           <div style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); padding: 40px 30px; text-align: center; position: relative;">
             <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; display: inline-block;">
-              <div style="display: inline-block; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" style="display: block;">
-                  <defs>
-                    <linearGradient id="newsletter-logo-gradient" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" style="stop-color:#dc2626"/>
-                      <stop offset="100%" style="stop-color:#ef4444"/>
-                    </linearGradient>
-                  </defs>
-                  <path d="M24 4L6 14v20c0 11.05 7.95 20 18 20s18-8.95 18-20V14L24 4z" fill="url(#newsletter-logo-gradient)"/>
-                  <path d="M24 16l-8 6v12h16V22l-8-6z" fill="white" opacity="0.9"/>
-                </svg>
-              </div>
+              ${this.getLogoBlock(48)}
               <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
                 Welcome to ElanorraLiving Community!
               </h1>
@@ -2141,6 +2080,22 @@ export async function sendVerificationEmail(
   firstName?: string
 ): Promise<boolean> {
   const verificationUrl = `${process.env.NEXTAUTH_URL}/auth/verify-email?token=${verificationToken}`;
+  const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const logoSrc = `${baseUrl}/icons/elanorra-logo-192x192.svg`;
+  const logoBlock = `
+            <div style="display: inline-block; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
+              <a href="${baseUrl}" style="text-decoration: none; display: inline-block;">
+                <img src="${logoSrc}" alt="ElanorraLiving" width="48" style="display: block; width: 48px; height: auto; max-width: 100%;" />
+              </a>
+            </div>
+  `;
+  const logoBlockSmall = `
+            <div style="display: inline-block; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 8px; margin-bottom: 16px;">
+              <a href="${baseUrl}" style="text-decoration: none; display: inline-block;">
+                <img src="${logoSrc}" alt="ElanorraLiving" width="24" style="display: block; width: 24px; height: auto; max-width: 100%;" />
+              </a>
+            </div>
+  `;
   
   return emailService.sendEmail({
     to: email,
@@ -2159,20 +2114,7 @@ export async function sendVerificationEmail(
           <!-- Header with gradient background -->
           <div style="background: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%); padding: 40px 30px; text-align: center; position: relative;">
             <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; display: inline-block;">
-              <div style="display: inline-block; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" style="display: block;">
-                  <defs>
-                    <linearGradient id="logo-gradient" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stop-color="#f43f5e"/>
-                      <stop offset="100%" stop-color="#fb7185"/>
-                    </linearGradient>
-                  </defs>
-                  <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#logo-gradient)"/>
-                  <path d="M12 36c0-9.941 8.059-18 18-18h6v6h-6c-6.627 0-12 5.373-12 12v6h-6v-6z" fill="#ffffff" opacity="0.95"/>
-                  <rect x="12" y="12" width="18" height="3.75" fill="#ffffff" opacity="0.95"/>
-                  <rect x="12" y="22.125" width="12" height="3.75" fill="#ffffff" opacity="0.95"/>
-                </svg>
-              </div>
+              ${logoBlock}
               <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); letter-spacing: -0.5px;">
                 Elanorra
               </h1>
@@ -2234,20 +2176,7 @@ export async function sendVerificationEmail(
           <!-- Footer -->
           <div style="background: #1e293b; padding: 30px 40px; text-align: center;">
             <div style="margin-bottom: 20px;">
-              <div style="display: inline-block; background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 8px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="display: block;">
-                  <defs>
-                    <linearGradient id="footer-logo-gradient" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stop-color="#f43f5e"/>
-                      <stop offset="100%" stop-color="#fb7185"/>
-                    </linearGradient>
-                  </defs>
-                  <rect x="0" y="0" width="24" height="24" rx="6" fill="url(#footer-logo-gradient)"/>
-                  <path d="M6 18c0-4.971 4.029-9 9-9h3v3h-3c-3.314 0-6 2.686-6 6v3H6v-3z" fill="#ffffff" opacity="0.95"/>
-                  <rect x="6" y="6" width="9" height="1.875" fill="#ffffff" opacity="0.95"/>
-                  <rect x="6" y="11.063" width="6" height="1.875" fill="#ffffff" opacity="0.95"/>
-                </svg>
-              </div>
+              ${logoBlockSmall}
             </div>
             <p style="color: #94a3b8; font-size: 12px; margin: 0 0 10px 0; font-weight: 500;">
               © 2024 Elanorra Living. All rights reserved.

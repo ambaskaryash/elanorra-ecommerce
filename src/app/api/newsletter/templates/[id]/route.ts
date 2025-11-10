@@ -23,8 +23,26 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { userId } = await auth();
-    // TODO: Add admin role check for Clerk users
+    // Dev-friendly auth: allow access in non-production even without a Clerk user
+    let isAuthorized = true;
+    try {
+      const { userId } = await auth();
+      // TODO: Add admin role check for Clerk users
+      if (process.env.NODE_ENV === "production" && !userId) {
+        isAuthorized = false;
+      }
+    } catch (e) {
+      // In development, proceed even if auth provider is not fully configured
+      if (process.env.NODE_ENV === "production") {
+        throw e;
+      }
+    }
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { error: "Unauthorized - Admin access required" },
+        { status: 401 }
+      );
+    }
 
     const { id } = params;
 
@@ -55,8 +73,26 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { userId } = await auth();
-    // TODO: Add admin role check for Clerk users
+    // Dev-friendly auth: allow updates in non-production even without a Clerk user
+    let isAuthorized = true;
+    try {
+      const { userId } = await auth();
+      // TODO: Add admin role check for Clerk users
+      if (process.env.NODE_ENV === "production" && !userId) {
+        isAuthorized = false;
+      }
+    } catch (e) {
+      // In development, proceed even if auth provider is not fully configured
+      if (process.env.NODE_ENV === "production") {
+        throw e;
+      }
+    }
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { error: "Unauthorized - Admin access required" },
+        { status: 401 }
+      );
+    }
 
     const { id } = params;
     const body = await request.json();
@@ -115,8 +151,26 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { userId } = await auth();
-    // TODO: Add admin role check for Clerk users
+    // Dev-friendly auth: allow deletes in non-production even without a Clerk user
+    let isAuthorized = true;
+    try {
+      const { userId } = await auth();
+      // TODO: Add admin role check for Clerk users
+      if (process.env.NODE_ENV === "production" && !userId) {
+        isAuthorized = false;
+      }
+    } catch (e) {
+      // In development, proceed even if auth provider is not fully configured
+      if (process.env.NODE_ENV === "production") {
+        throw e;
+      }
+    }
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { error: "Unauthorized - Admin access required" },
+        { status: 401 }
+      );
+    }
 
     const { id } = params;
 
@@ -152,8 +206,26 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { userId } = await auth();
-    // TODO: Add admin role check for Clerk users
+    // Dev-friendly auth: allow actions in non-production even without a Clerk user
+    let isAuthorized = true;
+    try {
+      const { userId } = await auth();
+      // TODO: Add admin role check for Clerk users
+      if (process.env.NODE_ENV === "production" && !userId) {
+        isAuthorized = false;
+      }
+    } catch (e) {
+      // In development, proceed even if auth provider is not fully configured
+      if (process.env.NODE_ENV === "production") {
+        throw e;
+      }
+    }
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { error: "Unauthorized - Admin access required" },
+        { status: 401 }
+      );
+    }
 
     const { id } = params;
     const { searchParams } = new URL(request.url);

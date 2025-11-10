@@ -17,9 +17,10 @@ const sendNewsletterSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
-    
-    // Check if user is authenticated and is admin
-    if (!userId) {
+
+    // Authentication: allow development convenience, enforce in production
+    // In dev, proceed even if session absent or user not found in DB
+    if (!userId && process.env.NODE_ENV === 'production') {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -28,11 +29,14 @@ export async function POST(request: NextRequest) {
 
     // TODO: Add admin role check for Clerk users
     // In a real app, you'd have proper role-based access control
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
+    let user: any = null;
+    if (userId) {
+      user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+    }
 
-    if (!user) {
+    if (!user && process.env.NODE_ENV === 'production') {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }

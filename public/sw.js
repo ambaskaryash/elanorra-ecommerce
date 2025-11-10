@@ -1,6 +1,7 @@
-const CACHE_NAME = 'elanorra-pwa-v1';
+const CACHE_NAME = 'elanorra-pwa-v2';
 const ASSETS_TO_CACHE = [
   '/',
+  '/offline',
   '/icon.svg',
   '/manifest.json',
 ];
@@ -33,25 +34,40 @@ self.addEventListener('fetch', (event) => {
   // Only cache GET requests
   if (request.method !== 'GET') return;
 
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request)
-        .then((networkResponse) => {
-          const cloned = networkResponse.clone();
-          // Cache successful responses
-          if (request.url.startsWith(self.location.origin) && networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, cloned);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => {
-          // Fallback to cache when offline
-          return cachedResponse;
-        });
+  // Navigation requests: network-first, fallback to offline page
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      (async () => {
+        try {
+          const preloadResp = await event.preloadResponse;
+          if (preloadResp) return preloadResp;
+          const networkResp = await fetch(request);
+          return networkResp;
+        } catch (err) {
+          const cache = await caches.open(CACHE_NAME);
+          const offlineResp = await cache.match('/offline');
+          return offlineResp || Response.error();
+        }
+      })()
+    );
+    return;
+  }
 
-      return cachedResponse || fetchPromise;
-    })
+  // Asset requests: cache-first, then network with background update
+  event.respondWith(
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const cached = await cache.match(request);
+      const networkFetch = fetch(request)
+        .then(async (resp) => {
+          if (request.url.startsWith(self.location.origin) && resp.status === 200) {
+            try { await cache.put(request, resp.clone()); } catch (_) {}
+          }
+          return resp;
+        })
+        .catch(() => cached);
+
+      return cached || networkFetch;
+    })()
   );
 });

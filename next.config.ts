@@ -3,9 +3,6 @@ const nextConfig = {
     optimizeCss: false,
   },
   // No custom webpack workaround; relying on Next 16 defaults
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },

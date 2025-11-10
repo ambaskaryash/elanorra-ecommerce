@@ -30,29 +30,16 @@
     }
   ],
   "icons": [
-    {
-      "src": "/icon-192x192.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-512x512.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/apple-icon.svg",
-      "sizes": "180x180",
-      "type": "image/svg+xml",
-      "purpose": "apple touch icon"
-    }
+    { "src": "/icons/elanorra-logo-48x48.svg",  "sizes": "48x48",  "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/elanorra-logo-72x72.svg",  "sizes": "72x72",  "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/elanorra-logo-96x96.svg",  "sizes": "96x96",  "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/elanorra-logo-128x128.svg", "sizes": "128x128", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/elanorra-logo-144x144.svg", "sizes": "144x144", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/elanorra-logo-152x152.svg", "sizes": "152x152", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/elanorra-logo-192x192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/elanorra-logo-256x256.svg", "sizes": "256x256", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/elanorra-logo-384x384.svg", "sizes": "384x384", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/elanorra-logo-512x512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/elanorra-favicon-32x32.svg", "sizes": "32x32", "type": "image/svg+xml", "purpose": "any" }
   ]
 }

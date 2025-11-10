@@ -22,18 +22,24 @@ export default clerkMiddleware(async (auth, req) => {
   // Configure CORS
   configureCORS(req, response);
 
-  // Apply rate limiting
-  const rateLimitResult = applyRateLimit(req);
-  if (!rateLimitResult.allowed) {
-    return new NextResponse('Too Many Requests', { 
-      status: 429,
-      headers: {
-        'Retry-After': String(Math.ceil((rateLimitResult.resetTime || Date.now()) / 1000)),
-        'X-RateLimit-Limit': '100',
-        'X-RateLimit-Remaining': String(rateLimitResult.remaining),
-        'X-RateLimit-Reset': String(rateLimitResult.resetTime || Date.now()),
-      }
-    });
+  // Apply rate limiting (skip for newsletter endpoints in development)
+  const pathname = req.nextUrl.pathname;
+  const isNewsletterEndpoint = pathname.startsWith('/api/newsletter') || pathname.startsWith('/api/newsletter/templates');
+  const shouldBypassRateLimit = process.env.NODE_ENV !== 'production' && isNewsletterEndpoint;
+
+  if (!shouldBypassRateLimit) {
+    const rateLimitResult = applyRateLimit(req);
+    if (!rateLimitResult.allowed) {
+      return new NextResponse('Too Many Requests', {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.ceil((rateLimitResult.resetTime || Date.now()) / 1000)),
+          'X-RateLimit-Limit': '100',
+          'X-RateLimit-Remaining': String(rateLimitResult.remaining),
+          'X-RateLimit-Reset': String(rateLimitResult.resetTime || Date.now()),
+        },
+      });
+    }
   }
 
   // Protect routes that require authentication

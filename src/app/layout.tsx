@@ -3,6 +3,7 @@ import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import { Providers } from '@/components/providers/providers';
 import type { Metadata } from "next";
+import { Inter } from 'next/font/google';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Toaster } from 'sonner';
@@ -33,7 +34,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icons/elanorra-favicon-32x32.svg', type: 'image/svg+xml' },
+      { url: '/icons/elanorra-logo-192x192.svg', type: 'image/svg+xml' },
+      { url: '/icons/elanorra-logo-512x512.svg', type: 'image/svg+xml' },
     ],
     apple: [
       { url: '/apple-icon.svg', type: 'image/svg+xml' },
@@ -83,6 +86,11 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap'
+});
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -90,7 +98,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`antialiased`}>
+      <body className={`${inter.className} antialiased`}>
         <Providers>
           <div className="min-h-screen bg-background">
             <Header />
