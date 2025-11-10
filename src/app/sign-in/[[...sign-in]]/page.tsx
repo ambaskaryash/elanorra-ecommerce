@@ -25,7 +25,9 @@ export default function SignInPage() {
                 headerSubtitle: "hidden",
               },
             }}
-            redirectUrl="/account"
+            routing="path"
+            path="/sign-in"
+            afterSignInUrl="/account"
             signUpUrl="/sign-up"
           />
         </div>
