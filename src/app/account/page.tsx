@@ -144,7 +144,25 @@ export default function AccountPage() {
       fetchOrders();
       fetchAddresses();
     }
-  }, [status, router, fetchOrders, fetchAddresses]);
+  }, [isLoaded, user?.id, router, fetchOrders, fetchAddresses]);
+
+  // Gate Admin Dashboard option based on role level (1: SUPER_ADMIN, 2: ADMIN)
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/user/capabilities', { cache: 'no-store' });
+        if (!res.ok) return; // fail closed
+        const data = await res.json();
+        const level = typeof data?.userLevel === 'number' ? data.userLevel : undefined;
+        if (active) setIsAdmin(!!level && level <= 2);
+      } catch {
+        // fail closed: keep isAdmin false on error
+      }
+    })();
+    return () => { active = false; };
+  }, [isLoaded, user?.id]);
 
   // Handlers for Address Management
   const handleAddAddress = () => {
@@ -275,11 +293,11 @@ export default function AccountPage() {
     }
   };
 
-  if (status === 'loading') {
+  if (!isLoaded) {
     return <div className="flex h-screen items-center justify-center">Loading your account...</div>;
   }
 
-  if (status === 'unauthenticated') {
+  if (isLoaded && !user) {
     return null; // Or a message encouraging login/signup
   }
 
