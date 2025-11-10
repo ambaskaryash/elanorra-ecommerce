@@ -1,9 +1,8 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+const nextConfig = {
   experimental: {
     optimizeCss: false,
   },
+  // No custom webpack workaround; relying on Next 16 defaults
   eslint: {
     ignoreDuringBuilds: true,
   },

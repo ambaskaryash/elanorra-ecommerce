@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import DOMPurify from 'isomorphic-dompurify';
+// Note: Avoid isomorphic-dompurify on the server to prevent jsdom file access during build
 import crypto from 'crypto';
 
 // Common validation schemas
@@ -29,10 +29,16 @@ export const limitSchema = z.number().int().min(1).max(100);
 
 // Input sanitization functions
 export function sanitizeHtml(input: string): string {
-  return DOMPurify.sanitize(input, { 
-    ALLOWED_TAGS: [],
-    ALLOWED_ATTR: []
-  });
+  // Server-safe sanitizer: strips all HTML tags and common XSS vectors
+  // This mirrors our intention of ALLOWED_TAGS: [] and ALLOWED_ATTR: []
+  if (!input) return '';
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // remove script blocks
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '') // remove style blocks
+    .replace(/<[^>]*>/g, '') // strip all remaining tags
+    .replace(/javascript:/gi, '') // remove javascript: protocol
+    .replace(/on\w+=/gi, '') // remove inline event handlers
+    .trim();
 }
 
 export function sanitizeText(input: string): string {

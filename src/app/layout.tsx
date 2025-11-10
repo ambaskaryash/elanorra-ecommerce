@@ -2,20 +2,13 @@ import Cart from '@/components/layout/Cart';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import { Providers } from '@/components/providers/providers';
-import PWAInstaller from '@/components/pwa/PWAInstaller';
-import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 import type { Metadata } from "next";
-import { Instrument_Sans } from "next/font/google";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Toaster } from 'sonner';
 import Script from 'next/script';
 import "./globals.css";
 
-const instrumentSans = Instrument_Sans({
-  subsets: ["latin"],
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://elanorraliving.in'),
@@ -95,7 +88,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${instrumentSans.className} antialiased`}>
+      <body className={`antialiased`}>
         <Providers>
           <div className="min-h-screen bg-background">
             <Header />
@@ -104,8 +97,8 @@ export default async function RootLayout({
             </main>
             <Footer />
             <Cart />
-            <PWAInstaller />
-            <ServiceWorkerRegistration />
+            {/* PWA temporarily disabled on Vercel/Next 15 */}
+            {/* <PWAInstaller /> */}
           </div>
           <Toaster />
           <ToastContainer
