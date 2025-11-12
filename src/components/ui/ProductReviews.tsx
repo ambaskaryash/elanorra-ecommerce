@@ -146,7 +146,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
               id="sort"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+              className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent"
             >
               <option value="newest">Newest</option>
               <option value="oldest">Oldest</option>
@@ -164,7 +164,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
               id="filter"
               value={filterBy}
               onChange={(e) => setFilterBy(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+              className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent"
             >
               <option value="all">All reviews</option>
               <option value="verified">Verified only</option>
@@ -179,7 +179,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
 
         <button
           onClick={handleWriteReview}
-          className="flex items-center space-x-2 px-4 py-2 bg-rose-600 text-white font-medium rounded-md hover:bg-rose-700 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[var(--accent)] text-white font-medium rounded-md hover:bg-[color:rgb(186,156,109)] transition-colors"
         >
           <PencilIcon className="h-4 w-4" />
           <span>Write Review</span>
@@ -209,7 +209,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
                     <div>
                       <div className="flex items-center space-x-3 mb-2">
                         <div className="flex items-center space-x-2">
-                          <div className="w-8 h-8 bg-rose-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                          <div className="w-8 h-8 bg-[var(--accent)] rounded-full flex items-center justify-center text-white text-sm font-medium">
                             {review.userName.charAt(0)}
                           </div>
                           <div>
@@ -427,7 +427,7 @@ function WriteReviewModal({ isOpen, onClose, productId, productName, user }: Wri
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Summarize your experience"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent"
               maxLength={100}
             />
           </div>
@@ -443,7 +443,7 @@ function WriteReviewModal({ isOpen, onClose, productId, productName, user }: Wri
               onChange={(e) => setComment(e.target.value)}
               placeholder="Tell others about your experience with this product"
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent resize-none"
               maxLength={500}
             />
             <div className="text-xs text-gray-500 mt-1">
@@ -463,7 +463,7 @@ function WriteReviewModal({ isOpen, onClose, productId, productName, user }: Wri
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700 disabled:bg-gray-400 transition-colors"
+              className="flex-1 px-4 py-2 bg-[var(--accent)] text-white rounded-md hover:bg-[color:rgb(186,156,109)] disabled:bg-gray-400 transition-colors"
             >
               {isSubmitting ? 'Submitting...' : 'Submit Review'}
             </button>

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence, cubicBezier } from 'framer-motion';
 import { 
@@ -22,6 +23,7 @@ interface HeaderProps {
 }
 
 export default function Header({ className }: HeaderProps) {
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -156,7 +158,7 @@ export default function Header({ className }: HeaderProps) {
   return (
     <header className={`sticky top-0 z-50 glass ${className || ''}`}>
       {/* Newsletter Banner */}
-      <div className="bg-rose-50 text-center py-2 text-sm sm:text-base text-gray-700">
+      <div className="bg-[var(--muted)] text-center py-2 text-sm sm:text-base text-gray-700">
         <span className="font-medium">✨ Welcome to ElanorraLiving</span>
         <span className="mx-2 text-gray-500">•</span>
         <span>Subscribe & get 15% off your first order</span>
@@ -175,12 +177,21 @@ export default function Header({ className }: HeaderProps) {
             </button>
           </div>
 
-          {/* Brand Wordmark */}
+          {/* Brand Logo + Wordmark */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center" aria-label="ElanorraLiving Home">
-              <span className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-900">
-                Elanorra<span className="font-bold">Living</span>
-              </span>
+              <Image
+                src="/icons/elanorra-emblem.svg"
+                alt="Elanorra EL emblem"
+                width={40}
+                height={40}
+                priority
+                className="mr-2"
+              />
+              <div className="text-lg sm:text-xl font-serif tracking-widest text-gray-900 flex items-baseline">
+                <span className="uppercase">Elanorra</span>
+                <span className="ml-1 font-serif normal-case tracking-normal text-gray-700">Living</span>
+              </div>
             </Link>
           </div>
 
@@ -195,10 +206,10 @@ export default function Header({ className }: HeaderProps) {
                   >
                     <button
                       onClick={() => handleDropdownToggle(item.id)}
-                      className="flex items-center text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap"
+                      className={`nav-link whitespace-nowrap ${pathname.startsWith(item.href) ? 'nav-link--active' : ''}`}
                     >
                       {item.name}
-                      <ChevronDownIcon className="ml-1 h-4 w-4" />
+                      <ChevronDownIcon className="ml-1 h-4 w-4 text-current" />
                     </button>
                     
                     <AnimatePresence>
@@ -222,7 +233,7 @@ export default function Header({ className }: HeaderProps) {
                                 <div>
                                   <div className="mb-6">
                                     <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                                      <span className="w-2 h-2 bg-rose-500 rounded-full mr-3"></span>
+                                      <span className="w-2 h-2 bg-[var(--accent)] rounded-full mr-3"></span>
                                       Tableware
                                     </h3>
                                     <div className="space-y-3">
@@ -230,7 +241,7 @@ export default function Header({ className }: HeaderProps) {
                                         <Link
                                           key={subItem.id}
                                           href={subItem.href}
-                                          className="block text-sm text-gray-600 hover:text-rose-600 hover:translate-x-1 transition-all duration-200 py-1"
+                                          className="block text-sm text-gray-600 hover:text-[var(--ring)] hover:translate-x-1 transition-all duration-200 py-1"
                                           onClick={closeAllDropdowns}
                                         >
                                           {subItem.name}
@@ -240,8 +251,8 @@ export default function Header({ className }: HeaderProps) {
                                   </div>
                                   
                                   {/* Featured Image */}
-                                  <div className="relative h-32 bg-gradient-to-br from-rose-50 to-pink-50 rounded-lg overflow-hidden group cursor-pointer">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-rose-400/20 to-pink-400/20 group-hover:from-rose-400/30 group-hover:to-pink-400/30 transition-all duration-300"></div>
+                                  <div className="relative h-32 bg-gradient-to-br from-[var(--muted)] to-white rounded-lg overflow-hidden group cursor-pointer">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-[color:rgba(138,106,63,0.15)] to-[color:rgba(255,255,255,0.2)] group-hover:from-[color:rgba(138,106,63,0.25)] group-hover:to-[color:rgba(255,255,255,0.25)] transition-all duration-300"></div>
                                     <div className="absolute bottom-3 left-3 right-3">
                                       <p className="text-xs font-medium text-gray-700 mb-1">Elevate Your Everyday</p>
                                       <p className="text-xs text-gray-500">Premium Home Decor</p>
@@ -261,7 +272,7 @@ export default function Header({ className }: HeaderProps) {
                                         <Link
                                           key={subItem.id}
                                           href={subItem.href}
-                                          className="block text-sm text-gray-600 hover:text-rose-600 hover:translate-x-1 transition-all duration-200 py-1"
+                                          className="block text-sm text-gray-600 hover:text-[var(--ring)] hover:translate-x-1 transition-all duration-200 py-1"
                                           onClick={closeAllDropdowns}
                                         >
                                           {subItem.name}
@@ -273,7 +284,7 @@ export default function Header({ className }: HeaderProps) {
                                   {/* View All Collections Link */}
                                   <Link
                                     href="/collections"
-                                    className="inline-flex items-center text-sm font-medium text-rose-600 hover:text-rose-700 group"
+                                    className="inline-flex items-center text-sm font-medium text-[var(--ring)] hover:text-[var(--accent)] group"
                                     onClick={closeAllDropdowns}
                                   >
                                     View All Collections
@@ -295,7 +306,7 @@ export default function Header({ className }: HeaderProps) {
                                         <Link
                                           key={subItem.id}
                                           href={subItem.href}
-                                          className="block text-sm text-gray-600 hover:text-rose-600 hover:translate-x-1 transition-all duration-200 py-1"
+                                          className="block text-sm text-gray-600 hover:text-[var(--ring)] hover:translate-x-1 transition-all duration-200 py-1"
                                           onClick={closeAllDropdowns}
                                         >
                                           {subItem.name}
@@ -305,7 +316,7 @@ export default function Header({ className }: HeaderProps) {
                                   </div>
                                   
                                   {/* Special Offer Badge */}
-                                  <div className="bg-gradient-to-r from-rose-500 to-pink-500 text-white p-4 rounded-lg text-center">
+                                  <div className="bg-gradient-to-r from-[var(--accent)] to-[color:rgb(186, 156, 109)] text-white p-4 rounded-lg text-center">
                                     <p className="text-xs font-medium mb-1">New Customer?</p>
                                     <p className="text-sm font-bold mb-2">Get 15% OFF</p>
                                     <p className="text-xs opacity-90">on your first order</p>
@@ -369,7 +380,7 @@ export default function Header({ className }: HeaderProps) {
                 ) : (
                   <Link
                     href={item.href}
-                    className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap"
+                    className={`nav-link whitespace-nowrap ${pathname.startsWith(item.href) ? 'nav-link--active' : ''}`}
                   >
                     {item.name}
                   </Link>
@@ -420,7 +431,7 @@ export default function Header({ className }: HeaderProps) {
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center space-x-2 p-2 text-gray-700 hover:text-gray-900 rounded-md"
                   >
-                    <div className="w-8 h-8 bg-rose-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                    <div className="w-8 h-8 bg-[var(--accent)] text-white rounded-full flex items-center justify-center text-sm font-medium">
                       {user?.firstName?.[0] || user?.emailAddresses?.[0]?.emailAddress?.[0]?.toUpperCase()}
                     </div>
                     <ChevronDownIcon className="h-4 w-4" />
@@ -494,7 +505,7 @@ export default function Header({ className }: HeaderProps) {
               >
                 <ShoppingBagIcon className="h-6 w-6" />
                 {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-[var(--accent)] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {totalItems}
                   </span>
                 )}
@@ -590,7 +601,7 @@ export default function Header({ className }: HeaderProps) {
             >
               <ShoppingBagIcon className="h-6 w-6" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-[var(--accent)] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {totalItems}
                 </span>
               )}

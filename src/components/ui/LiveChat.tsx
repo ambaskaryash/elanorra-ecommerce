@@ -135,7 +135,7 @@ const LiveChat: React.FC<LiveChatProps> = ({ isOpen, onClose }) => {
             >
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-rose-500 to-pink-500">
+                <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-[var(--accent)] to-[color:rgb(186,156,109)]">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                       <ChatBubbleLeftRightIcon className="w-5 h-5 text-white" />
@@ -167,7 +167,7 @@ const LiveChat: React.FC<LiveChatProps> = ({ isOpen, onClose }) => {
                         <div className={`flex items-start space-x-2 max-w-xs ${message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                             message.sender === 'user' 
-                              ? 'bg-rose-500' 
+                              ? 'bg-[var(--accent)]' 
                               : 'bg-gray-200'
                           }`}>
                             {message.sender === 'user' ? (
@@ -178,12 +178,12 @@ const LiveChat: React.FC<LiveChatProps> = ({ isOpen, onClose }) => {
                           </div>
                           <div className={`rounded-lg px-3 py-2 ${
                             message.sender === 'user'
-                              ? 'bg-rose-500 text-white'
+                              ? 'bg-[var(--accent)] text-white'
                               : 'bg-gray-100 text-gray-900'
                           }`}>
                             <p className="text-sm">{message.text}</p>
                             <p className={`text-xs mt-1 ${
-                              message.sender === 'user' ? 'text-rose-100' : 'text-gray-500'
+                              message.sender === 'user' ? 'text-white/80' : 'text-gray-500'
                             }`}>
                               {formatTime(message.timestamp)}
                             </p>
@@ -226,13 +226,13 @@ const LiveChat: React.FC<LiveChatProps> = ({ isOpen, onClose }) => {
                       value={inputMessage}
                       onChange={(e) => setInputMessage(e.target.value)}
                       placeholder="Type your message..."
-                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent"
                       disabled={isTyping}
                     />
                     <button
                       type="submit"
                       disabled={!inputMessage.trim() || isTyping}
-                      className="bg-rose-500 text-white p-2 rounded-lg hover:bg-rose-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="bg-[var(--accent)] text-white p-2 rounded-lg hover:bg-[color:rgb(186,156,109)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <PaperAirplaneIcon className="w-5 h-5" />
                     </button>

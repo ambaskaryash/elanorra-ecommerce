@@ -240,23 +240,36 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (coupon.type === 'PERCENTAGE') {
+      if (coupon.type === 'percentage') {
         discount = (coupon.value / 100) * subtotal;
         if (coupon.maxDiscount) {
           discount = Math.min(discount, coupon.maxDiscount);
         }
-      } else {
-        // FIXED amount
+      } else if (coupon.type === 'fixed') {
         discount = coupon.value;
         if (coupon.maxDiscount) {
           discount = Math.min(discount, coupon.maxDiscount);
         }
+      } else if (coupon.type === 'free_shipping') {
+        // Free shipping: shipping cost waived
+        // Apply after subtotal calc but before total
+        appliedCouponId = coupon.id;
       }
       appliedCouponId = coupon.id;
     }
 
     const taxes = Math.max(0, validatedData.taxes || 0);
-    const shipping = Math.max(0, validatedData.shipping || 0);
+    let shipping = Math.max(0, validatedData.shipping || 0);
+    // If free shipping coupon applied, override shipping to 0
+    if (validatedData.couponCode) {
+      const coupon = await prisma.coupon.findFirst({
+        where: { code: validatedData.couponCode },
+        select: { type: true },
+      });
+      if (coupon?.type === 'free_shipping') {
+        shipping = 0;
+      }
+    }
     const totalPrice = Math.max(0, subtotal + taxes + shipping - discount);
 
     // Generate order number

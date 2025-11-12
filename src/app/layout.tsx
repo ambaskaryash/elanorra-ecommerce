@@ -98,7 +98,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>
+      <body className={`theme-premium ${inter.className} antialiased`}>
         <Providers>
           <div className="min-h-screen bg-background">
             <Header />

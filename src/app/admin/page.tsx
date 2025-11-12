@@ -8,28 +8,29 @@ import { useOrderStore } from '@/lib/store/order-store';
 import { useReviewsStore } from '@/lib/store/reviews-store';
 import { formatPrice } from '@/lib/utils';
 import { checkAdminAccess } from '@/lib/actions/rbac-actions';
-import {
-  ChartBarIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  CurrencyRupeeIcon,
-  EnvelopeIcon,
-  EyeIcon,
-  PencilIcon,
-  ShoppingBagIcon,
-  TrashIcon,
-  UsersIcon,
-  XCircleIcon,
-  ArrowPathIcon,
-  HomeIcon,
-  Cog6ToothIcon,
-  DocumentTextIcon,
-  StarIcon,
-  ArrowTrendingUpIcon,
-  Bars3Icon,
-  XMarkIcon,
-  ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline';
+  import {
+    ChartBarIcon,
+    CheckCircleIcon,
+    ClockIcon,
+    CurrencyRupeeIcon,
+    EnvelopeIcon,
+    EyeIcon,
+    PencilIcon,
+    ShoppingBagIcon,
+    TrashIcon,
+    UsersIcon,
+    XCircleIcon,
+    ArrowPathIcon,
+    HomeIcon,
+    Cog6ToothIcon,
+    DocumentTextIcon,
+    StarIcon,
+    ArrowTrendingUpIcon,
+    Bars3Icon,
+    XMarkIcon,
+    ExclamationTriangleIcon,
+    TicketIcon,
+  } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -38,6 +39,7 @@ import RichTextEditor from '@/components/admin/RichTextEditor';
 import ImageUpload from '@/components/admin/ImageUpload';
 import { BulkProductUpload } from '@/components/admin/BulkProductUpload'; // Import the new component
 import NewsletterDashboard from '@/components/admin/NewsletterDashboard';
+import CouponsManager from '@/components/admin/CouponsManager';
 
 interface StatCardProps {
   title: string;
@@ -442,6 +444,7 @@ export default function AdminDashboard() {
     { id: 'blog', name: 'Blog', icon: DocumentTextIcon, color: 'pink' },
     { id: 'newsletter', name: 'Newsletter', icon: EnvelopeIcon, color: 'teal' },
     { id: 'reviews', name: 'Reviews', icon: StarIcon, color: 'yellow' },
+    { id: 'coupons', name: 'Coupons', icon: TicketIcon, color: 'teal' },
   ];
 
   const Sidebar = () => {
@@ -563,7 +566,7 @@ export default function AdminDashboard() {
 
       {/* Main content */}
       <div className="lg:pl-80">
-        {/* Top header */}
+        {/* Top header with integrated nav */}
         <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-200">
           <div className="px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
@@ -575,11 +578,24 @@ export default function AdminDashboard() {
                   <Bars3Icon className="h-6 w-6 text-gray-600" />
                 </button>
                 <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                    {navigationItems.find(item => item.id === activeTab)?.name || 'Dashboard'}
-                  </h1>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Welcome back, {user?.firstName || 'Admin'}! Here's what's happening today.
+                  <div className="flex items-center space-x-2">
+                    {(() => {
+                      const current = navigationItems.find(item => item.id === activeTab) || navigationItems[0];
+                      const Icon = current.icon;
+                      return (
+                        <div className="flex items-center space-x-2">
+                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                            <Icon className="h-5 w-5 text-gray-700" />
+                          </div>
+                          <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                            {current.name}
+                          </h1>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                    Welcome back, {user?.firstName || 'Admin'}!
                   </p>
                 </div>
               </div>
@@ -588,18 +604,38 @@ export default function AdminDashboard() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => router.push('/')}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
                 >
                   <HomeIcon className="h-4 w-4" />
                   <span>View Store</span>
                 </motion.button>
               </div>
             </div>
+
+            {/* Integrated top navigation (mirrors sidebar) */}
+            <div className="mt-4 -mx-2 overflow-x-auto lg:hidden">
+              <div className="flex items-center space-x-2 px-2">
+                {navigationItems.map((item) => (
+                  <button
+                    key={`top-${item.id}`}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`${
+                      activeTab === item.id
+                        ? 'bg-gray-900 text-white shadow-sm'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    } flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Main Content Area */}
-        <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <div className="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto">
           {/* Dashboard Overview */}
           {activeTab === 'dashboard' && (
             <div className="space-y-8">
@@ -1564,8 +1600,19 @@ export default function AdminDashboard() {
                 ))}
               </div>
             </div>
-          </div>
-        )}
+            </div>
+          )}
+
+          {/* Coupons Management */}
+          {activeTab === 'coupons' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden p-6"
+            >
+              <CouponsManager />
+            </motion.div>
+          )}
         </div>
       </div>
       

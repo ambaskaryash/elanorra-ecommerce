@@ -104,15 +104,15 @@ export default function Footer() {
             {/* Contact Info */}
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
-                <EnvelopeIcon className="h-5 w-5 text-rose-500" />
+                <EnvelopeIcon className="h-5 w-5 text-[var(--accent)]" />
                 <span className="text-gray-300">info@elanorraliving.in</span>
               </div>
               <div className="flex items-center space-x-3">
-                <PhoneIcon className="h-5 w-5 text-rose-500" />
+                <PhoneIcon className="h-5 w-5 text-[var(--accent)]" />
                 <span className="text-gray-300">+91 9876543210</span>
               </div>
               <div className="flex items-center space-x-3">
-                <MapPinIcon className="h-5 w-5 text-rose-500" />
+                <MapPinIcon className="h-5 w-5 text-[var(--accent)]" />
                 <span className="text-gray-300">Mumbai, Maharashtra, India</span>
               </div>
             </div>

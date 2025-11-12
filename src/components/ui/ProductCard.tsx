@@ -15,9 +15,10 @@ import toast from 'react-hot-toast';
 interface ProductCardProps {
   product: ApiProduct;
   className?: string;
+  variant?: 'default' | 'homepage';
 }
 
-export default function ProductCard({ product, className = '' }: ProductCardProps) {
+export default function ProductCard({ product, className = '', variant = 'default' }: ProductCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
   const { addItem } = useCartStore();
@@ -42,16 +43,26 @@ export default function ProductCard({ product, className = '' }: ProductCardProp
 
   return (
     <motion.div
-      whileHover={{ y: -4 }}
+      whileHover={{ y: variant === 'homepage' ? -6 : -4, scale: variant === 'homepage' ? 1.01 : 1 }}
       transition={{ duration: 0.35, ease: cubicBezier(0.16, 1, 0.3, 1) }}
-      className={`group relative bg-white rounded-xl border border-gray-200/70 shadow-sm hover:shadow-xl hover:border-rose-300/70 transition-all duration-300 overflow-hidden hover-float ${className}`}
+      className={`group relative rounded-2xl p-[1px] transition-all duration-300 ${className}`}
     >
-      <Link href={`/products/${product.slug}`} className="block">
-        {/* Product Image */}
-        <div className="relative aspect-square overflow-hidden bg-stone-50">
-          {!imageLoaded && (
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 animate-pulse" />
-          )}
+      {/* Decorative gradient border that appears on hover */}
+      <div
+        className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-[1px] ${
+          variant === 'homepage'
+            ? 'ribbon-bronze'
+            : 'bg-gradient-to-br from-gray-200 via-gray-200 to-gray-300'
+        }`}
+      />
+
+      <div className="relative bg-white rounded-2xl border border-gray-200/70 shadow-sm hover:shadow-xl overflow-hidden">
+        <Link href={`/products/${product.slug}`} className="block">
+          {/* Product Image */}
+          <div className="relative aspect-square overflow-hidden bg-stone-50">
+            {!imageLoaded && (
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 animate-pulse" />
+            )}
           
           <Image
             src={imgError ? '/images/placeholder.svg' : (product.images[0]?.src || '/images/placeholder.svg')}
@@ -87,9 +98,17 @@ export default function ProductCard({ product, className = '' }: ProductCardProp
               </span>
             )}
             {discount > 0 && (
-              <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                {discount}% Off
-              </span>
+              variant === 'homepage' ? (
+                <div className="absolute -top-2 -left-2">
+                  <div className="rotate-[-15deg] ribbon-bronze text-white text-[10px] px-3 py-1 shadow-md rounded-sm">
+                    {discount}% OFF
+                  </div>
+                </div>
+              ) : (
+                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                  {discount}% Off
+                </span>
+              )
             )}
           </div>
 
@@ -99,7 +118,7 @@ export default function ProductCard({ product, className = '' }: ProductCardProp
             className="absolute top-3 right-3 p-2.5 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full transition-all opacity-0 group-hover:opacity-100 duration-300 shadow-sm hover:shadow-md border border-gray-200/60"
           >
             {isWishlisted ? (
-              <HeartSolidIcon className="h-5 w-5 text-rose-500" />
+              <HeartSolidIcon className="h-5 w-5 text-[var(--accent)]" />
             ) : (
               <HeartIcon className="h-5 w-5 text-gray-700" />
             )}
@@ -114,7 +133,7 @@ export default function ProductCard({ product, className = '' }: ProductCardProp
               disabled={!product.inStock}
               className={`w-full flex items-center justify-center space-x-2 py-3 px-4 text-sm font-light transition-all duration-300 rounded-lg ${
                 product.inStock
-                  ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg'
+                  ? 'bg-[var(--accent)] hover:bg-[color:rgb(186,156,109)] text-white shadow-lg'
                   : 'bg-gray-400 text-gray-600 cursor-not-allowed'
               }`}
             >
@@ -191,10 +210,15 @@ export default function ProductCard({ product, className = '' }: ProductCardProp
                   </div>
                 )}
               </div>
+              {/* Decorative bottom accent for homepage variant */}
+              {variant === 'homepage' && (
+                <div className="mt-4 w-full divider-bronze" />
+              )}
             </>
           )}
         </div>
       </Link>
+      </div>
     </motion.div>
   );
 }

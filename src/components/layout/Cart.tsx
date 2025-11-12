@@ -82,7 +82,7 @@ export default function Cart() {
                               <div className="text-gray-500 mb-4">Your cart is empty</div>
                               <Link
                                 href="/shop"
-                                className="inline-block bg-rose-600 text-white px-6 py-2 rounded-md hover:bg-rose-700 transition-colors"
+                                className="inline-block bg-[var(--accent)] text-white px-6 py-2 rounded-md hover:bg-[color:rgb(186,156,109)] transition-colors"
                                 onClick={toggleCart}
                               >
                                 Continue Shopping
@@ -109,7 +109,7 @@ export default function Cart() {
                                           <Link 
                                             href={`/products/${item.product.slug}`}
                                             onClick={toggleCart}
-                                            className="hover:text-rose-600"
+                                            className="hover:text-[var(--ring)]"
                                           >
                                             {item.product.name}
                                           </Link>
@@ -143,7 +143,7 @@ export default function Cart() {
                                         <button
                                           type="button"
                                           onClick={() => removeItem(item.productId)}
-                                          className="font-medium text-rose-600 hover:text-rose-500"
+                                          className="font-medium text-[var(--ring)] hover:text-[var(--accent)]"
                                         >
                                           Remove
                                         </button>
@@ -174,7 +174,7 @@ export default function Cart() {
                                   value={couponCode}
                                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                                   placeholder="Enter code"
-                                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent"
                                 />
                                 <button
                                   onClick={async () => {
@@ -190,7 +190,7 @@ export default function Cart() {
                                     setIsApplyingCoupon(false);
                                   }}
                                   disabled={!couponCode.trim() || isApplyingCoupon}
-                                  className="px-4 py-2 bg-rose-600 text-white text-sm font-medium rounded-md hover:bg-rose-700 disabled:bg-gray-400 transition-colors"
+                                  className="px-4 py-2 bg-[var(--accent)] text-white text-sm font-medium rounded-md hover:bg-[color:rgb(186,156,109)] disabled:bg-gray-400 transition-colors"
                                 >
                                   {isApplyingCoupon ? 'Applying...' : 'Apply'}
                                 </button>
@@ -248,7 +248,7 @@ export default function Cart() {
                         <div className="mt-6">
                           <Link
                             href="/checkout"
-                            className="flex items-center justify-center rounded-md border border-transparent bg-rose-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-rose-700 transition-colors"
+                            className="flex items-center justify-center rounded-md border border-transparent bg-[var(--accent)] px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-[color:rgb(186,156,109)] transition-colors"
                             onClick={toggleCart}
                           >
                             Checkout
@@ -260,7 +260,7 @@ export default function Cart() {
                             or{' '}
                             <button
                               type="button"
-                              className="font-medium text-rose-600 hover:text-rose-500"
+                              className="font-medium text-[var(--ring)] hover:text-[var(--accent)]"
                               onClick={toggleCart}
                             >
                               Continue Shopping

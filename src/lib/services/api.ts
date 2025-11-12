@@ -452,6 +452,69 @@ return apiFetch<{
   },
 };
 
+// Coupon API functions
+export const couponAPI = {
+  getCoupons: async (params?: { page?: number; limit?: number; active?: boolean; code?: string }): Promise<{
+    coupons: any[];
+    pagination: { page: number; limit: number; total: number; pages: number };
+  }> => {
+    const sp = new URLSearchParams();
+    if (params) {
+      if (params.page) sp.set('page', String(params.page));
+      if (params.limit) sp.set('limit', String(params.limit));
+      if (params.active !== undefined) sp.set('active', String(params.active));
+      if (params.code) sp.set('code', params.code);
+    }
+    const endpoint = `/coupons${sp.toString() ? `?${sp.toString()}` : ''}`;
+    return apiFetch(endpoint);
+  },
+
+  createCoupon: async (couponData: {
+    code: string;
+    type: 'percentage' | 'fixed' | 'free_shipping';
+    value?: number;
+    minAmount?: number;
+    maxDiscount?: number;
+    usageLimit?: number;
+    validFrom: string | Date;
+    validTo: string | Date;
+    isActive?: boolean;
+  }): Promise<any> => {
+    return apiFetch('/coupons', {
+      method: 'POST',
+      body: JSON.stringify(couponData),
+    });
+  },
+
+  updateCoupon: async (id: string, updates: {
+    code?: string;
+    type?: 'percentage' | 'fixed' | 'free_shipping';
+    value?: number;
+    minAmount?: number;
+    maxDiscount?: number;
+    usageLimit?: number;
+    validFrom?: string | Date;
+    validTo?: string | Date;
+    isActive?: boolean;
+  }): Promise<any> => {
+    return apiFetch(`/coupons/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  },
+
+  deactivateCoupon: async (id: string): Promise<any> => {
+    return apiFetch(`/coupons/${id}`, { method: 'DELETE' });
+  },
+
+  validateCoupon: async (code: string): Promise<any> => {
+    return apiFetch('/coupons/validate', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    });
+  },
+};
+
 // Review API functions
 export const reviewAPI = {
   // Get reviews with optional filters
@@ -695,6 +758,7 @@ export const returnAPI = {
 export const api = {
   products: productAPI,
   orders: orderAPI,
+  coupons: couponAPI,
   reviews: reviewAPI,
   addresses: addressAPI,
   blog: blogAPI,

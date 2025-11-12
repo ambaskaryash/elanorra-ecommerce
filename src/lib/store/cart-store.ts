@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { ApiProduct } from '@/lib/services/api';
+import { ApiProduct, couponAPI } from '@/lib/services/api';
 
 interface CartItem {
   productId: string;
@@ -18,23 +18,18 @@ interface CartState {
   taxAmount: number;
   shippingAmount: number;
   appliedCoupon: string | null;
+  appliedCouponType?: 'percentage' | 'fixed' | 'free_shipping';
   addItem: (product: ApiProduct, quantity?: number) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
-  applyCoupon: (couponCode: string) => Promise<{ success: boolean; message: string; discount?: number }>;
+  applyCoupon: (couponCode: string) => Promise<{ success: boolean; message: string; discount?: number }>; 
   removeCoupon: () => void;
   updateShipping: (amount: number) => void;
   clearCart: () => void;
   toggleCart: () => void;
 }
 
-// Mock coupon codes
-const COUPON_CODES = {
-  'WELCOME10': { discount: 0.10, type: 'percentage', minAmount: 500 },
-  'SAVE200': { discount: 200, type: 'fixed', minAmount: 1000 },
-  'FREESHIP': { discount: 0, type: 'free_shipping', minAmount: 799 },
-  'NEWUSER15': { discount: 0.15, type: 'percentage', minAmount: 1500 },
-} as const;
+// Removed local mock coupons; using live validation API
 
 export const useCartStore = create<CartState>()(
   persist(
@@ -134,48 +129,57 @@ export const useCartStore = create<CartState>()(
       },
 
       applyCoupon: async (couponCode: string) => {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const coupon = COUPON_CODES[couponCode as keyof typeof COUPON_CODES];
-        const state = get();
-        
-        if (!coupon) {
-          return { success: false, message: 'Invalid coupon code' };
-        }
-        
-        if (state.subtotalPrice < coupon.minAmount) {
-          return { 
-            success: false, 
-            message: `Minimum order amount of ₹${coupon.minAmount} required` 
+        try {
+          const state = get();
+          const result = await couponAPI.validateCoupon(couponCode);
+          if (result.error) {
+            return { success: false, message: result.error };
+          }
+          const coupon = result as unknown as {
+            code: string;
+            type: 'percentage' | 'fixed' | 'free_shipping';
+            value: number;
+            minAmount?: number | null;
+            maxDiscount?: number | null;
           };
+
+          // Server already validates window and usage; compute discount client-side for UX
+          let discountAmount = 0;
+          let message = '';
+          if (coupon.type === 'percentage') {
+            discountAmount = Math.round(state.subtotalPrice * (coupon.value / 100));
+            if (coupon.maxDiscount) {
+              discountAmount = Math.min(discountAmount, coupon.maxDiscount);
+            }
+            message = `${coupon.value}% discount applied!`;
+          } else if (coupon.type === 'fixed') {
+            discountAmount = Math.round(coupon.value);
+            if (coupon.maxDiscount) {
+              discountAmount = Math.min(discountAmount, coupon.maxDiscount);
+            }
+            message = `₹${discountAmount} discount applied!`;
+          } else if (coupon.type === 'free_shipping') {
+            message = 'Free shipping applied!';
+          }
+
+          const taxAmount = Math.round(state.subtotalPrice * 0.18);
+          const shippingAmount = coupon.type === 'free_shipping' ? 0 : state.shippingAmount;
+          const totalPrice = state.subtotalPrice - discountAmount + taxAmount + shippingAmount;
+
+          set({
+            ...state,
+            appliedCoupon: couponCode,
+            appliedCouponType: coupon.type,
+            discountAmount,
+            taxAmount,
+            shippingAmount,
+            totalPrice,
+          });
+
+          return { success: true, message, discount: discountAmount };
+        } catch (e: any) {
+          return { success: false, message: e?.message || 'Failed to apply coupon' };
         }
-        
-        let discountAmount = 0;
-        let message = '';
-        
-        if (coupon.type === 'percentage') {
-          discountAmount = Math.round(state.subtotalPrice * coupon.discount);
-          message = `${coupon.discount * 100}% discount applied!`;
-        } else if (coupon.type === 'fixed') {
-          discountAmount = coupon.discount;
-          message = `₹${coupon.discount} discount applied!`;
-        } else if (coupon.type === 'free_shipping') {
-          // Free shipping will be handled in shipping calculation
-          message = 'Free shipping applied!';
-        }
-        
-        const taxAmount = Math.round(state.subtotalPrice * 0.18);
-        const totalPrice = state.subtotalPrice - discountAmount + taxAmount + state.shippingAmount;
-        
-        set({
-          ...state,
-          appliedCoupon: couponCode,
-          discountAmount,
-          totalPrice
-        });
-        
-        return { success: true, message, discount: discountAmount };
       },
       
       removeCoupon: () => {
@@ -195,7 +199,7 @@ export const useCartStore = create<CartState>()(
       updateShipping: (amount: number) => {
         set((state) => {
           // Check for free shipping coupon
-          const isFreeShipping = state.appliedCoupon === 'FREESHIP';
+          const isFreeShipping = state.appliedCouponType === 'free_shipping';
           const shippingAmount = isFreeShipping ? 0 : amount;
           const totalPrice = state.subtotalPrice - state.discountAmount + state.taxAmount + shippingAmount;
           

@@ -1,0 +1,32 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Elanorra mark">
+  <defs>
+    <linearGradient id="bronzeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8a6a3f" />
+      <stop offset="100%" stop-color="#ba9c6d" />
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feOffset dx="0" dy="1" />
+      <feGaussianBlur stdDeviation="1.2" result="blur" />
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0" />
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Bronze circle -->
+  <circle cx="32" cy="32" r="28" fill="url(#bronzeGrad)" filter="url(#softShadow)" />
+
+  <!-- Minimalist E monogram -->
+  <g fill="#ffffff">
+    <!-- vertical spine -->
+    <rect x="22" y="18" width="6" height="28" rx="3" />
+    <!-- top bar -->
+    <rect x="28" y="18" width="18" height="6" rx="3" />
+    <!-- middle bar -->
+    <rect x="28" y="30" width="14" height="6" rx="3" />
+    <!-- bottom bar -->
+    <rect x="28" y="40" width="18" height="6" rx="3" />
+  </g>
+</svg>

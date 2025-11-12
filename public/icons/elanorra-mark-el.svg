@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Elanorra EL monogram">
+  <defs>
+    <radialGradient id="bronzeMedallion" cx="50%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#c9b083"/>
+      <stop offset="55%" stop-color="#a38457"/>
+      <stop offset="100%" stop-color="#7a5c33"/>
+    </radialGradient>
+    <linearGradient id="bronzeRing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e6d6b8"/>
+      <stop offset="100%" stop-color="#9b7a4a"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#3a2d1a" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <!-- Medallion base -->
+  <g filter="url(#softShadow)">
+    <circle cx="32" cy="32" r="28" fill="url(#bronzeMedallion)"/>
+    <circle cx="32" cy="32" r="26" fill="none" stroke="url(#bronzeRing)" stroke-width="1.6" opacity="0.85"/>
+    <circle cx="32" cy="32" r="22" fill="none" stroke="#f5e9d5" stroke-opacity="0.35" stroke-width="1"/>
+  </g>
+
+  <!-- EL monogram: balanced, interlocked strokes -->
+  <g fill="none" stroke="#fbf7ef" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.4">
+    <!-- E vertical -->
+    <path d="M22 18 L22 46"/>
+    <!-- E bars -->
+    <path d="M22 18 L40 18"/>
+    <path d="M22 32 L36 32"/>
+    <path d="M22 46 L40 46"/>
+    <!-- L vertical (slightly inset) -->
+    <path d="M34 20 L34 44"/>
+    <!-- L foot with subtle flare -->
+    <path d="M30 44 Q37 48 44 44"/>
+  </g>
+
+  <!-- Highlight sweep -->
+  <path d="M14 25 A18 18 0 0 1 29 14" fill="none" stroke="#ffffff" stroke-opacity="0.22" stroke-width="2" stroke-linecap="round"/>
+</svg>

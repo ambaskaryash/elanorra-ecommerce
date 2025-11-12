@@ -4,8 +4,11 @@ import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import HeroCarousel from '@/components/sections/HeroCarousel';
+import BenefitsBar from '@/components/sections/BenefitsBar';
+import CategoryMosaic from '@/components/sections/CategoryMosaic';
 import FeaturedCollections from '@/components/sections/FeaturedCollections';
 import FeaturedProducts from '@/components/sections/FeaturedProducts';
+import EditorialBanner from '@/components/sections/EditorialBanner';
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -24,9 +27,18 @@ export default function Home() {
     <div>
       {/* Hero Section */}
       <HeroCarousel />
+
+      {/* Trust & Benefits */}
+      <BenefitsBar />
+      
+      {/* Category Mosaic */}
+      <CategoryMosaic />
       
       {/* Featured Collections */}
       <FeaturedCollections />
+      
+      {/* Editorial Banner */}
+      <EditorialBanner />
       
       {/* Featured Products */}
       <FeaturedProducts />

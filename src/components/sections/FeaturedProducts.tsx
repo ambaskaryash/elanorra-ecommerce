@@ -92,7 +92,7 @@ export default function FeaturedProducts() {
   }
 
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-stone-50">
+    <section className="py-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-50 via-stone-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -102,7 +102,8 @@ export default function FeaturedProducts() {
         >
           {/* Section Header */}
           <motion.div variants={itemVariants} className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl heading-xl mb-6 tracking-wide">Featured Products</h2>
+            <h2 className="text-4xl sm:text-5xl heading-xl mb-3 tracking-wide">Featured Products</h2>
+            <div className="mx-auto h-1 w-24 rounded-full bg-gradient-to-r from-rose-500 via-pink-500 to-indigo-500" />
             <p className="text-lg text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
               Handpicked favorites that showcase the best of our craftsmanship and design. 
               Each piece is created with love and attention to detail.
@@ -116,7 +117,7 @@ export default function FeaturedProducts() {
           >
             {products.map((product) => (
               <motion.div key={product.id} variants={itemVariants}>
-                <ProductCard product={product} />
+                <ProductCard product={product} variant="homepage" />
               </motion.div>
             ))}
           </motion.div>

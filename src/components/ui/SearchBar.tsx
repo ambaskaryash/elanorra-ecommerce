@@ -19,6 +19,8 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
   const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const categories = ['Tableware', 'Gifting', 'Kids Collection', 'Home Decor', 'Stationery'];
+  const trending = ['Dinner Set', 'Tea Set', 'Gift Hampers', 'Notebooks', 'Glassware'];
 
   // Generate suggestions based on query
   useEffect(() => {
@@ -128,8 +130,8 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
               }
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Search products..."
-            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent bg-white text-gray-900"
+            placeholder="Search products, collections..."
+            className="input-elevated pl-10 pr-10 py-2.5 text-sm sm:text-base"
           />
           {query && (
             <button
@@ -143,22 +145,50 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
         </div>
       </form>
 
-      {/* Suggestions Dropdown */}
-      {isOpen && query.trim().length >= 2 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
-          {suggestions.length > 0 ? (
+      {/* Suggestions Dropdown / Categories */}
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg z-50 max-h-[28rem] overflow-y-auto">
+          {query.trim().length < 2 ? (
+            <div className="px-4 pt-4 pb-2">
+              <div className="text-xs uppercase tracking-wide text-gray-500 mb-2">Popular Categories</div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {categories.map((cat) => (
+                  <Link key={cat} href={`/shop?category=${encodeURIComponent(cat.toLowerCase())}`} className="chip">
+                    {cat}
+                  </Link>
+                ))}
+              </div>
+              <div className="text-xs uppercase tracking-wide text-gray-500 mb-2">Trending Searches</div>
+              <div className="flex flex-wrap gap-2">
+                {trending.map((term) => (
+                  <button
+                    key={term}
+                    onClick={() => {
+                      setQuery(term);
+                      router.push(`/search?q=${encodeURIComponent(term)}`);
+                      setIsOpen(false);
+                      setSelectedIndex(-1);
+                    }}
+                    className="chip"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : suggestions.length > 0 ? (
             <div className="py-2">
               {suggestions.map((product, index) => (
                 <button
                   key={product.id}
                   onClick={() => handleSuggestionClick(product)}
                   className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center space-x-3 ${
-                    selectedIndex === index ? 'bg-rose-50' : ''
+                    selectedIndex === index ? 'bg-[var(--muted)]' : ''
                   }`}
                 >
                   <div className="flex-shrink-0 w-12 h-12 relative bg-gray-100 rounded-lg overflow-hidden">
                     <Image
-            src={product.images[0]?.src || '/images/placeholder.svg'}
+                      src={product.images[0]?.src || '/images/placeholder.svg'}
                       alt={product.name}
                       fill
                       className="object-cover"
@@ -187,7 +217,7 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
                     setIsOpen(false);
                     setSelectedIndex(-1);
                   }}
-                  className="block w-full px-4 py-3 text-center text-rose-600 hover:bg-rose-50 transition-colors font-medium"
+                  className="block w-full px-4 py-3 text-center text-[var(--ring)] hover:bg-[var(--muted)] transition-colors font-medium"
                 >
                   View all results for "{query}"
                 </Link>
@@ -203,7 +233,7 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
                   setIsOpen(false);
                   setSelectedIndex(-1);
                 }}
-                className="text-rose-600 hover:text-rose-700 text-sm mt-2 inline-block"
+                className="text-[var(--ring)] hover:text-[var(--accent)] text-sm mt-2 inline-block"
               >
                 Search anyway
               </Link>
