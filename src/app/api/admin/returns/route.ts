@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       include: { role: true }
     });
 
-    if (!user || !user.role || user.role.userLevel > 2) {
+    if (!user || !user.role || user.role.level > 2) {
       return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
     }
 

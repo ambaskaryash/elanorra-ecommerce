@@ -38,6 +38,23 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user || !user.role) {
+      // Legacy fallback: grant admin-like capabilities if legacy isAdmin is true
+      if (user && user.isAdmin) {
+        return NextResponse.json({
+          canManageUsers: true,
+          canManageProducts: true,
+          canManageOrders: true,
+          canManageBlog: true,
+          canManageNewsletter: true,
+          canViewAnalytics: true,
+          canManageRoles: true,
+          canAccessSystemSettings: true,
+          userRole: 'Admin (legacy)',
+          userLevel: 2,
+          permissions: []
+        });
+      }
+
       return NextResponse.json({
         canManageUsers: false,
         canManageProducts: false,
@@ -53,7 +70,10 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const permissions = user.role.permissions.map(rp => rp.permission.name);
+    // Explicitly type the role-permission relation to avoid implicit any
+    const permissions = (user.role.permissions ?? []).map(
+      (rp: { permission: { name: string } }) => rp.permission.name
+    );
     
     return NextResponse.json({
       canManageUsers: permissions.includes('MANAGE_USERS'),

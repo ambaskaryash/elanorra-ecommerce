@@ -43,7 +43,7 @@ export async function verifyAdminAccess(request?: NextRequest): Promise<AdminSec
 
     // Fetch user from database to ensure current admin status
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { clerkId: userId },
       select: {
         id: true,
         email: true,
@@ -184,7 +184,7 @@ export async function hasAdminPermission(
 ): Promise<boolean> {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { clerkId: userId },
       select: { isAdmin: true },
     });
     

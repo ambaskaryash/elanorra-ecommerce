@@ -117,27 +117,46 @@ async function seedRBAC() {
   }
 
   // Make kimetsu119@gmail.com a Super Admin
-  console.log('👑 Setting up Super Admin...');
-  const superAdminRole = await prisma.role.findUnique({
-    where: { name: 'SUPER_ADMIN' }
-  });
+  console.log('👑 Setting up Super Admins and Admins from env...');
+  const superAdminRole = await prisma.role.findUnique({ where: { name: 'SUPER_ADMIN' } });
+  const adminRole = await prisma.role.findUnique({ where: { name: 'ADMIN' } });
 
-  if (superAdminRole) {
-    const superAdminUser = await prisma.user.findUnique({
-      where: { email: 'kimetsu119@gmail.com' }
-    });
+  const superAdminsEnv = (process.env.SUPER_ADMIN_EMAILS || '').split(',').map(e => e.trim()).filter(Boolean);
+  const adminsEnv = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim()).filter(Boolean);
 
-    if (superAdminUser) {
-      await prisma.user.update({
-        where: { email: 'kimetsu119@gmail.com' },
-        data: {
-          roleId: superAdminRole.id,
-          isAdmin: true, // Keep backward compatibility
-        }
-      });
-      console.log('✅ kimetsu119@gmail.com has been granted Super Admin privileges');
-    } else {
-      console.log('⚠️  User kimetsu119@gmail.com not found in database. They need to log in first.');
+  if (superAdminRole && superAdminsEnv.length > 0) {
+    for (const email of superAdminsEnv) {
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (user) {
+        await prisma.user.update({
+          where: { email },
+          data: {
+            roleId: superAdminRole.id,
+            isAdmin: true,
+          }
+        });
+        console.log(`✅ ${email} has been granted Super Admin privileges`);
+      } else {
+        console.log(`⚠️  User ${email} not found. They need to log in first.`);
+      }
+    }
+  }
+
+  if (adminRole && adminsEnv.length > 0) {
+    for (const email of adminsEnv) {
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (user) {
+        await prisma.user.update({
+          where: { email },
+          data: {
+            roleId: adminRole.id,
+            isAdmin: true,
+          }
+        });
+        console.log(`✅ ${email} has been granted Admin privileges`);
+      } else {
+        console.log(`⚠️  User ${email} not found. They need to log in first.`);
+      }
     }
   }
 

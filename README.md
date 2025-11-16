@@ -172,3 +172,12 @@ This project draws inspiration from modern lifestyle and tableware e-commerce ex
 ---
 
 **Made with ❤️ using Next.js and modern web technologies**
+
+## 🔐 Production Admin Setup
+
+- Ensure `DATABASE_URL` is configured for your production database.
+- Seed RBAC roles and permissions on production:
+  - Set `SUPER_ADMIN_EMAILS` and/or `ADMIN_EMAILS` (comma-separated) in your environment.
+  - Run `tsx prisma/rbac-seed.ts` locally against production DB or via your deployment process.
+- First login creates a user with the default `USER` role; the seed upgrades specified emails to Admin/Super Admin.
+- Legacy fallback: if a user has `isAdmin=true` but no role, admin capabilities are granted to prevent lockout; still run the RBAC seed to properly assign roles.
