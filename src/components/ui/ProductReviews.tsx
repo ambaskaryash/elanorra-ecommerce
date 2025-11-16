@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   StarIcon,
   HandThumbUpIcon,
   CheckBadgeIcon,
-  PencilIcon
+  PencilIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
-import { useReviewsStore } from '@/lib/store/reviews-store';
+import { reviewAPI } from '@/lib/services/api';
 import { useAuth } from '@/lib/contexts/auth-context';
 import { toast } from 'react-hot-toast';
 
@@ -22,18 +23,36 @@ export default function ProductReviews({ productId, productName }: ProductReview
   const [showWriteReview, setShowWriteReview] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
   const [filterBy, setFilterBy] = useState('all');
-  
-  const { 
-    getProductReviews, 
-    getProductRating, 
-    addReview, 
-    markHelpful, 
-    isLoading 
-  } = useReviewsStore();
+  const [reviews, setReviews] = useState<Array<{ id: string; productId: string; userId?: string; userName: string; rating: number; title: string; comment: string; helpful: number; verified: boolean; createdAt: string; isOwner?: boolean }>>([]);
+  const [editingReview, setEditingReview] = useState<null | { id: string; rating: number; title: string; comment: string }>(null);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const { user, isAuthenticated } = useAuth();
 
-  const reviews = getProductReviews(productId);
-  const { averageRating, totalReviews } = getProductRating(productId);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setIsLoading(true);
+        const res = await reviewAPI.getReviews({ productId, limit: 100, sortBy: 'createdAt', sortOrder: 'desc' });
+        setReviews(res.reviews);
+        if (res.reviews.length > 0) {
+          const sum = res.reviews.reduce((acc, r) => acc + r.rating, 0);
+          setAverageRating(sum / res.reviews.length);
+          setTotalReviews(res.reviews.length);
+        } else {
+          setAverageRating(0);
+          setTotalReviews(0);
+        }
+      } catch (err: any) {
+        console.error('Failed to load reviews', err);
+        toast.error(err?.message || 'Failed to load reviews');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, [productId]);
 
   // Sort reviews
   const sortedReviews = [...reviews].sort((a, b) => {
@@ -61,9 +80,9 @@ export default function ProductReviews({ productId, productName }: ProductReview
   });
 
   const handleWriteReview = () => {
+    // Always open the modal; if not authenticated, the modal will prompt sign-in
     if (!isAuthenticated) {
-      toast.error('Please sign in to write a review');
-      return;
+      toast.error('Please sign in to submit your review');
     }
     setShowWriteReview(true);
   };
@@ -244,7 +263,8 @@ export default function ProductReviews({ productId, productName }: ProductReview
                   <div className="flex items-center justify-between">
                     <button
                       onClick={() => {
-                        markHelpful(review.id);
+                        // Optimistic helpful increment (no server persistence yet)
+                        setReviews(prev => prev.map(r => r.id === review.id ? { ...r, helpful: r.helpful + 1 } : r));
                         toast.success('Thank you for your feedback!');
                       }}
                       className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
@@ -257,6 +277,44 @@ export default function ProductReviews({ productId, productName }: ProductReview
                       <span className="text-xs text-green-600 font-medium">
                         ✓ Verified Purchase
                       </span>
+                    )}
+                    {review.isOwner && (
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => {
+                            setEditingReview({ id: review.id, rating: review.rating, title: review.title, comment: review.comment });
+                            setShowWriteReview(true);
+                          }}
+                          className="text-sm text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1"
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await reviewAPI.deleteReview(review.id);
+                              toast.success('Review deleted');
+                              const res = await reviewAPI.getReviews({ productId, limit: 100, sortBy: 'createdAt', sortOrder: 'desc' });
+                              setReviews(res.reviews);
+                              if (res.reviews.length > 0) {
+                                const sum = res.reviews.reduce((acc, r) => acc + r.rating, 0);
+                                setAverageRating(sum / res.reviews.length);
+                                setTotalReviews(res.reviews.length);
+                              } else {
+                                setAverageRating(0);
+                                setTotalReviews(0);
+                              }
+                            } catch (e: any) {
+                              toast.error(e?.message || 'Failed to delete review');
+                            }
+                          }}
+                          className="text-sm text-gray-600 hover:text-red-600 transition-colors flex items-center gap-1"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                          Delete
+                        </button>
+                      </div>
                     )}
                   </div>
                 </motion.div>
@@ -292,10 +350,29 @@ export default function ProductReviews({ productId, productName }: ProductReview
       {/* Write Review Modal */}
       <WriteReviewModal
         isOpen={showWriteReview}
-        onClose={() => setShowWriteReview(false)}
+        onClose={() => { setShowWriteReview(false); setEditingReview(null); }}
         productId={productId}
         productName={productName}
         user={user}
+        isAuthenticated={isAuthenticated}
+        mode={editingReview ? 'edit' : 'create'}
+        initialReview={editingReview || undefined}
+        onSubmitted={async () => {
+          try {
+            setIsLoading(true);
+            const res = await reviewAPI.getReviews({ productId, limit: 100, sortBy: 'createdAt', sortOrder: 'desc' });
+            setReviews(res.reviews);
+            if (res.reviews.length > 0) {
+              const sum = res.reviews.reduce((acc, r) => acc + r.rating, 0);
+              setAverageRating(sum / res.reviews.length);
+              setTotalReviews(res.reviews.length);
+            } else {
+              setAverageRating(0);
+              setTotalReviews(0);
+            }
+          } catch {}
+          setIsLoading(false);
+        }}
       />
     </div>
   );
@@ -308,16 +385,30 @@ interface WriteReviewModalProps {
   productId: string;
   productName: string;
   user: any;
+  isAuthenticated: boolean;
+  onSubmitted?: () => void;
+  mode?: 'create' | 'edit';
+  initialReview?: { id: string; rating: number; title: string; comment: string };
 }
 
-function WriteReviewModal({ isOpen, onClose, productId, productName, user }: WriteReviewModalProps) {
-  const [rating, setRating] = useState(0);
+function WriteReviewModal({ isOpen, onClose, productId, productName, user, isAuthenticated, onSubmitted, mode = 'create', initialReview }: WriteReviewModalProps) {
+  const [rating, setRating] = useState(initialReview?.rating || 0);
   const [hoveredRating, setHoveredRating] = useState(0);
-  const [title, setTitle] = useState('');
-  const [comment, setComment] = useState('');
+  const [title, setTitle] = useState(initialReview?.title || '');
+  const [comment, setComment] = useState(initialReview?.comment || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { addReview } = useReviewsStore();
+  useEffect(() => {
+    if (initialReview) {
+      setRating(initialReview.rating);
+      setTitle(initialReview.title);
+      setComment(initialReview.comment);
+    } else {
+      setRating(0);
+      setTitle('');
+      setComment('');
+    }
+  }, [initialReview, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -334,27 +425,33 @@ function WriteReviewModal({ isOpen, onClose, productId, productName, user }: Wri
 
     setIsSubmitting(true);
 
-    const reviewData = {
-      productId,
-      userId: user?.id || 'guest',
-      userName: `${user?.firstName} ${user?.lastName}` || 'Anonymous',
-      userEmail: user?.email || 'guest@example.com',
-      rating,
-      title: title.trim(),
-      comment: comment.trim(),
-      verified: false, // In real app, check if user purchased the product
-    };
-
-    const result = await addReview(reviewData);
-    
-    if (result.success) {
-      toast.success('Review submitted successfully!');
+    try {
+      if (mode === 'edit' && initialReview?.id) {
+        await reviewAPI.updateReview(initialReview.id, {
+          rating,
+          title: title.trim(),
+          comment: comment.trim(),
+        });
+        toast.success('Review updated successfully!');
+      } else {
+        await reviewAPI.createReview({
+          productId,
+          userName: `${user?.firstName} ${user?.lastName}` || 'Anonymous',
+          rating,
+          title: title.trim(),
+          comment: comment.trim(),
+          verified: false,
+        });
+        toast.success('Review submitted successfully!');
+      }
+      
       setRating(0);
       setTitle('');
       setComment('');
       onClose();
-    } else {
-      toast.error(result.error || 'Failed to submit review');
+      onSubmitted && onSubmitted();
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to submit review');
     }
     
     setIsSubmitting(false);
@@ -389,6 +486,12 @@ function WriteReviewModal({ isOpen, onClose, productId, productName, user }: Wri
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!isAuthenticated && (
+            <div className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-800">
+              You need to sign in to submit a review.
+              <a href="/sign-in" className="ml-2 font-medium underline">Sign in</a>
+            </div>
+          )}
           {/* Rating */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -462,7 +565,7 @@ function WriteReviewModal({ isOpen, onClose, productId, productName, user }: Wri
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isAuthenticated}
               className="flex-1 px-4 py-2 bg-[var(--accent)] text-white rounded-md hover:bg-[color:rgb(186,156,109)] disabled:bg-gray-400 transition-colors"
             >
               {isSubmitting ? 'Submitting...' : 'Submit Review'}

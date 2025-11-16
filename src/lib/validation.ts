@@ -152,6 +152,26 @@ export function validateSearch(data: unknown) {
   };
 }
 
+// Address/PIN helpers
+export function isValidPINCode(code: string): boolean {
+  // Indian PIN code: 6 digits, cannot start with 0
+  return /^[1-9][0-9]{5}$/.test(code.trim());
+}
+
+export function isServiceablePIN(code: string): boolean {
+  const trimmed = code.trim();
+  // Allow configuration via env var: comma-separated PINs
+  const list = (process.env.NEXT_PUBLIC_SERVICEABLE_PINS || '')
+    .split(',')
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (list.length > 0) {
+    return list.includes(trimmed);
+  }
+  // Fallback: serviceable by default if no list is provided
+  return true;
+}
+
 // SQL injection prevention helpers
 export function escapeForLike(input: string): string {
   return input.replace(/[%_\\]/g, '\\$&');

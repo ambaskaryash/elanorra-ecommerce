@@ -130,6 +130,7 @@ export interface ApiReview {
     slug: string;
     images: Array<{ src: string; alt: string }>;
   };
+  isOwner?: boolean;
 }
 
 export interface ApiBlogPost {
@@ -262,6 +263,7 @@ export const productAPI = {
   getProducts: async (params?: {
     category?: string;
     search?: string;
+    ids?: string[];
     page?: number;
     limit?: number;
     sortBy?: string;
@@ -571,6 +573,22 @@ export const reviewAPI = {
       body: JSON.stringify(reviewData),
     });
   },
+  
+  updateReview: async (
+    id: string,
+    updates: Partial<{ rating: number; title: string; comment: string }>
+  ): Promise<{ review: ApiReview }> => {
+    return apiFetch<{ review: ApiReview }>(`/reviews/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+  },
+  
+  deleteReview: async (id: string): Promise<{ message: string; deletedId?: string }> => {
+    return apiFetch<{ message: string; deletedId?: string }>(`/reviews/${id}`, {
+      method: 'DELETE',
+    });
+  },
 };
 
 // Address API functions
@@ -765,6 +783,23 @@ export const api = {
   users: userAPI,
   auth: authAPI,
   returns: returnAPI,
+  wishlist: {
+    getWishlist: async (): Promise<{ products: ApiProduct[] }> => {
+      return apiFetch<{ products: ApiProduct[] }>(`/wishlist`);
+    },
+    add: async (productId: string): Promise<{ message: string } | { error: string }> => {
+      return apiFetch(`/wishlist`, {
+        method: 'POST',
+        body: JSON.stringify({ productId }),
+      });
+    },
+    remove: async (productId: string): Promise<{ message: string } | { error: string }> => {
+      return apiFetch(`/wishlist`, {
+        method: 'DELETE',
+        body: JSON.stringify({ productId }),
+      });
+    },
+  },
 };
 
 export type ApiReturnRequest = {

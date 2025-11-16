@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Order, Address, User } from '@/types';
 import { api, ApiError } from '@/lib/services/api';
+import { isValidPINCode, isServiceablePIN } from '@/lib/validation';
 
 interface AddressFormInput {
   firstName: string;
@@ -209,12 +210,23 @@ export default function AccountPage() {
     setCurrentAddressToEdit(null);
   };
 
+  // ZIP/PIN validation state
+  const [isZipValid, setIsZipValid] = useState<boolean | null>(null);
+  const [isZipServiceable, setIsZipServiceable] = useState<boolean | null>(null);
+
   const handleAddressInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setNewAddressData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
+
+    if (name === 'zipCode') {
+      const valid = isValidPINCode(value);
+      setIsZipValid(valid);
+      // Only check serviceability for valid PINs
+      setIsZipServiceable(valid ? isServiceablePIN(value) : null);
+    }
   };
 
   const handleSubmitAddressForm = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -499,7 +511,24 @@ export default function AccountPage() {
                             </div>
                             <div className="sm:col-span-2">
                               <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700">ZIP / Postal code</label>
-                              <input type="text" name="zipCode" id="zipCode" value={newAddressData.zipCode} onChange={handleAddressInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" />
+                              <input
+                                type="text"
+                                name="zipCode"
+                                id="zipCode"
+                                value={newAddressData.zipCode}
+                                onChange={handleAddressInputChange}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                placeholder="e.g., 560001"
+                              />
+                              {isZipValid === false && (
+                                <p className="mt-1 text-xs text-red-600">Enter a valid 6-digit PIN code.</p>
+                              )}
+                              {isZipValid && isZipServiceable === false && (
+                                <p className="mt-1 text-xs text-amber-600">We currently don’t ship to this PIN. Please use another.</p>
+                              )}
+                              {isZipValid && isZipServiceable && (
+                                <p className="mt-1 text-xs text-green-600">PIN code is valid and serviceable.</p>
+                              )}
                             </div>
                             <div className="sm:col-span-6">
                               <label htmlFor="country" className="block text-sm font-medium text-gray-700">Country</label>
@@ -535,7 +564,7 @@ export default function AccountPage() {
                           <button type="button" onClick={handleCancelAddressForm} className="mr-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
                             Cancel
                           </button>
-                          <button type="submit" className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700">
+                          <button type="submit" disabled={isZipValid === false || isZipServiceable === false} className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
                             Save Address
                           </button>
                         </div>

@@ -248,6 +248,20 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteReview = async (review: ApiReview) => {
+    if (!confirm(`Are you sure you want to delete the review by "${review.userName}"?`)) {
+      return;
+    }
+    try {
+      await reviewAPI.deleteReview(review.id);
+      toast.success('Review deleted successfully!');
+      await loadData();
+    } catch (error: unknown) {
+      console.error('Error deleting review:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to delete review');
+    }
+  };
+
   const handleProductModalSuccess = async () => {
     await loadData(); // Refresh data after product create/update
   };
@@ -1546,7 +1560,7 @@ export default function AdminDashboard() {
             </div>
             <div className="p-6">
               <div className="space-y-6">
-                {reviews.map((review) => (
+                {dbReviews.map((review) => (
                   <div key={review.id} className="border border-gray-200 rounded-lg p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
@@ -1581,7 +1595,7 @@ export default function AdminDashboard() {
                         <button className="text-green-600 hover:text-green-900">
                           <CheckCircleIcon className="h-5 w-5" />
                         </button>
-                        <button className="text-red-600 hover:text-red-900">
+                        <button className="text-red-600 hover:text-red-900" onClick={() => handleDeleteReview(review)}>
                           <XCircleIcon className="h-5 w-5" />
                         </button>
                       </div>

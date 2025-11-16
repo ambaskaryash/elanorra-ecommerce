@@ -7,8 +7,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { useCartStore } from '@/lib/store/cart-store';
+import { useWishlistStore } from '@/lib/store/wishlist-store';
 import { formatPrice } from '@/lib/utils/index';
 import { toast } from 'react-hot-toast';
+import { api } from '@/lib/services/api';
 
 export default function Cart() {
   const { 
@@ -25,6 +27,7 @@ export default function Cart() {
     applyCoupon,
     removeCoupon
   } = useCartStore();
+  const { addToWishlist } = useWishlistStore();
   
   const [couponCode, setCouponCode] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
@@ -139,7 +142,20 @@ export default function Cart() {
                                         </button>
                                       </div>
 
-                                      <div className="flex">
+                                      <div className="flex space-x-4">
+                                        <button
+                                          type="button"
+                                          onClick={async () => {
+                                            addToWishlist(item.product);
+                                            removeItem(item.productId);
+                                            // Mirror to server wishlist for authenticated users (silently ignore errors)
+                                            try { await api.wishlist.add(item.productId); } catch {}
+                                            toast.success('Saved for later');
+                                          }}
+                                          className="font-medium text-gray-700 hover:text-gray-900"
+                                        >
+                                          Save for later
+                                        </button>
                                         <button
                                           type="button"
                                           onClick={() => removeItem(item.productId)}

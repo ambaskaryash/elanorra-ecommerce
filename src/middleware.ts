@@ -22,6 +22,12 @@ export default clerkMiddleware(async (auth, req) => {
   // Configure CORS
   configureCORS(req, response);
 
+  // Bypass middleware effects for API routes to avoid auth-related 500s
+  // API routes handle their own auth logic where required
+  if (req.nextUrl.pathname.startsWith('/api')) {
+    return response;
+  }
+
   // Apply rate limiting (skip for newsletter endpoints in development)
   const pathname = req.nextUrl.pathname;
   const isNewsletterEndpoint = pathname.startsWith('/api/newsletter') || pathname.startsWith('/api/newsletter/templates');

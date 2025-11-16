@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import Head from 'next/head';
 import Script from 'next/script';
-import { StarIcon, HeartIcon, ShareIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { StarIcon, HeartIcon, ShareIcon, MinusIcon, PlusIcon, SquaresPlusIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useCartStore } from '@/lib/store/cart-store';
 import { useWishlistStore } from '@/lib/store/wishlist-store';
+import { useCompareStore } from '@/lib/store/compare-store';
 import { Product } from '@/types';
 import { toast } from 'react-hot-toast';
 import ProductReviews from '@/components/ui/ProductReviews';
@@ -32,8 +32,10 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
 
   const { addItem } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const { toggle: toggleCompare, isCompared } = useCompareStore();
 
   const isWishlisted = isInWishlist(product?.id || '');
+  const inCompare = isCompared(product?.id || '');
 
   // Build ApiProduct shape for cart/wishlist stores
   const apiProductBase: ApiProduct = {
@@ -115,6 +117,11 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
     toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
   };
 
+  const handleCompare = () => {
+    toggleCompare(apiProductBase);
+    toast.success(inCompare ? 'Removed from compare' : 'Added to compare');
+  };
+
   const handleQuantityChange = (delta: number) => {
     const newQuantity = Math.max(1, Math.min(product.inventory, quantity + delta));
     setQuantity(newQuantity);
@@ -157,9 +164,6 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
 
   return (
     <div className="min-h-screen bg-white">
-      <Head>
-        <link rel="canonical" href={canonicalUrl} />
-      </Head>
       <Script
         id="product-jsonld"
         type="application/ld+json"
@@ -194,6 +198,23 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
                     reviewCount,
                   }
                 : undefined,
+          }),
+        }}
+      />
+
+      <Script
+        id="breadcrumb-jsonld"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: `${process.env.NEXT_PUBLIC_SITE_URL || ''}/` },
+              { '@type': 'ListItem', position: 2, name: 'Shop', item: `${process.env.NEXT_PUBLIC_SITE_URL || ''}/shop` },
+              { '@type': 'ListItem', position: 3, name: product.name, item: canonicalUrl },
+            ],
           }),
         }}
       />
@@ -276,17 +297,26 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
                   <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
                   <p className="mt-2 text-gray-600">{product.shortDescription || product.description}</p>
                 </div>
-                <button
-                  onClick={handleWishlist}
-                  className="p-2 rounded-full border hover:bg-gray-50"
-                  aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-                >
-                  {isWishlisted ? (
-                    <HeartIconSolid className="h-6 w-6 text-rose-600" />
-                  ) : (
-                    <HeartIcon className="h-6 w-6 text-gray-700" />
-                  )}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleWishlist}
+                    className="p-2 rounded-full border hover:bg-gray-50"
+                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                  >
+                    {isWishlisted ? (
+                      <HeartIconSolid className="h-6 w-6 text-rose-600" />
+                    ) : (
+                      <HeartIcon className="h-6 w-6 text-gray-700" />
+                    )}
+                  </button>
+                  <button
+                    onClick={handleCompare}
+                    className="p-2 rounded-full border hover:bg-gray-50"
+                    aria-label={inCompare ? 'Remove from compare' : 'Add to compare'}
+                  >
+                    <SquaresPlusIcon className={`h-6 w-6 ${inCompare ? 'text-rose-600' : 'text-gray-700'}`} />
+                  </button>
+                </div>
               </div>
 
               {/* Ratings */}

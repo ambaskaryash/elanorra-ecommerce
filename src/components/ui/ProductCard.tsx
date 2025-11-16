@@ -4,12 +4,13 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, cubicBezier } from 'framer-motion';
-import { HeartIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
+import { HeartIcon, ShoppingBagIcon, SquaresPlusIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { ApiProduct } from '@/lib/services/api';
 import { formatPrice, getDiscountPercentage } from '@/lib/utils';
 import { useCartStore } from '@/lib/store/cart-store';
 import { useWishlistStore } from '@/lib/store/wishlist-store';
+import { useCompareStore } from '@/lib/store/compare-store';
 import toast from 'react-hot-toast';
 
 interface ProductCardProps {
@@ -23,7 +24,9 @@ export default function ProductCard({ product, className = '', variant = 'defaul
   const [imgError, setImgError] = useState(false);
   const { addItem } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const { toggle: toggleCompare, isCompared } = useCompareStore();
   const isWishlisted = isInWishlist(product.id);
+  const inCompare = isCompared(product.id);
 
   const discount = product.compareAtPrice 
     ? getDiscountPercentage(product.compareAtPrice, product.price)
@@ -39,6 +42,12 @@ export default function ProductCard({ product, className = '', variant = 'defaul
     e.preventDefault();
     toggleWishlist(product);
     toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
+  };
+
+  const handleToggleCompare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    toggleCompare(product);
+    toast.success(inCompare ? 'Removed from compare' : 'Added to compare');
   };
 
   return (
@@ -112,7 +121,7 @@ export default function ProductCard({ product, className = '', variant = 'defaul
             )}
           </div>
 
-          {/* Wishlist Button */}
+          {/* Wishlist & Compare Buttons */}
           <button
             onClick={handleToggleWishlist}
             className="absolute top-3 right-3 p-2.5 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full transition-all opacity-0 group-hover:opacity-100 duration-300 shadow-sm hover:shadow-md border border-gray-200/60"
@@ -122,6 +131,14 @@ export default function ProductCard({ product, className = '', variant = 'defaul
             ) : (
               <HeartIcon className="h-5 w-5 text-gray-700" />
             )}
+          </button>
+
+          <button
+            onClick={handleToggleCompare}
+            className="absolute top-14 right-3 p-2.5 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full transition-all opacity-0 group-hover:opacity-100 duration-300 shadow-sm hover:shadow-md border border-gray-200/60"
+            aria-label={inCompare ? 'Remove from compare' : 'Add to compare'}
+          >
+            <SquaresPlusIcon className={`h-5 w-5 ${inCompare ? 'text-[var(--accent)]' : 'text-gray-700'}`} />
           </button>
 
           {/* Quick Add to Cart */}

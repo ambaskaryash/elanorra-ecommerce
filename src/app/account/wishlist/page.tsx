@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import type { Product } from '@/types';
 import { useUser } from '@clerk/nextjs';
+import { api } from '@/lib/services/api';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -63,6 +64,28 @@ export default function WishlistPage() {
     }
   }, [isAuthenticated, isLoaded, router]);
 
+  // On mount, sync wishlist from server for authenticated users
+  useEffect(() => {
+    const syncWishlist = async () => {
+      if (!isAuthenticated) return;
+      try {
+        const res = await api.wishlist.getWishlist();
+        const serverItems = res.products || [];
+        // Merge: add any server items not already present
+        serverItems.forEach((p) => {
+          if (!wishlistItems.find((i) => i.id === p.id)) {
+            // Use store method to add
+            useWishlistStore.getState().addToWishlist(p);
+          }
+        });
+      } catch (e) {
+        console.warn('Wishlist sync failed:', e);
+      }
+    };
+    syncWishlist();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
+
   // Show loading state
   if (!isLoaded) {
     return (
@@ -77,13 +100,20 @@ export default function WishlistPage() {
     return null;
   }
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = async (product: any) => {
     addItem(product);
+    // If authenticated, also remove from server wishlist when adding to cart
+    if (isAuthenticated) {
+      try { await api.wishlist.remove(product.id); } catch {}
+    }
     toast.success(`${product.name} added to cart!`);
   };
 
-  const handleRemoveFromWishlist = (productId: string, productName: string) => {
+  const handleRemoveFromWishlist = async (productId: string, productName: string) => {
     removeFromWishlist(productId);
+    if (isAuthenticated) {
+      try { await api.wishlist.remove(productId); } catch {}
+    }
     toast.success(`${productName} removed from wishlist`);
   };
 
@@ -91,7 +121,12 @@ export default function WishlistPage() {
     setIsClearing(true);
     
     // Add a small delay for better UX
-    setTimeout(() => {
+    setTimeout(async () => {
+      if (isAuthenticated) {
+        // Remove each item server-side
+        const toRemove = [...wishlistItems];
+        await Promise.allSettled(toRemove.map((p) => api.wishlist.remove(p.id)));
+      }
       clearWishlist();
       setIsClearing(false);
       toast.success('Wishlist cleared');
@@ -188,6 +223,21 @@ export default function WishlistPage() {
                 >
                   Continue Shopping
                 </Link>
+                <button
+                  onClick={() => {
+                    if (typeof window === 'undefined') return;
+                    const url = new URL(`${window.location.origin}/wishlist`);
+                    url.searchParams.set('ids', wishlistItems.map((p) => p.id).join(','));
+                    navigator.clipboard?.writeText(url.toString()).then(() => {
+                      toast.success('Shareable wishlist link copied!');
+                    }).catch(() => {
+                      toast.error('Failed to copy link');
+                    });
+                  }}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Copy Wishlist Link
+                </button>
                 <button
                   onClick={handleClearWishlist}
                   disabled={isClearing}

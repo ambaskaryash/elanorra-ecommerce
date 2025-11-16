@@ -68,3 +68,4 @@ fix-admin-role.cjs
 /fix-*.js
 /test-*.js
 /test-*.cjs
+scripts/check-user-role.ts

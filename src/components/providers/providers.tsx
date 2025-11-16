@@ -1,6 +1,7 @@
 'use client';
 
 import { ClerkProvider } from '@clerk/nextjs';
+import { AuthProvider } from '@/lib/contexts/auth-context';
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -17,7 +18,9 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <ClerkProvider {...clerkProps}>
-      {children}
+      <AuthProvider>
+        {children}
+      </AuthProvider>
     </ClerkProvider>
   );
 }

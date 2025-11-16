@@ -1,41 +1,25 @@
 name: Lighthouse CI
 
 on:
-  pull_request:
   push:
     branches: [ main ]
 
 jobs:
-  audit:
+  audit-production:
+    name: Lighthouse CI (Production)
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.x'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Start server and wait
-        run: |
-          npm run start &
-          npx wait-on http://localhost:3000
-
-      - name: Lighthouse checks
+      - name: Lighthouse checks (elanorraliving.in)
         uses: treosh/lighthouse-ci-action@v10
         with:
           urls: |
-            http://localhost:3000/
-            http://localhost:3000/offline
-            http://localhost:3000/shop
+            https://elanorraliving.in/
+            https://elanorraliving.in/account
+            https://elanorraliving.in/shop
           uploadArtifacts: true
           temporaryPublicStorage: true
           runs: 1

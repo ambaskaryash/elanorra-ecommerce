@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useUser as useClerkUser } from '@clerk/nextjs';
 import { User } from '@/types';
 
 interface AuthContextType {
@@ -27,6 +28,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { isSignedIn, user: clerkUser } = useClerkUser();
 
   // Simulate checking for existing session on mount
   useEffect(() => {
@@ -58,6 +60,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     checkAuth();
   }, []);
+
+  // Sync with Clerk if available
+  useEffect(() => {
+    try {
+      if (isSignedIn && clerkUser) {
+        const mappedUser: User = {
+          id: clerkUser.id,
+          email: clerkUser.primaryEmailAddress?.emailAddress || clerkUser.emailAddresses?.[0]?.emailAddress || '',
+          firstName: clerkUser.firstName || '',
+          lastName: clerkUser.lastName || '',
+          phone: clerkUser.primaryPhoneNumber?.phoneNumber,
+          addresses: [],
+        };
+        setUser(mappedUser);
+      } else if (!isSignedIn) {
+        // If Clerk signs out, reflect in our context too
+        setUser(null);
+      }
+    } catch (e) {
+      // No-op: keep local auth if mapping fails
+    }
+    // We intentionally exclude setUser from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSignedIn, clerkUser]);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
