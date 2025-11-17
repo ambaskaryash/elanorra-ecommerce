@@ -109,6 +109,7 @@ export interface Address {
   state: string;
   zipCode: string;
   phone?: string;
+  tag?: string;
   isDefault?: boolean;
   isDefaultShipping: boolean;
   isDefaultBilling: boolean;

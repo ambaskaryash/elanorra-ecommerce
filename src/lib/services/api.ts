@@ -54,6 +54,10 @@ export interface ApiOrder {
   paymentId?: string;
   couponCode?: string;
   notes?: string;
+  // Shipping persistence fields (optional)
+  shippingCarrier?: string;
+  awb?: string;
+  labelUrl?: string;
   createdAt: string;
   updatedAt: string;
   items: Array<{
@@ -107,8 +111,12 @@ lastName: string;
   zipCode: string;
   country: string;
   phone?: string;
-  isDefaultShipping: boolean;
-  isDefaultBilling: boolean;
+  // Unified default flag and optional tag for labeling addresses
+  isDefault?: boolean;
+  tag?: string;
+  // Legacy flags retained for backward compatibility (may be undefined)
+  isDefaultShipping?: boolean;
+  isDefaultBilling?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -611,8 +619,8 @@ export const addressAPI = {
     zipCode: string;
     country?: string;
     phone?: string;
-    isDefaultShipping?: boolean;
-    isDefaultBilling?: boolean;
+    isDefault?: boolean;
+    tag?: string;
   }): Promise<{ address: ApiAddress }> => {
     return apiFetch<{ address: ApiAddress }>('/addresses', {
       method: 'POST',
@@ -634,8 +642,8 @@ export const addressAPI = {
       zipCode: string;
       country: string;
       phone: string;
-      isDefaultShipping: boolean;
-      isDefaultBilling: boolean;
+      isDefault: boolean;
+      tag: string;
     }>
   ): Promise<{ address: ApiAddress }> => {
     return apiFetch<{ address: ApiAddress }>(`/addresses?id=${id}`, {

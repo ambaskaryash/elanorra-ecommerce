@@ -2,13 +2,14 @@
 
 import { api, ApiOrder } from '@/lib/services/api';
 import { useUser } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function NewReturnRequestPage() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [orders, setOrders] = useState<ApiOrder[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<ApiOrder | null>(null);
   const [selectedItems, setSelectedItems] = useState<{[itemId: string]: number}>({});
@@ -19,7 +20,7 @@ export default function NewReturnRequestPage() {
     async function fetchOrders() {
       if (!isLoaded || !user) return;
       try {
-        const userOrders = await api.orders.getOrders();
+        const userOrders = await api.orders.getOrders({ userId: user.id });
         setOrders(userOrders.orders.filter((order: ApiOrder) => order.fulfillmentStatus === 'fulfilled'));
       } catch (err) {
         toast.error('Failed to fetch orders.');
@@ -28,6 +29,19 @@ export default function NewReturnRequestPage() {
 
     fetchOrders();
   }, [isLoaded, user]);
+
+  // Preselect the order from query parameter and default all item quantities to 1
+  useEffect(() => {
+    const orderId = searchParams?.get('orderId');
+    if (!orderId || orders.length === 0) return;
+    const order = orders.find(o => o.id === orderId) || null;
+    setSelectedOrder(order);
+    if (order) {
+      const defaults: {[k: string]: number} = {};
+      order.items.forEach(it => { defaults[it.id] = 1; });
+      setSelectedItems(defaults);
+    }
+  }, [searchParams, orders]);
 
   const handleItemQuantityChange = (itemId: string, quantity: number) => {
     setSelectedItems(prev => ({ ...prev, [itemId]: quantity }));

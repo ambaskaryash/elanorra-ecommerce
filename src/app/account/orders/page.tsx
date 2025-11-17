@@ -9,6 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { getShippingProvider } from '@/lib/services/shipping';
 
 const getFinancialStatusColor = (status: string) => {
   switch (status) {
@@ -137,6 +138,31 @@ export default function OrderHistoryPage() {
                       <div className="mt-2 sm:mt-0 flex items-center space-x-2">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getFinancialStatusColor(order.financialStatus)}`}>{order.financialStatus}</span>
                         <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getFulfillmentStatusColor(order.fulfillmentStatus)}`}>{order.fulfillmentStatus}</span>
+                        {/* Tracking link if available */}
+                        {order.shippingCarrier && (order.awb || order.labelUrl) && (
+                          <Link
+                            href={order.awb ? getShippingProvider(order.shippingCarrier as any).getTrackingUrl(order.awb) : order.labelUrl!}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200"
+                          >
+                            {order.awb ? 'Track Shipment' : 'Download Label'}
+                          </Link>
+                        )}
+                        {/* Invoice download / view */}
+                        <Link
+                          href={`/account/orders/${order.id}/invoice`}
+                          className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        >
+                          View Invoice
+                        </Link>
+                        {/* Initiate return */}
+                        <Link
+                          href={`/account/returns/new?orderId=${order.id}`}
+                          className="px-2.5 py-1 rounded-full text-xs font-medium bg-rose-100 text-rose-800 hover:bg-rose-200"
+                        >
+                          Start Return
+                        </Link>
                       </div>
                   </div>
                 </div>

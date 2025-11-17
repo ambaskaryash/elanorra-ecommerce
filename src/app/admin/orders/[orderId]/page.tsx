@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { notFound, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { ChevronDownIcon, LinkIcon } from '@heroicons/react/24/outline';
 
 interface Props {
   params: {
@@ -33,6 +34,8 @@ export default function AdminOrderDetailPage({ params }: Props) {
   const [order, setOrder] = useState<ApiOrder | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [provider, setProvider] = useState<'shiprocket' | 'delhivery' | 'bluedart'>('shiprocket');
+  const [pickupDate, setPickupDate] = useState<string>('');
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -108,6 +111,66 @@ export default function AdminOrderDetailPage({ params }: Props) {
       setIsUpdating(false);
     }
   };
+
+  const handleGenerateLabel = async () => {
+    if (!order) return;
+    try {
+      const res = await fetch('/api/shipping/label', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider, orderNumber: order.orderNumber }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to generate label');
+
+      const label = data.label;
+      setOrder((prev) => prev ? {
+        ...prev,
+        shippingCarrier: label.carrier,
+        awb: label.awb || label.trackingNumber,
+        labelUrl: label.labelUrl,
+      } : prev);
+      toast.success('Shipping label generated successfully');
+    } catch (e: any) {
+      console.error('Generate label error:', e);
+      toast.error(e?.message || 'Failed to generate label');
+    }
+  };
+
+  const handleSchedulePickup = async () => {
+    if (!order) return;
+    try {
+      const res = await fetch('/api/shipping/pickup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider,
+          awb: order.awb,
+          pickupDate: pickupDate || new Date().toISOString(),
+          address: order.shippingAddress,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to schedule pickup');
+      toast.success('Pickup scheduled');
+    } catch (e: any) {
+      console.error('Schedule pickup error:', e);
+      toast.error(e?.message || 'Failed to schedule pickup');
+    }
+  };
+
+  const trackingUrl = order?.awb ? (() => {
+    switch (provider) {
+      case 'shiprocket':
+        return `https://shiprocket.co/tracking/${order.awb}`;
+      case 'delhivery':
+        return `https://www.delhivery.com/track/${order.awb}`;
+      case 'bluedart':
+        return `https://www.bluedart.com/track?awb=${order.awb}`;
+      default:
+        return '#';
+    }
+  })() : '#';
 
   if (isLoading || status === 'loading') {
     return (
@@ -293,6 +356,88 @@ export default function AdminOrderDetailPage({ params }: Props) {
                   {order.shippingAddress?.address2 && <p>{order.shippingAddress.address2}</p>}
                   <p>{order.shippingAddress?.city}, {order.shippingAddress?.state} {order.shippingAddress?.zipCode}</p>
                   <p>{order.shippingAddress?.country}</p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Shipping Actions */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.35 }}
+              className="bg-white rounded-lg shadow p-6"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Shipping</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Provider</label>
+                  <div className="relative">
+                    <select
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                      value={provider}
+                      onChange={(e) => setProvider(e.target.value as any)}
+                    >
+                      <option value="shiprocket">Shiprocket</option>
+                      <option value="delhivery">Delhivery</option>
+                      <option value="bluedart">Bluedart</option>
+                    </select>
+                    <ChevronDownIcon className="absolute right-2 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleGenerateLabel}
+                    className="px-3 py-2 bg-rose-600 text-white rounded-md text-sm hover:bg-rose-700"
+                  >
+                    Generate Label
+                  </button>
+                  <a
+                    href={order?.labelUrl || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-2 bg-gray-100 text-gray-800 rounded-md text-sm hover:bg-gray-200 inline-flex items-center"
+                  >
+                    <LinkIcon className="h-4 w-4 mr-1" /> Label
+                  </a>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Pickup Date</label>
+                  <input
+                    type="date"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                    value={pickupDate}
+                    onChange={(e) => setPickupDate(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleSchedulePickup}
+                    className="px-3 py-2 bg-emerald-600 text-white rounded-md text-sm hover:bg-emerald-700"
+                    disabled={!order?.awb}
+                  >
+                    Schedule Pickup
+                  </button>
+                  <a
+                    href={trackingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                  >
+                    Track Shipment
+                  </a>
+                </div>
+
+                <div className="border-t border-gray-200 pt-4 mt-4 text-sm text-gray-700 space-y-1">
+                  <p><span className="font-medium">Carrier:</span> {order?.shippingCarrier || '—'}</p>
+                  <p><span className="font-medium">AWB:</span> {order?.awb || '—'}</p>
+                  {order?.labelUrl && (
+                    <p>
+                      <span className="font-medium">Label URL:</span>{' '}
+                      <a href={order.labelUrl} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">Open</a>
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>

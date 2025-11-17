@@ -22,6 +22,7 @@ const addressSchema = z.object({
   zipCode: z.string().min(1, 'Zip code is required'),
   country: z.string().min(1, 'Country is required').default('India'),
   phone: z.string().optional(),
+  tag: z.string().optional(),
   isDefault: z.boolean().optional().default(false),
 });
 

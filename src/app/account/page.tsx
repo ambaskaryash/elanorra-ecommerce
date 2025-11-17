@@ -33,8 +33,8 @@ interface AddressFormInput {
   zipCode: string;
   country: string;
   phone?: string;
-  isDefaultShipping: boolean;
-  isDefaultBilling: boolean;
+  isDefault: boolean;
+  tag?: string;
 }
 
 const accountMenuItems = [
@@ -89,8 +89,8 @@ export default function AccountPage() {
     zipCode: '',
     country: '',
     phone: '',
-    isDefaultShipping: false,
-    isDefaultBilling: false,
+    isDefault: false,
+    tag: '',
   });
 
   // Security: change password state
@@ -125,7 +125,27 @@ export default function AccountPage() {
       setAddressesLoading(true);
       try {
         const response = await api.addresses.getAddresses(user.id);
-        setAddresses(response.addresses);
+        // Map API addresses to local Address type with safe defaults
+        const mapped = response.addresses.map((a) => ({
+          id: a.id,
+          firstName: a.firstName,
+          lastName: a.lastName,
+          company: a.company,
+          address1: a.address1,
+          address2: a.address2,
+          city: a.city,
+          state: a.state,
+          zipCode: a.zipCode,
+          country: a.country,
+          phone: a.phone,
+          // Unified fields
+          isDefault: (a as any).isDefault ?? false,
+          tag: (a as any).tag ?? undefined,
+          // Legacy flags default to false when missing
+          isDefaultShipping: a.isDefaultShipping ?? false,
+          isDefaultBilling: a.isDefaultBilling ?? false,
+        }));
+        setAddresses(mapped);
       } catch (error: unknown) {
         console.error('Error fetching addresses:', error);
         const errorMessage = error instanceof ApiError ? error.message : 'An unknown error occurred.';
@@ -177,8 +197,8 @@ export default function AccountPage() {
       zipCode: '',
       country: '',
       phone: '',
-      isDefaultShipping: false,
-      isDefaultBilling: false,
+      isDefault: false,
+      tag: '',
     });
     setIsAddingAddress(true);
     setIsEditingAddress(false);
@@ -197,8 +217,8 @@ export default function AccountPage() {
       zipCode: address.zipCode || '',
       country: address.country || '',
       phone: address.phone || '',
-      isDefaultShipping: address.isDefaultShipping || false,
-      isDefaultBilling: address.isDefaultBilling || false,
+      isDefault: address.isDefault || false,
+      tag: address.tag || '',
     });
     setIsEditingAddress(true);
     setIsAddingAddress(false);
@@ -214,8 +234,9 @@ export default function AccountPage() {
   const [isZipValid, setIsZipValid] = useState<boolean | null>(null);
   const [isZipServiceable, setIsZipServiceable] = useState<boolean | null>(null);
 
-  const handleAddressInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleAddressInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target as any;
+    const checked = (e.target as any).checked as boolean | undefined;
     setNewAddressData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
@@ -538,23 +559,17 @@ export default function AccountPage() {
                               <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
                               <input type="text" name="phone" id="phone" value={newAddressData.phone} onChange={handleAddressInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" />
                             </div>
-                            <div className="sm:col-span-6">
-                              <div className="flex items-start">
-                                <div className="flex h-5 items-center">
-                                  <input id="isDefaultShipping" name="isDefaultShipping" type="checkbox" checked={newAddressData.isDefaultShipping} onChange={handleAddressInputChange} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                                </div>
-                                <div className="ml-3 text-sm">
-                                  <label htmlFor="isDefaultShipping" className="font-medium text-gray-700">Set as default shipping address</label>
-                                </div>
-                              </div>
+                            <div className="sm:col-span-3">
+                              <label htmlFor="tag" className="block text-sm font-medium text-gray-700">Address Tag</label>
+                              <input type="text" name="tag" id="tag" value={newAddressData.tag || ''} onChange={handleAddressInputChange} placeholder="e.g., Home, Office" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" />
                             </div>
-                            <div className="sm:col-span-6">
-                              <div className="flex items-start">
+                            <div className="sm:col-span-3">
+                              <div className="flex items-start mt-6">
                                 <div className="flex h-5 items-center">
-                                  <input id="isDefaultBilling" name="isDefaultBilling" type="checkbox" checked={newAddressData.isDefaultBilling} onChange={handleAddressInputChange} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                                  <input id="isDefault" name="isDefault" type="checkbox" checked={newAddressData.isDefault} onChange={handleAddressInputChange} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
                                 </div>
                                 <div className="ml-3 text-sm">
-                                  <label htmlFor="isDefaultBilling" className="font-medium text-gray-700">Set as default billing address</label>
+                                  <label htmlFor="isDefault" className="font-medium text-gray-700">Set as default address</label>
                                 </div>
                               </div>
                             </div>
@@ -581,8 +596,12 @@ export default function AccountPage() {
                           <div className="flex justify-between">
                             <p className="font-semibold">{address.firstName} {address.lastName}</p>
                             <div>
-                              {address.isDefaultShipping && <span className="mr-2 inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Default Shipping</span>}
-                              {address.isDefaultBilling && <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">Default Billing</span>}
+                              {address.isDefault && (
+                                <span className="mr-2 inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Default</span>
+                              )}
+                              {address.tag && (
+                                <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">{address.tag}</span>
+                              )}
                             </div>
                           </div>
                           <p className="text-sm text-gray-600">{address.address1}</p>
