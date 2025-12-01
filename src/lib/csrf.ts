@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { 
   generateCSRFToken, 
-  validateCSRFToken, 
-  isCSRFTokenExpired 
+  validateCSRFToken,
 } from '@/lib/validation';
 
 // CSRF token configuration
@@ -30,31 +29,25 @@ export function generateCSRFTokenWithTimestamp(): CSRFTokenData {
 /**
  * Get CSRF token from request headers or cookies
  */
-export function getCSRFTokenFromRequest(request: NextRequest): string | null {
-  // First try to get from header
-  const headerToken = request.headers.get(CSRF_TOKEN_HEADER);
-  if (headerToken) {
-    return headerToken;
-  }
+export function getCSRFTokenFromRequestHeader(request: NextRequest): string | null {
+  return request.headers.get(CSRF_TOKEN_HEADER);
+}
 
-  // Fallback to cookie
-  const cookieToken = request.cookies.get(CSRF_TOKEN_COOKIE)?.value;
-  return cookieToken || null;
+export function getCSRFTokenFromCookie(request: NextRequest): string | null {
+  return request.cookies.get(CSRF_TOKEN_COOKIE)?.value || null;
 }
 
 /**
  * Validate CSRF token from request
  */
-export function validateCSRFTokenFromRequest(
-  request: NextRequest, 
-  sessionToken: string
-): boolean {
-  const token = getCSRFTokenFromRequest(request);
-  if (!token) {
+export function validateCSRFTokenFromRequest(request: NextRequest): boolean {
+  const headerToken = getCSRFTokenFromRequestHeader(request);
+  const cookieToken = getCSRFTokenFromCookie(request);
+  if (!headerToken || !cookieToken) {
     return false;
   }
-
-  return validateCSRFToken(token, sessionToken, CSRF_SECRET);
+  // Double-submit cookie pattern: compare header token to cookie token using HMAC secret
+  return validateCSRFToken(headerToken, cookieToken, CSRF_SECRET);
 }
 
 /**
@@ -79,19 +72,10 @@ export async function withCSRFProtection(
   }
 
   try {
-    // Get session to validate CSRF token
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Authentication required for CSRF validation' },
-        { status: 401 }
-      );
-    }
-
-    // Validate CSRF token
-    const isValidCSRF = validateCSRFTokenFromRequest(request, userId);
+    // Validate CSRF token by comparing header and cookie values
+    const isValidCSRF = validateCSRFTokenFromRequest(request);
     if (!isValidCSRF) {
-      console.warn(`CSRF validation failed for user ${userId} on ${request.method} ${request.url}`);
+      console.warn(`CSRF validation failed on ${request.method} ${request.url}`);
       return NextResponse.json(
         { error: 'Invalid CSRF token' },
         { status: 403 }
@@ -132,7 +116,7 @@ export async function generateCSRFTokenResponse(request: NextRequest): Promise<N
       expiresAt: tokenData.timestamp + CSRF_TOKEN_MAX_AGE
     });
 
-    // Set CSRF token in cookie (httpOnly for security)
+    // Set CSRF token in cookie (httpOnly for security, server compares cookie vs header)
     response.cookies.set(CSRF_TOKEN_COOKIE, tokenData.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
