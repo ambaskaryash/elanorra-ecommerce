@@ -21,6 +21,30 @@ export default function ImageUpload({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  // Fetch a CSRF token before making POST requests to CSRF-protected APIs
+  const fetchCsrfToken = async (): Promise<string | null> => {
+    try {
+      const res = await fetch('/api/csrf', { method: 'GET' });
+      if (!res.ok) {
+        // Try read as JSON, else text
+        let body: any = {};
+        try {
+          body = await res.json();
+        } catch {
+          const text = await res.text().catch(() => '');
+          body = text ? { error: text } : {};
+        }
+        console.error('Failed to obtain CSRF token:', { status: res.status, body });
+        return null;
+      }
+      const data = await res.json();
+      return data?.csrfToken ?? null;
+    } catch (err) {
+      console.error('Error fetching CSRF token:', err);
+      return null;
+    }
+  };
+
   const uploadImage = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append('file', file);
@@ -28,9 +52,13 @@ export default function ImageUpload({
     try {
       console.log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
       
+      // Ensure we have a CSRF token (required by the upload API)
+      const csrfToken = await fetchCsrfToken();
+
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
+        headers: csrfToken ? { 'x-csrf-token': csrfToken } : undefined,
       });
 
       console.log('Upload response status:', response.status);
