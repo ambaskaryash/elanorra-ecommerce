@@ -247,8 +247,7 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
               <ImageZoom
                 src={product.images[selectedImage]?.src || '/images/placeholder.svg'}
                 alt={product.images[selectedImage]?.alt || product.name}
-                className="absolute inset-0"
-                priority
+                className="w-full h-full"
               />
 
               {/* Badges */}

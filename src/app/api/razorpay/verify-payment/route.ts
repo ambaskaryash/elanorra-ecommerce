@@ -173,13 +173,8 @@ async function savePaymentToDatabase(paymentData: PaymentData, orderData: { id: 
         paymentId: paymentData.razorpay_payment_id,
         financialStatus: 'paid',
         paymentMethod: 'razorpay',
-        paidAt: new Date(paymentData.created_at * 1000), // Convert Unix timestamp to Date
-        paymentDetails: {
-          razorpay_order_id: paymentData.razorpay_order_id,
-          razorpay_signature: paymentData.razorpay_signature,
-          method: paymentData.method,
-          currency: paymentData.currency,
-        },
+        // updatedAt will auto-update via Prisma @updatedAt
+        // Persist minimal payment info to existing fields only
       },
     });
 

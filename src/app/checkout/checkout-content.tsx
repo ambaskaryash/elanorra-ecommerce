@@ -319,7 +319,7 @@ export default function CheckoutContent() {
     setIsProcessing(true);
 
     try {
-      const requiredFields = ['firstName', 'lastName', 'address1', 'city', 'state', 'pincode', 'phone'];
+      const requiredFields = ['firstName', 'lastName', 'address1', 'city', 'state', 'pincode', 'phone', 'email'];
       const missingFields = requiredFields.filter(field => !billingAddress[field as keyof Address]);
 
       if (missingFields.length > 0) {
@@ -340,6 +340,15 @@ export default function CheckoutContent() {
         return;
       }
 
+      // Validate email used for Razorpay order creation
+      const emailToUse = user?.email || billingAddress.email || '';
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(emailToUse)) {
+        toast.error('Please enter a valid email address');
+        setIsProcessing(false);
+        return;
+      }
+
       // Process Razorpay payment
       await processOnlinePayment();
     } catch (error) {
@@ -351,21 +360,12 @@ export default function CheckoutContent() {
 
   const createOrderInSystem = async (paymentResponse?: RazorpayResponse): Promise<{ success: boolean; orderId?: string; error?: string }> => {
     try {
-      const orderData = {
+      const apiPayload = {
         email: user?.email || billingAddress.email || '',
-        lineItems: items.map(item => ({
-          id: item.productId,
+        items: items.map(item => ({
           productId: item.productId,
           quantity: item.quantity,
           price: item.product.price,
-          title: item.product.name,
-          totalDiscount: 0,
-          image: item.product.images[0]?.src || '',
-          product: {
-            name: item.product.name,
-            slug: item.product.slug,
-            images: item.product.images,
-          },
         })),
         shippingAddress: {
           firstName: billingAddress.firstName,
@@ -395,24 +395,26 @@ export default function CheckoutContent() {
         taxes: taxAmount,
         shipping: shippingAmount,
         totalPrice: totalPrice,
-        currency: 'INR',
         paymentMethod: selectedPayment,
-        deliveryOption: selectedDelivery,
-        orderNotes: orderNotes,
+        notes: orderNotes,
       };
 
-      const result = await createOrder(orderData);
-      
-      if (result.success) {
-        return { success: true, orderId: result.orderId };
-      } else {
-        return { success: false, error: result.error || 'Order creation failed' };
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(apiPayload),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.order?.id) {
+        return { success: false, error: json.error || 'Order creation failed' };
       }
-      
+
+      return { success: true, orderId: json.order.id };
     } catch (error) {
       console.error('Order creation error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to create order. Please contact support.';
-      
       return { success: false, error: errorMessage };
     }
   };
@@ -650,6 +652,24 @@ export default function CheckoutContent() {
                     className="absolute left-4 -top-2.5 bg-white px-2 text-sm font-medium text-gray-700 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-rose-600"
                   >
                     Phone Number *
+                  </label>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="email"
+                    id="email"
+                    value={billingAddress.email || ''}
+                    onChange={(e) => handleAddressChange('email', e.target.value, 'billing')}
+                    className="peer w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent placeholder-transparent"
+                    placeholder="Email"
+                    required
+                  />
+                  <label
+                    htmlFor="email"
+                    className="absolute left-4 -top-2.5 bg-white px-2 text-sm font-medium text-gray-700 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-rose-600"
+                  >
+                    Email *
                   </label>
                 </div>
               </div>

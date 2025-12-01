@@ -16,7 +16,21 @@ export default function ImageZoom({ src, alt, className = '', priority = false }
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const imageRef = useRef<HTMLDivElement>(null);
+
+  // Ensure the image src is absolute and uses https
+  const sanitizeSrc = (raw: string) => {
+    if (!raw) return '/images/placeholder.svg';
+    // Handle protocol-relative URLs
+    if (raw.startsWith('//')) return `https:${raw}`;
+    // Force https for cloudinary or http links
+    if (raw.startsWith('http://res.cloudinary.com')) {
+      return raw.replace('http://', 'https://');
+    }
+    return raw;
+  };
+  const safeSrc = hasError ? '/images/placeholder.svg' : sanitizeSrc(src);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!imageRef.current) return;
@@ -60,19 +74,19 @@ export default function ImageZoom({ src, alt, className = '', priority = false }
         onClick={handleClick}
       >
         <Image
-          src={src}
+          src={safeSrc}
           alt={alt}
           fill
+          sizes="(max-width: 1024px) 100vw, 50vw"
           className="object-cover transition-transform duration-300"
           priority={priority}
+          onError={() => setHasError(true)}
         />
 
-        {/* Zoom Indicator */}
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300">
-          <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-full p-2 shadow-lg">
-              <MagnifyingGlassIcon className="w-5 h-5 text-gray-700" />
-            </div>
+        {/* Zoom Indicator (no background overlay to avoid black cover) */}
+        <div className="pointer-events-none absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
+            <MagnifyingGlassIcon className="w-5 h-5 text-gray-700" />
           </div>
         </div>
 
@@ -81,7 +95,7 @@ export default function ImageZoom({ src, alt, className = '', priority = false }
           <div
             className="absolute inset-0 bg-no-repeat pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             style={{
-              backgroundImage: `url(${src})`,
+              backgroundImage: `url(${safeSrc})`,
               backgroundSize: '200%',
               backgroundPosition: `${mousePosition.x}% ${mousePosition.y}%`,
               borderRadius: 'inherit',
@@ -121,12 +135,13 @@ export default function ImageZoom({ src, alt, className = '', priority = false }
               <div className="relative w-full h-full flex items-center justify-center">
                 <div className="relative max-w-full max-h-full">
                   <Image
-                    src={src}
+                    src={safeSrc}
                     alt={alt}
                     width={1200}
                     height={1200}
                     className="object-contain max-w-full max-h-[90vh] w-auto h-auto"
                     priority
+                    onError={() => setHasError(true)}
                   />
                 </div>
               </div>
