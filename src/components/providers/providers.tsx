@@ -9,15 +9,12 @@ interface ProvidersProps {
 }
 
 export function Providers({ children }: ProvidersProps) {
-  const clerkProps: Record<string, unknown> = {};
-  if (publishableKey) {
-    clerkProps.publishableKey = publishableKey;
-  }
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   // Use default Clerk JS URL derived from publishableKey/tenant; no override
 
   return (
     <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!}
+      publishableKey={publishableKey}
       appearance={{
         baseTheme: undefined,
         variables: {
