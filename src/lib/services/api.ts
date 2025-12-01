@@ -44,6 +44,11 @@ export interface ApiOrder {
   email: string;
   financialStatus: string;
   fulfillmentStatus: string;
+  // Shipment tracking
+  trackingNumber?: string;
+  carrier?: string;
+  shippedAt?: string;
+  estimatedDelivery?: string;
   subtotal: number;
   taxes: number;
   shipping: number;
@@ -54,10 +59,11 @@ export interface ApiOrder {
   paymentId?: string;
   couponCode?: string;
   notes?: string;
-  // Shipping persistence fields (optional)
-  shippingCarrier?: string;
-  awb?: string;
-  labelUrl?: string;
+  // Invoice related fields
+  invoiceNumber?: string;
+  invoiceGenerated: boolean;
+  invoiceFilePath?: string;
+  invoiceEmailSent: boolean;
   createdAt: string;
   updatedAt: string;
   items: Array<{

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
+import { Review } from '@prisma/client';
 
 type RouteParamsPromise = Promise<{ slug: string }>;
 
@@ -55,9 +56,9 @@ export async function GET(
     }
 
     // Calculate average rating
-    const ratings = product.reviews.map(r => r.rating);
+    const ratings = product.reviews.map((r: Review) => r.rating);
     const avgRating = ratings.length > 0 
-      ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length 
+      ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length 
       : 0;
 
     // Format product with additional data

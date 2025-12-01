@@ -34,8 +34,10 @@ export default function AdminOrderDetailPage({ params }: Props) {
   const [order, setOrder] = useState<ApiOrder | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [provider, setProvider] = useState<'shiprocket' | 'delhivery' | 'bluedart'>('shiprocket');
-  const [pickupDate, setPickupDate] = useState<string>('');
+  const [trackingNumber, setTrackingNumber] = useState<string>('');
+  const [carrier, setCarrier] = useState<string>('');
+  const [shippedAt, setShippedAt] = useState<string>('');
+  const [estimatedDelivery, setEstimatedDelivery] = useState<string>('');
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -88,6 +90,15 @@ export default function AdminOrderDetailPage({ params }: Props) {
     fetchOrder();
   }, [params.orderId]);
 
+  useEffect(() => {
+    if (order) {
+      setTrackingNumber(order.trackingNumber ?? '');
+      setCarrier(order.carrier ?? '');
+      setShippedAt(order.shippedAt ?? '');
+      setEstimatedDelivery(order.estimatedDelivery ?? '');
+    }
+  }, [order]);
+
   const handleStatusUpdate = async (financialStatus: string, fulfillmentStatus: string) => {
     if (!order) return;
     setIsUpdating(true);
@@ -112,65 +123,32 @@ export default function AdminOrderDetailPage({ params }: Props) {
     }
   };
 
-  const handleGenerateLabel = async () => {
+  const handleTrackingUpdate = async () => {
     if (!order) return;
+    setIsUpdating(true);
     try {
-      const res = await fetch('/api/shipping/label', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider, orderNumber: order.orderNumber }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Failed to generate label');
-
-      const label = data.label;
-      setOrder((prev) => prev ? {
-        ...prev,
-        shippingCarrier: label.carrier,
-        awb: label.awb || label.trackingNumber,
-        labelUrl: label.labelUrl,
-      } : prev);
-      toast.success('Shipping label generated successfully');
-    } catch (e: any) {
-      console.error('Generate label error:', e);
-      toast.error(e?.message || 'Failed to generate label');
-    }
-  };
-
-  const handleSchedulePickup = async () => {
-    if (!order) return;
-    try {
-      const res = await fetch('/api/shipping/pickup', {
-        method: 'POST',
+      const res = await fetch('/api/orders', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          provider,
-          awb: order.awb,
-          pickupDate: pickupDate || new Date().toISOString(),
-          address: order.shippingAddress,
-        }),
+          orderId: order.id,
+          trackingNumber: trackingNumber || undefined,
+          carrier: carrier || undefined,
+          shippedAt: shippedAt || undefined,
+          estimatedDelivery: estimatedDelivery || undefined,
+        })
       });
+      if (!res.ok) throw new Error('Failed to update tracking');
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Failed to schedule pickup');
-      toast.success('Pickup scheduled');
-    } catch (e: any) {
-      console.error('Schedule pickup error:', e);
-      toast.error(e?.message || 'Failed to schedule pickup');
+      setOrder(data.order);
+      toast.success('Tracking details updated');
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to update tracking details');
+    } finally {
+      setIsUpdating(false);
     }
   };
-
-  const trackingUrl = order?.awb ? (() => {
-    switch (provider) {
-      case 'shiprocket':
-        return `https://shiprocket.co/tracking/${order.awb}`;
-      case 'delhivery':
-        return `https://www.delhivery.com/track/${order.awb}`;
-      case 'bluedart':
-        return `https://www.bluedart.com/track?awb=${order.awb}`;
-      default:
-        return '#';
-    }
-  })() : '#';
 
   if (isLoading || status === 'loading') {
     return (
@@ -328,6 +306,63 @@ export default function AdminOrderDetailPage({ params }: Props) {
                     <span className="text-gray-900">{formatPrice(order.totalPrice)}</span>
                   </div>
                 </div>
+              </div>
+            </motion.div>
+
+            {/* Shipment Tracking */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.25 }}
+              className="bg-white rounded-lg shadow p-6"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Shipment Tracking</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Tracking Number</label>
+                  <input
+                    type="text"
+                    value={trackingNumber}
+                    onChange={(e) => setTrackingNumber(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Carrier</label>
+                  <input
+                    type="text"
+                    value={carrier}
+                    onChange={(e) => setCarrier(e.target.value)}
+                    placeholder="e.g., FedEx, UPS, DHL, Bluedart, DTDC"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Shipped At (ISO datetime)</label>
+                  <input
+                    type="datetime-local"
+                    value={shippedAt ? shippedAt.substring(0, 16) : ''}
+                    onChange={(e) => setShippedAt(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Estimated Delivery (ISO datetime)</label>
+                  <input
+                    type="datetime-local"
+                    value={estimatedDelivery ? estimatedDelivery.substring(0, 16) : ''}
+                    onChange={(e) => setEstimatedDelivery(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500"
+                  />
+                </div>
+
+                <button
+                  onClick={handleTrackingUpdate}
+                  disabled={isUpdating}
+                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-rose-600 hover:bg-rose-700 disabled:bg-gray-400"
+                >
+                  {isUpdating ? 'Saving...' : 'Save Tracking Details'}
+                </button>
               </div>
             </motion.div>
 

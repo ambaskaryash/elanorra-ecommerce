@@ -61,11 +61,11 @@ check-user-permissions.cjs
 debug-admin-access.js
 debug-user-role-query.cjs
 fix-admin-role.cjs
-.gitignore
+test-admin-access.cjs
+test-api-capabilities.js
+test-current-user.js
+check-user.js
 
-# Local dev/test scripts (root)
-/check-*.js
-/fix-*.js
-/test-*.js
-/test-*.cjs
-scripts/check-user-role.ts
+fix-admin.js
+fix-super-admin.js
+check-orders.js

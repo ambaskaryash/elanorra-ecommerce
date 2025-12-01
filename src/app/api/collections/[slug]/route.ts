@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Product, Review } from '@prisma/client';
 
 type RouteParamsPromise = Promise<{ slug: string }>;
+
+type ProductWithReviews = Product & {
+  reviews: Review[];
+  _count: { reviews: number };
+};
 
 // GET /api/collections/[slug] - Get a single collection and its products
 export async function GET(
@@ -57,10 +63,10 @@ export async function GET(
       orderBy: { createdAt: 'desc' },
     });
 
-    const productsWithRatings = products.map((product) => {
-      const ratings = product.reviews.map((r) => r.rating);
+    const productsWithRatings = products.map((product: ProductWithReviews) => {
+      const ratings = product.reviews.map((r: Review) => r.rating);
       const avgRating = ratings.length > 0
-        ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+        ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length
         : 0;
 
       return {

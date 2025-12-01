@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import type { Product, ProductVariant } from '@prisma/client';
 
 // Local types used to ensure strong typing for Prisma results in this route
 type ProductVariantForPricing = {
@@ -129,6 +130,11 @@ const createOrderSchema = z.object({
     country: z.string().default('India'),
     phone: z.string().optional(),
   }).optional(),
+  // Optional shipment tracking fields
+  trackingNumber: z.string().optional(),
+  carrier: z.string().optional(),
+  shippedAt: z.string().optional(),
+  estimatedDelivery: z.string().optional(),
   subtotal: z.number().positive(),
   taxes: z.number().min(0).optional(),
   shipping: z.number().min(0).optional(),
@@ -150,8 +156,10 @@ export async function POST(request: NextRequest) {
     const products = await prisma.product.findMany({
       where: { id: { in: productIds } },
       include: { variants: true },
-    }) as ProductWithVariants[];
-    const productMap = new Map<string, ProductWithVariants>(products.map((p) => [p.id, p]));
+    });
+    const productMap = new Map<string, Product & { variants: ProductVariant[] }>(
+      products.map((p: Product & { variants: ProductVariant[] }) => [p.id, p])
+    );
 
     // Compute item prices and subtotal securely
     let subtotal = 0;
@@ -300,6 +308,10 @@ export async function POST(request: NextRequest) {
         orderNumber,
         userId: validatedData.userId || null,
         email: validatedData.email,
+        trackingNumber: validatedData.trackingNumber || null,
+        carrier: validatedData.carrier || null,
+        shippedAt: validatedData.shippedAt ? new Date(validatedData.shippedAt) : null,
+        estimatedDelivery: validatedData.estimatedDelivery ? new Date(validatedData.estimatedDelivery) : null,
         subtotal,
         taxes,
         shipping,
@@ -358,6 +370,24 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Generate invoice asynchronously (don't wait for it to complete)
+    try {
+      const invoiceResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/invoices/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderId: order.id }),
+      });
+      
+      if (!invoiceResponse.ok) {
+        console.error('Failed to generate invoice:', await invoiceResponse.text());
+      }
+    } catch (invoiceError) {
+      console.error('Error triggering invoice generation:', invoiceError);
+      // Don't fail the order creation if invoice generation fails
+    }
+
     return NextResponse.json({ order }, { status: 201 });
   } catch (error) {
     console.error('Error creating order:', error);
@@ -373,5 +403,55 @@ export async function POST(request: NextRequest) {
       { error: 'Failed to create order' },
       { status: 500 }
     );
+  }
+}
+
+// PATCH /api/orders - Update order tracking fields
+const updateTrackingSchema = z.object({
+  orderId: z.string(),
+  trackingNumber: z.string().optional(),
+  carrier: z.string().optional(),
+  shippedAt: z.string().optional(),
+  estimatedDelivery: z.string().optional(),
+  fulfillmentStatus: z.string().optional(),
+});
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const data = updateTrackingSchema.parse(body);
+
+    const updated = await prisma.order.update({
+      where: { id: data.orderId },
+      data: {
+        trackingNumber: data.trackingNumber ?? undefined,
+        carrier: data.carrier ?? undefined,
+        shippedAt: data.shippedAt ? new Date(data.shippedAt) : undefined,
+        estimatedDelivery: data.estimatedDelivery ? new Date(data.estimatedDelivery) : undefined,
+        fulfillmentStatus: data.fulfillmentStatus ?? undefined,
+      },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: { name: true, slug: true, images: { take: 1 } }
+            }
+          }
+        },
+        shippingAddress: true,
+        billingAddress: true,
+      }
+    });
+
+    return NextResponse.json({ order: updated });
+  } catch (error) {
+    console.error('Error updating order tracking:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.issues },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
   }
 }

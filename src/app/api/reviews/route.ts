@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { auth, currentUser } from '@clerk/nextjs/server';
-import { rateLimit, rateLimitConfigs, createRateLimitResponse } from '@/lib/rate-limit';
+import { auth } from '@clerk/nextjs/server';
+import { Review, User } from '@prisma/client';
 
 // GET /api/reviews - Get reviews with optional filters
 export async function GET(request: NextRequest) {
@@ -71,25 +71,13 @@ export async function GET(request: NextRequest) {
       prisma.review.count({ where }),
     ]);
 
-    // Determine current auth user (for owner flag)
-    let currentClerkId: string | null = null;
-    try {
-      const { userId: authUserId } = await auth();
-      currentClerkId = authUserId || null;
-    } catch {}
-
-    // Format reviews and include an isOwner flag
-    const formattedReviews = reviews.map((review: any) => {
-      const displayName = review.user
-        ? `${review.user.firstName ?? ''} ${review.user.lastName ?? ''}`.trim()
-        : review.userName;
-      const isOwner = !!currentClerkId && review.user?.clerkId === currentClerkId;
-      return {
-        ...review,
-        userName: displayName,
-        isOwner,
-      };
-    });
+    // Format reviews
+    const formattedReviews = reviews.map((review: Review & { user?: User }) => ({
+      ...review,
+      userName: review.user 
+        ? `${review.user.firstName} ${review.user.lastName}`
+        : review.userName,
+    }));
 
     return NextResponse.json({
       reviews: formattedReviews,
@@ -134,10 +122,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch Clerk user to ensure we have full name details
-    const clerkUser = await currentUser();
-    if (!clerkUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Get user data for review
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, firstName: true, lastName: true }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const body = await request.json();
@@ -155,40 +147,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure review is tied to the authenticated (Clerk) user mapped to our DB user
-    let dbUser = await prisma.user.findUnique({ where: { clerkId: userId } });
-
-    // Create local user record if missing (using Clerk profile)
-    if (!dbUser) {
-      const email = clerkUser.primaryEmailAddress?.emailAddress || clerkUser.emailAddresses?.[0]?.emailAddress || `${userId}@placeholder.local`;
-      try {
-        dbUser = await prisma.user.create({
-          data: {
-            clerkId: userId,
-            email,
-            firstName: clerkUser.firstName || undefined,
-            lastName: clerkUser.lastName || undefined,
-            image: clerkUser.imageUrl || undefined,
-            phone: clerkUser.phoneNumbers?.[0]?.phoneNumber || undefined,
-          },
-        });
-      } catch {
-        // If a race condition occurs, re-fetch
-        dbUser = await prisma.user.findUnique({ where: { clerkId: userId } });
-      }
-    }
-
-    // Construct full name and enforce non-anonymous reviews
-    const fullName = `${dbUser?.firstName ?? ''} ${dbUser?.lastName ?? ''}`.trim();
-    if (!fullName) {
-      return NextResponse.json(
-        { error: 'Please add your first and last name to your profile before submitting a review.' },
-        { status: 400 }
-      );
-    }
-
-    validatedData.userId = dbUser?.id;
-    validatedData.userName = fullName;
+    // Ensure review is tied to the authenticated user
+    validatedData.userId = user.id;
+    validatedData.userName = validatedData.userName || `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
 
     // Check if user already reviewed this product
     if (validatedData.userId) {
@@ -231,10 +192,7 @@ export async function POST(request: NextRequest) {
       select: { rating: true },
     });
 
-    const totalRating = productReviews.reduce(
-      (sum: number, r: { rating: number }) => sum + r.rating,
-      0
-    );
+    const totalRating = productReviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0);
     const newReviewCount = productReviews.length;
     const newAvgRating = newReviewCount > 0 ? totalRating / newReviewCount : 0;
 

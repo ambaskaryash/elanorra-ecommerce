@@ -157,6 +157,11 @@ model Order {
   email             String
   financialStatus   String          @default("pending")
   fulfillmentStatus String          @default("unfulfilled")
+  // Shipment tracking fields
+  trackingNumber    String?
+  carrier           String?
+  shippedAt         DateTime?
+  estimatedDelivery DateTime?
   subtotal          Float
   taxes             Float           @default(0)
   shipping          Float           @default(0)
@@ -167,10 +172,11 @@ model Order {
   paymentId         String?
   couponCode        String?
   notes             String?
-  // Shipping persistence fields
-  shippingCarrier   String?
-  awb               String?
-  labelUrl          String?
+  // Invoice related fields
+  invoiceNumber     String?         @unique
+  invoiceGenerated  Boolean         @default(false)
+  invoiceFilePath   String?
+  invoiceEmailSent  Boolean         @default(false)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   shippingAddressId String?

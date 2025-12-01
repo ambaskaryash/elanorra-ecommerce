@@ -1,8 +1,22 @@
 'use client';
 
 import { SignIn } from '@clerk/nextjs';
+import { useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 export default function SignInPage() {
+  const searchParams = useSearchParams();
+  const sessionExpired = searchParams.get('session_expired');
+
+  useEffect(() => {
+    if (sessionExpired === 'true') {
+      toast.error('Your session has expired. Please sign in again.', {
+        duration: 5000,
+      });
+    }
+  }, [sessionExpired]);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
@@ -13,6 +27,13 @@ export default function SignInPage() {
           <p className="mt-2 text-sm text-gray-600">
             Welcome back to ElanorraLiving
           </p>
+          {sessionExpired === 'true' && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-sm text-red-600">
+                Your session has expired for security reasons. Please sign in again.
+              </p>
+            </div>
+          )}
         </div>
         <div className="mt-8">
           <SignIn 

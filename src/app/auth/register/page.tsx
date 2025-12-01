@@ -385,13 +385,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-
-const handleRegister = async (formData) => {
-  // ... your register logic ...
-  if (success) {
-    toast.success(`Welcome, ${username}! Your account has been created.`);
-    // ...redirect or other logic...
-  } else {
-    toast.error('Registration failed. Please try again.');
-  }
-};

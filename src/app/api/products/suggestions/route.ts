@@ -2,6 +2,12 @@ import { prisma } from '@/lib/prisma';
 import Fuse from 'fuse.js';
 import { NextRequest, NextResponse } from 'next/server';
 
+type ProductData = {
+  name: string;
+  tags: string[];
+  category: string;
+};
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -19,7 +25,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const searchData = products.flatMap(p => [
+    const searchData = products.flatMap((p: ProductData) => [
         p.name, 
         ...p.tags, 
         p.category
@@ -32,7 +38,7 @@ export async function GET(request: NextRequest) {
     });
 
     const results = fuse.search(query).slice(0, 10);
-    const suggestions = results.map(r => r.item);
+    const suggestions = results.map(r => r.item as string);
 
     let didYouMean = null;
     if (suggestions.length > 0 && suggestions[0].toLowerCase() !== query.toLowerCase()) {

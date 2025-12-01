@@ -9,14 +9,19 @@ import {
 } from '@/lib/razorpay';
 import { useCartStore } from '@/lib/store/cart-store';
 import { useOrderStore } from '@/lib/store/order-store';
+import { 
+  calculateDeliveryEstimate, 
+  formatDeliveryTime, 
+  getDeliveryDate, 
+  formatDeliveryDate,
+  isValidPincode 
+} from '@/lib/services/pincode-delivery';
 import { formatPrice } from '@/lib/utils';
 import {
   ArrowPathIcon,
-  BanknotesIcon,
   CalendarIcon,
   CheckCircleIcon,
   CreditCardIcon,
-  DevicePhoneMobileIcon,
   LockClosedIcon,
   ShieldCheckIcon,
   StarIcon,
@@ -54,63 +59,18 @@ interface PaymentMethod {
 
 const paymentMethods: PaymentMethod[] = [
   {
-    id: 'card',
-    name: 'Credit/Debit Card',
+    id: 'razorpay',
+    name: 'Pay with Razorpay',
     icon: CreditCardIcon,
-    description: 'Pay securely with your credit or debit card',
+    description: 'Secure payment with cards, UPI, net banking & more',
     enabled: true,
-  },
-  {
-    id: 'upi',
-    name: 'UPI Payment',
-    icon: DevicePhoneMobileIcon,
-    description: 'Pay using UPI apps like GPay, PhonePe, Paytm',
-    enabled: true,
-  },
-  {
-    id: 'netbanking',
-    name: 'Net Banking',
-    icon: BanknotesIcon,
-    description: 'Pay directly from your bank account',
-    enabled: true,
-  },
-  {
-    id: 'cod',
-    name: 'Cash on Delivery',
-    icon: TruckIcon,
-    description: 'Pay when your order is delivered',
-    enabled: true,
-  },
-];
-
-const deliveryOptions = [
-  {
-    id: 'standard',
-    name: 'Standard Delivery',
-    description: '5-7 business days',
-    price: 200,
-    icon: TruckIcon,
-  },
-  {
-    id: 'express',
-    name: 'Express Delivery',
-    description: '2-3 business days',
-    price: 500,
-    icon: TruckIcon,
-  },
-  {
-    id: 'premium',
-    name: 'White Glove Delivery',
-    description: 'Professional installation & setup',
-    price: 1500,
-    icon: CalendarIcon,
   },
 ];
 
 export default function CheckoutContent() {
   const router = useRouter();
   const { user } = useAuth();
-  const { items, totalPrice, subtotalPrice, taxAmount, shippingAmount, appliedCoupon, clearCart } = useCartStore();
+  const { items, totalPrice, subtotalPrice, taxAmount, shippingAmount, appliedCoupon, clearCart, updateShipping } = useCartStore();
   const { createOrder } = useOrderStore();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -140,10 +100,11 @@ export default function CheckoutContent() {
     email: '',
   });
   const [sameAsBilling, setSameAsBilling] = useState(true);
-  const [selectedPayment, setSelectedPayment] = useState('card');
+  const [selectedPayment, setSelectedPayment] = useState('razorpay');
   const [selectedDelivery, setSelectedDelivery] = useState('standard');
   const [orderNotes, setOrderNotes] = useState('');
   const [couponCode, setCouponCode] = useState('');
+  const [deliveryEstimate, setDeliveryEstimate] = useState(calculateDeliveryEstimate('560001')); // Default to Bangalore
 
   useEffect(() => {
     if (items.length === 0) {
@@ -162,6 +123,63 @@ export default function CheckoutContent() {
       }));
     }
   }, [user]);
+
+  // Update delivery estimate when pincode changes
+  useEffect(() => {
+    const pincode = sameAsBilling ? billingAddress.pincode : shippingAddress.pincode;
+    if (pincode && isValidPincode(pincode)) {
+      const estimate = calculateDeliveryEstimate(pincode);
+      setDeliveryEstimate(estimate);
+    }
+  }, [billingAddress.pincode, shippingAddress.pincode, sameAsBilling]);
+
+  // Update shipping cost when delivery option changes
+  useEffect(() => {
+    const deliveryOptions = getDynamicDeliveryOptions();
+    const selectedOption = deliveryOptions.find(option => option.id === selectedDelivery);
+    if (selectedOption) {
+      updateShipping(selectedOption.price);
+    }
+  }, [selectedDelivery, deliveryEstimate, updateShipping]);
+
+  // Generate dynamic delivery options based on pincode
+  const getDynamicDeliveryOptions = () => {
+    const basePrice = {
+      standard: deliveryEstimate.zone === 'local' ? 100 : deliveryEstimate.zone === 'regional' ? 150 : 200,
+      express: deliveryEstimate.zone === 'local' ? 200 : deliveryEstimate.zone === 'regional' ? 350 : 500,
+      premium: deliveryEstimate.zone === 'local' ? 800 : deliveryEstimate.zone === 'regional' ? 1200 : 1500,
+    };
+
+    return [
+      {
+        id: 'standard',
+        name: 'Standard Delivery',
+        description: formatDeliveryTime(deliveryEstimate.standardDays),
+        estimatedDate: formatDeliveryDate(getDeliveryDate(deliveryEstimate.standardDays)),
+        price: basePrice.standard,
+        icon: TruckIcon,
+        days: deliveryEstimate.standardDays,
+      },
+      {
+        id: 'express',
+        name: 'Express Delivery',
+        description: formatDeliveryTime(deliveryEstimate.expressDays),
+        estimatedDate: formatDeliveryDate(getDeliveryDate(deliveryEstimate.expressDays)),
+        price: basePrice.express,
+        icon: TruckIcon,
+        days: deliveryEstimate.expressDays,
+      },
+      {
+        id: 'premium',
+        name: 'White Glove Delivery',
+        description: `${formatDeliveryTime(deliveryEstimate.premiumDays)} with installation`,
+        estimatedDate: formatDeliveryDate(getDeliveryDate(deliveryEstimate.premiumDays)),
+        price: basePrice.premium,
+        icon: CalendarIcon,
+        days: deliveryEstimate.premiumDays,
+      },
+    ];
+  };
 
   const handleAddressChange = (field: keyof Address, value: string, type: 'billing' | 'shipping') => {
     if (type === 'billing') {
@@ -297,13 +315,6 @@ export default function CheckoutContent() {
     }
   };
 
-  const processCODOrder = async () => {
-    const result = await createOrderInSystem();
-    if (!result.success) {
-      setIsProcessing(false);
-    }
-  };
-
   const handlePlaceOrder = async () => {
     setIsProcessing(true);
 
@@ -329,11 +340,8 @@ export default function CheckoutContent() {
         return;
       }
 
-      if (selectedPayment === 'cod') {
-        await processCODOrder();
-      } else {
-        await processOnlinePayment();
-      }
+      // Process Razorpay payment
+      await processOnlinePayment();
     } catch (error) {
       console.error('Order processing error:', error);
       toast.error('Failed to process order. Please try again.');
@@ -396,12 +404,6 @@ export default function CheckoutContent() {
       const result = await createOrder(orderData);
       
       if (result.success) {
-        // For COD orders, clear cart and redirect immediately
-        if (selectedPayment === 'cod') {
-          clearCart();
-          toast.success('Order placed successfully!');
-          router.push(`/order-confirmation/${result.orderId}`);
-        }
         return { success: true, orderId: result.orderId };
       } else {
         return { success: false, error: result.error || 'Order creation failed' };
@@ -410,11 +412,6 @@ export default function CheckoutContent() {
     } catch (error) {
       console.error('Order creation error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to create order. Please contact support.';
-      
-      // For COD orders, show error immediately
-      if (selectedPayment === 'cod') {
-        toast.error(errorMessage);
-      }
       
       return { success: false, error: errorMessage };
     }
@@ -672,11 +669,30 @@ export default function CheckoutContent() {
                   </div>
                   <h2 className="text-xl font-bold text-gray-900">Delivery Options</h2>
                 </div>
+                {deliveryEstimate && (
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">
+                        Delivering to PIN: <span className="font-medium text-gray-900">
+                          {sameAsBilling ? billingAddress.pincode : shippingAddress.pincode}
+                        </span>
+                      </span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        deliveryEstimate.zone === 'local' ? 'bg-green-100 text-green-800' :
+                        deliveryEstimate.zone === 'regional' ? 'bg-blue-100 text-blue-800' :
+                        'bg-orange-100 text-orange-800'
+                      }`}>
+                        {deliveryEstimate.zone === 'local' ? 'Same City' :
+                         deliveryEstimate.zone === 'regional' ? 'Same State' : 'Other State'}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="p-6">
                 <div className="space-y-4">
-                  {deliveryOptions.map((option) => (
+                  {getDynamicDeliveryOptions().map((option) => (
                     <label
                       key={option.id}
                       className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
@@ -693,7 +709,7 @@ export default function CheckoutContent() {
                         onChange={(e) => setSelectedDelivery(e.target.value)}
                         className="sr-only"
                       />
-                      <div className="flex items-center space-x-4 flex-1">
+                      <div className="flex items-start space-x-4 flex-1">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                           selectedDelivery === option.id ? 'bg-rose-100' : 'bg-gray-100'
                         }`}>
@@ -703,12 +719,24 @@ export default function CheckoutContent() {
                         </div>
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-900">{option.name}</h3>
-                          <p className="text-sm text-gray-600">{option.description}</p>
+                          <p className="text-sm text-gray-600 mb-1">{option.description}</p>
+                          {option.estimatedDate && (
+                            <div className="flex items-center space-x-2 text-xs text-gray-500">
+                              <CalendarIcon className="w-3 h-3" />
+                              <span>Expected delivery: {option.estimatedDate}</span>
+                            </div>
+                          )}
                         </div>
                         <div className="text-right">
                           <p className="font-semibold text-gray-900">
                             {option.price === 0 ? 'Free' : formatPrice(option.price)}
                           </p>
+                          {deliveryEstimate && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {deliveryEstimate.zone === 'local' ? 'Same city' : 
+                               deliveryEstimate.zone === 'regional' ? 'Same state' : 'Other state'}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </label>
@@ -738,39 +766,20 @@ export default function CheckoutContent() {
               </div>
 
               <div className="p-6">
-                <div className="space-y-4">
-                  {paymentMethods.map((method) => (
-                    <label
-                      key={method.id}
-                      className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                        selectedPayment === method.id
-                          ? 'border-rose-500 bg-rose-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="payment"
-                        value={method.id}
-                        checked={selectedPayment === method.id}
-                        onChange={(e) => setSelectedPayment(e.target.value)}
-                        className="sr-only"
-                      />
-                      <div className="flex items-center space-x-4 flex-1">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                          selectedPayment === method.id ? 'bg-rose-100' : 'bg-gray-100'
-                        }`}>
-                          <method.icon className={`w-5 h-5 ${
-                            selectedPayment === method.id ? 'text-rose-600' : 'text-gray-600'
-                          }`} />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">{method.name}</h3>
-                          <p className="text-sm text-gray-600">{method.description}</p>
-                        </div>
-                      </div>
-                    </label>
-                  ))}
+                <div className="flex items-center p-4 border-2 border-rose-500 bg-rose-50 rounded-xl">
+                  <div className="flex items-center space-x-4 flex-1">
+                    <div className="w-10 h-10 bg-rose-100 rounded-lg flex items-center justify-center">
+                      <CreditCardIcon className="w-5 h-5 text-rose-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900">Pay with Razorpay</h3>
+                      <p className="text-sm text-gray-600">Secure payment with cards, UPI, net banking & more</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <CheckCircleIconSolid className="w-5 h-5 text-rose-600" />
+                      <span className="text-sm text-rose-600 font-medium">Selected</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </motion.div>

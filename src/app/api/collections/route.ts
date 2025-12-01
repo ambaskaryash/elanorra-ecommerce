@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Collection, Product, ProductImage, ProductCollection } from '@prisma/client';
+
+type CollectionWithProducts = Collection & {
+  _count: { products: number };
+  products: (ProductCollection & {
+    product: Product & {
+      images: ProductImage[];
+    };
+  })[];
+};
 
 // GET /api/collections - Get all collections
 export async function GET(request: NextRequest) {
@@ -54,7 +64,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Transform the data to match the expected format
-    const transformedCollections = collections.map(collection => ({
+    const transformedCollections = collections.map((collection: CollectionWithProducts) => ({
       id: collection.id,
       name: collection.name,
       slug: collection.slug,
@@ -62,7 +72,7 @@ export async function GET(request: NextRequest) {
       image: collection.image,
       featured: true, // For now, all are featured
       productCount: collection._count.products,
-      sampleProducts: collection.products.map(p => ({
+      sampleProducts: collection.products.map((p: ProductCollection & { product: Product & { images: ProductImage[] } }) => ({
         id: p.product.id,
         name: p.product.name,
         slug: p.product.slug,

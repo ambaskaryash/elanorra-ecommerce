@@ -4,6 +4,7 @@ import { uploadToCloudinary } from '@/lib/cloudinary';
 import { rateLimit, rateLimitConfigs } from '@/lib/rate-limit';
 import { handleError } from '@/lib/error-handler';
 import { createCSRFProtectedHandler } from '@/lib/csrf';
+import { prisma } from '@/lib/prisma';
 
 const limiter = rateLimit(rateLimitConfigs.api);
 
@@ -32,7 +33,20 @@ async function handlePOST(request: NextRequest) {
       );
     }
 
-    if (!isDevelopment && !session.user.isAdmin) {
+    // Get user data for admin check
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, isAdmin: true }
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    if (!isDevelopment && !user.isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized. Admin access required.' },
         { status: 403 }
@@ -69,7 +83,7 @@ async function handlePOST(request: NextRequest) {
     console.log('Processing file:', file.name, 'Size:', file.size, 'Type:', file.type);
 
     // Log admin action
-    console.log(`Admin action: ${session.user.id} uploaded file ${file.name} at ${new Date().toISOString()}`);
+    console.log(`Admin action: ${user.id} uploaded file ${file.name} at ${new Date().toISOString()}`);
 
     const result = await uploadToCloudinary(file, 'ecommerce/products');
 

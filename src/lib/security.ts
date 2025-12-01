@@ -23,19 +23,13 @@ export const defaultSecurityConfig: SecurityConfig = {
 export const getCSPHeader = (nonce?: string): string => {
   const cspDirectives = [
     "default-src 'self'",
-    // Allow required third-party JS including Clerk and JSDelivr
-    `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${nonce ? `'nonce-${nonce}'` : ''} https://js.razorpay.com https://checkout.razorpay.com https://clerk.com https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://cdn.jsdelivr.net`,
-    // Styles and fonts
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com",
-    // Images and media
+    `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${nonce ? `'nonce-${nonce}'` : ''} https://js.razorpay.com https://checkout.razorpay.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com https://tracking.anifun.store`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com",
+    "font-src 'self' https://fonts.gstatic.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com",
     "img-src 'self' data: blob: https: http:",
     "media-src 'self' https:",
-    // Network connections for APIs, HMR in dev, and Clerk endpoints
-    "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com ws: wss: https://api.clerk.com https://clerk.com https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://cdn.jsdelivr.net",
-    // Frames for Razorpay/Stripe/Clerk flows
-    "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://js.stripe.com https://clerk.com https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev",
-    // Hardening
+    "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com https://api.clerk.com https://*.api.clerk.com https://tracking.anifun.store",
+    "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
