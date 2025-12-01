@@ -36,9 +36,17 @@ export default function ImageUpload({
       console.log('Upload response status:', response.status);
 
       if (!response.ok) {
-        const error = await response.json();
-        console.error('Upload failed with error:', error);
-        throw new Error(error.error || 'Upload failed');
+        let errorBody: any = {};
+        try {
+          errorBody = await response.json();
+        } catch (_) {
+          const text = await response.text().catch(() => '');
+          errorBody = text ? { error: text } : {};
+        }
+        const message =
+          errorBody.error || errorBody.message || `Upload failed (${response.status})`;
+        console.error('Upload failed:', { status: response.status, body: errorBody });
+        throw new Error(message);
       }
 
       const result = await response.json();
