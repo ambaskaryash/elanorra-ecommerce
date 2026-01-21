@@ -1,12 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { syncProductsFromOdoo } from '@/lib/odoo/sync';
 import { logger } from '@/lib/logger';
+import { auth } from '@clerk/nextjs/server';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
-    // In a real app, add admin authentication check here
-    // const session = await getSession();
-    // if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Admin authentication check
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    // Check if current user is admin
+    const currentUserRecord = await prisma.user.findUnique({
+      where: { clerkId: userId },
+      select: { isAdmin: true }
+    });
+
+    if (!currentUserRecord?.isAdmin) {
+      return NextResponse.json({ error: 'Admin privileges required' }, { status: 403 });
+    }
 
     const result = await syncProductsFromOdoo();
     
