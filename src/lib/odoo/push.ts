@@ -79,22 +79,52 @@ export async function pushOrderToOdoo(orderId: string) {
     }
 
     // 3. Prepare Order Lines
+    const templateIds = order.items
+      .map((item: any) => item.product.odooId)
+      .filter((id: any): id is number => typeof id === 'number');
+
+    // Batch fetch variants for these templates
+    // Sale Order requires product.product ID (variant), not product.template ID
+    const variantMap = new Map<number, number>();
+    if (templateIds.length > 0) {
+      try {
+        const variants = await odoo.searchRead(
+          'product.product',
+          [['product_tmpl_id', 'in', templateIds]],
+          { fields: ['id', 'product_tmpl_id'] }
+        );
+        
+        for (const v of variants) {
+          // Store mapping: Template ID -> Variant ID
+          // Note: If multiple variants exist, this picks the last one processed. 
+          // For simple products (1 variant), this is correct.
+          if (Array.isArray(v.product_tmpl_id)) {
+             variantMap.set(v.product_tmpl_id[0], v.id);
+          }
+        }
+      } catch (e) {
+        logger.error('Failed to fetch product variants from Odoo', e);
+      }
+    }
+
     const orderLines = [];
     for (const item of order.items) {
-      let productOdooId = item.product.odooId;
+      const templateId = item.product.odooId;
 
-      if (!productOdooId) {
-        // Fallback: If product isn't linked, try to find it by name/SKU
-        // For now, we skip or log warning. In production, maybe create a placeholder?
-        logger.warn(`Product ${item.product.name} not linked to Odoo. Skipping line item.`);
+      if (!templateId) {
+        logger.warn(`Product ${item.product.name} not linked to Odoo. Skipping.`);
+        continue;
+      }
+
+      const variantId = variantMap.get(templateId);
+
+      if (!variantId) {
+        logger.warn(`No Odoo variant found for product ${item.product.name} (Template ID: ${templateId}). Skipping.`);
         continue;
       }
 
       orderLines.push([0, 0, {
-        product_id: productOdooId, // Note: Odoo uses product.product ID, not template. This is a simplification.
-        // In Odoo: product.template is the generic product, product.product is the variant.
-        // If we only have 1 variant per template, template_id might not work directly in sale order line.
-        // We might need to fetch the product.product ID from the template ID.
+        product_id: variantId, 
         product_uom_qty: item.quantity,
         price_unit: item.price,
       }]);

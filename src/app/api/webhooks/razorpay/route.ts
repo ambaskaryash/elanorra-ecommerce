@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { logger } from '@/lib/logger';
+import { pushOrderToOdoo } from '@/lib/odoo/push';
 
 // Razorpay webhook secret from environment variables
 const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
@@ -68,10 +69,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
-import { pushOrderToOdoo } from '@/lib/odoo/push';
-
-// ... existing imports
 
 async function handlePaymentCaptured(payment: any) {
   const paymentId = payment.id;
