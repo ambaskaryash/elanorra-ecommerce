@@ -53,6 +53,7 @@ The e-commerce platform has been successfully updated with:
 ### API Endpoints:
 - `POST /api/razorpay/create-order` - Create new payment order
 - `POST /api/razorpay/verify-payment` - Verify payment signature
+- `POST /api/webhooks/razorpay` - Handle Razorpay webhooks (payment.captured, payment.failed)
 
 ## Environment Variables
 
@@ -62,6 +63,7 @@ Add these to your `.env.local`:
 # Razorpay Configuration
 NEXT_PUBLIC_RAZORPAY_KEY_ID="rzp_test_your_key_id"
 RAZORPAY_KEY_SECRET="your_razorpay_secret_key"
+RAZORPAY_WEBHOOK_SECRET="your_razorpay_webhook_secret"
 ```
 
 ## Setup Instructions

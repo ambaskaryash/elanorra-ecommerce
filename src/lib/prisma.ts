@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 // Check if DATABASE_URL is available (for build-time safety)
 const isDatabaseAvailable = !!process.env.DATABASE_URL;
 
@@ -38,13 +40,15 @@ if (isDatabaseAvailable) {
   // Dynamic imports to avoid loading Prisma during build time
   const { PrismaClient } = require('@prisma/client');
   let baseClient: any;
+  const logConfig = process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'];
+
   try {
     const { withAccelerate } = require('@prisma/extension-accelerate');
-    baseClient = new PrismaClient({ log: ['query'] }).$extends(withAccelerate());
+    baseClient = new PrismaClient({ log: logConfig }).$extends(withAccelerate());
   } catch (err) {
     // If accelerate extension fails to load, fall back to plain PrismaClient
     console.warn('Prisma Accelerate extension unavailable, using base PrismaClient');
-    baseClient = new PrismaClient({ log: ['query'] });
+    baseClient = new PrismaClient({ log: logConfig });
   }
 
   // Temporarily disable Optimize extension to prevent build-time initialization issues
@@ -61,6 +65,30 @@ if (isDatabaseAvailable) {
   } else {
     prismaClient = baseClient;
   }
+
+  // Add logging extension for slow queries
+  prismaClient = prismaClient.$extends({
+    query: {
+      $allModels: {
+        async $allOperations({ model, operation, args, query }: any) {
+          const start = Date.now();
+          const result = await query(args);
+          const duration = Date.now() - start;
+
+          if (duration > 500) {
+            logger.warn(`Slow query detected: ${model}.${operation} took ${duration}ms`, {
+              model,
+              action: operation,
+              duration,
+              args,
+            });
+          }
+
+          return result;
+        },
+      },
+    },
+  });
 
 } else {
   prismaClient = createMockPrismaClient();

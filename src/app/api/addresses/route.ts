@@ -35,21 +35,32 @@ async function handleGET(request: NextRequest) {
       return NextResponse.json({ addresses: [] });
     }
 
-    const { userId } = await auth();
-    if (!userId) {
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Resolve internal user ID from Clerk ID
+    const user = await prisma.user.findUnique({
+      where: { clerkId: clerkUserId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      // User not found in database yet
+      return NextResponse.json({ addresses: [] });
+    }
+
     const addresses = await prisma.address.findMany({
-      where: { userId: userId },
+      where: { userId: user.id },
       orderBy: { id: 'desc' },
     });
 
     return NextResponse.json({ addresses });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching addresses:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch addresses' },
+      { error: error.message || 'Failed to fetch addresses' },
       { status: 500 }
     );
   }

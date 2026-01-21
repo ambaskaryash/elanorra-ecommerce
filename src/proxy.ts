@@ -29,6 +29,7 @@ function getSessionTimeout(pathname: string): number {
 const isProtectedRoute = createRouteMatcher([
   '/account(.*)',
   '/admin(.*)',
+  '/checkout(.*)',
 ]);
 
 // Define admin-only routes

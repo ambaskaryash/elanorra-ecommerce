@@ -144,40 +144,16 @@ export default function CheckoutContent() {
 
   // Generate dynamic delivery options based on pincode
   const getDynamicDeliveryOptions = () => {
-    const basePrice = {
-      standard: deliveryEstimate.zone === 'local' ? 100 : deliveryEstimate.zone === 'regional' ? 150 : 200,
-      express: deliveryEstimate.zone === 'local' ? 200 : deliveryEstimate.zone === 'regional' ? 350 : 500,
-      premium: deliveryEstimate.zone === 'local' ? 800 : deliveryEstimate.zone === 'regional' ? 1200 : 1500,
-    };
-
     return [
       {
         id: 'standard',
         name: 'Standard Delivery',
         description: formatDeliveryTime(deliveryEstimate.standardDays),
         estimatedDate: formatDeliveryDate(getDeliveryDate(deliveryEstimate.standardDays)),
-        price: basePrice.standard,
+        price: 0,
         icon: TruckIcon,
         days: deliveryEstimate.standardDays,
-      },
-      {
-        id: 'express',
-        name: 'Express Delivery',
-        description: formatDeliveryTime(deliveryEstimate.expressDays),
-        estimatedDate: formatDeliveryDate(getDeliveryDate(deliveryEstimate.expressDays)),
-        price: basePrice.express,
-        icon: TruckIcon,
-        days: deliveryEstimate.expressDays,
-      },
-      {
-        id: 'premium',
-        name: 'White Glove Delivery',
-        description: `${formatDeliveryTime(deliveryEstimate.premiumDays)} with installation`,
-        estimatedDate: formatDeliveryDate(getDeliveryDate(deliveryEstimate.premiumDays)),
-        price: basePrice.premium,
-        icon: CalendarIcon,
-        days: deliveryEstimate.premiumDays,
-      },
+      }
     ];
   };
 

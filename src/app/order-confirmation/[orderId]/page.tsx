@@ -12,38 +12,47 @@ import {
   ClockIcon,
   ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
-import { useOrderStore } from '@/lib/store/order-store';
+import { useCartStore } from '@/lib/store/cart-store';
 import { formatPrice } from '@/lib/utils';
 import { Order } from '@/types';
 import { notFound } from 'next/navigation';
 
 interface Props {
-  params: {
+  params: Promise<{
     orderId: string;
-  };
+  }>;
 }
 
 export default function OrderConfirmationPage({ params }: Props) {
-  const { getOrder } = useOrderStore();
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { clearCart } = useCartStore();
 
   useEffect(() => {
-    const fetchOrder = () => {
-      const foundOrder = getOrder(params.orderId);
-      if (foundOrder) {
-        setOrder(foundOrder);
+    const fetchOrder = async () => {
+      try {
+        const resolvedParams = await params;
+        const res = await fetch(`/api/orders/${resolvedParams.orderId}`);
+        
+        if (!res.ok) {
+           // Handle error gracefully
+           console.error('Failed to fetch order:', res.statusText);
+           setIsLoading(false);
+           return;
+        }
+
+        const data = await res.json();
+        setOrder(data);
+        clearCart();
+      } catch (error) {
+        console.error('Error fetching order:', error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     fetchOrder();
-    
-    // Poll for order updates
-    const interval = setInterval(fetchOrder, 2000);
-    
-    return () => clearInterval(interval);
-  }, [params.orderId, getOrder]);
+  }, [params, clearCart]);
 
   if (isLoading) {
     return (

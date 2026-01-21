@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
-import { Review } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 type RouteParamsPromise = Promise<{ slug: string }>;
 
@@ -14,9 +14,10 @@ export async function GET(
   try {
     // Check if DATABASE_URL is available (for build-time compatibility)
     if (!process.env.DATABASE_URL) {
+      logger.warn('⚠️ DATABASE_URL not available, returning empty response for build');
       return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
+        { error: 'Service temporarily unavailable' },
+        { status: 503 }
       );
     }
 
@@ -26,25 +27,29 @@ export async function GET(
       where: { slug },
       include: {
         images: {
-          orderBy: { position: 'asc' }
+          orderBy: {
+            position: 'asc',
+          },
         },
         variants: true,
         reviews: {
           include: {
             user: {
               select: {
-                firstName: true,
-                lastName: true,
-              }
-            }
+                name: true,
+                image: true,
+              },
+            },
           },
-          orderBy: { createdAt: 'desc' }
+          orderBy: {
+            createdAt: 'desc',
+          },
         },
         _count: {
           select: {
-            reviews: true
-          }
-        }
+            reviews: true,
+          },
+        },
       },
     });
 
@@ -56,22 +61,21 @@ export async function GET(
     }
 
     // Calculate average rating
-    const ratings = product.reviews.map((r: Review) => r.rating);
-    const avgRating = ratings.length > 0 
-      ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length 
+    const ratings = product.reviews.map((r: any) => r.rating);
+    const avgRating = ratings.length > 0
+      ? Math.round((ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length) * 10) / 10
       : 0;
 
-    // Format product with additional data
     const productWithRating = {
       ...product,
-      avgRating: Math.round(avgRating * 10) / 10,
+      avgRating,
       reviewCount: product._count.reviews,
       _count: undefined, // Remove _count from response
     };
 
     return NextResponse.json({ product: productWithRating });
   } catch (error) {
-    console.error('Error fetching product:', error);
+    logger.error('Error fetching product:', error);
     return NextResponse.json(
       { error: 'Failed to fetch product' },
       { status: 500 }
@@ -175,7 +179,7 @@ export async function PUT(
 
     return NextResponse.json({ product });
   } catch (error) {
-    console.error('Error updating product:', error);
+    logger.error('Error updating product:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -229,7 +233,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: 'Product deleted successfully' });
   } catch (error) {
-    console.error('Error deleting product:', error);
+    logger.error('Error deleting product:', error);
     return NextResponse.json(
       { error: 'Failed to delete product' },
       { status: 500 }

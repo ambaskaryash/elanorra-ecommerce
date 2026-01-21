@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import Razorpay from 'razorpay';
 import { z } from 'zod';
 
@@ -23,6 +24,15 @@ const razorpay = new Razorpay({
 
 export async function POST(request: NextRequest) {
   try {
+    // Require authentication before creating payment orders
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Authentication required', success: false },
+        { status: 401 }
+      );
+    }
+
     // Parse and validate request body
     const body = await request.json();
     const validatedData = createOrderSchema.parse(body);

@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
+import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/nextjs';
 
 // Loading component
 function CheckoutLoading() {
@@ -27,7 +28,12 @@ const CheckoutContent = dynamic(
 export default function CheckoutPage() {
   return (
     <Suspense fallback={<CheckoutLoading />}>
-      <CheckoutContent />
+      <SignedIn>
+        <CheckoutContent />
+      </SignedIn>
+      <SignedOut>
+        <RedirectToSignIn redirectUrl="/checkout" />
+      </SignedOut>
     </Suspense>
   );
 }

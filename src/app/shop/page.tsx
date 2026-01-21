@@ -78,20 +78,16 @@ export default function ShopPage() {
         sortBy,
         sortOrder,
         ...(selectedCategory !== 'all' && { category: selectedCategory }),
+        minPrice: priceRange.min.toString(),
+        maxPrice: priceRange.max.toString(),
+        minRating: minRating.toString(),
       });
       
       const response = await fetch(`/api/products?${params}`);
       if (response.ok) {
         const data = await response.json();
         
-        // Filter by price range and rating on frontend for now
-        let filteredProducts = data.products.filter((product: ApiProduct) => 
-          product.price >= priceRange.min && 
-          product.price <= priceRange.max &&
-          product.avgRating >= minRating
-        );
-        
-        setProducts(filteredProducts);
+        setProducts(data.products);
         setTotalPages(data.pagination.pages);
       }
     } catch (error) {

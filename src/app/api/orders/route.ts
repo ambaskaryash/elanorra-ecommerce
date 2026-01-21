@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import type { Product, ProductVariant } from '@prisma/client';
@@ -148,6 +149,69 @@ const createOrderSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Require authentication
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    let userId: string; // Internal User ID (CUID)
+
+    // Find user in DB
+    const dbUser = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
+    
+    if (dbUser) {
+      userId = dbUser.id;
+    } else {
+      // Sync user from Clerk if not found in DB
+      try {
+        const { currentUser } = await import('@clerk/nextjs/server');
+        const clerkUser = await currentUser();
+        
+        if (!clerkUser) {
+           console.error('Clerk user not found for ID:', clerkUserId);
+           return NextResponse.json({ error: 'User authentication failed' }, { status: 401 });
+        }
+        
+        const email = clerkUser.emailAddresses[0]?.emailAddress;
+        if (!email) {
+           console.error('Clerk user has no email:', clerkUserId);
+           return NextResponse.json({ error: 'User email required' }, { status: 400 });
+        }
+
+        // Check if email already exists (edge case where clerkId is different but email is same)
+        const existingEmailUser = await prisma.user.findUnique({ where: { email } });
+        
+        if (existingEmailUser) {
+           // Link the accounts if email matches
+           const updatedUser = await prisma.user.update({
+             where: { id: existingEmailUser.id },
+             data: { clerkId: clerkUserId }
+           });
+           userId = updatedUser.id;
+        } else {
+           const newUser = await prisma.user.create({
+             data: {
+               clerkId: clerkUserId,
+               email: email,
+               firstName: clerkUser.firstName || '',
+               lastName: clerkUser.lastName || '',
+               image: clerkUser.imageUrl || null,
+               isAdmin: false,
+             }
+           });
+           userId = newUser.id;
+        }
+        console.log(`Synced user ${clerkUserId} to database id ${userId}`);
+      } catch (error) {
+        console.error('Error syncing user in order creation:', error);
+        return NextResponse.json({ error: 'Failed to sync user profile' }, { status: 500 });
+      }
+    }
+
     const body = await request.json();
     const validatedData = createOrderSchema.parse(body);
 
@@ -288,7 +352,7 @@ export async function POST(request: NextRequest) {
     const shippingAddress = await prisma.address.create({
       data: {
         ...validatedData.shippingAddress,
-        userId: validatedData.userId || null,
+        userId,
       },
     });
 
@@ -297,7 +361,7 @@ export async function POST(request: NextRequest) {
       billingAddress = await prisma.address.create({
         data: {
           ...validatedData.billingAddress,
-          userId: validatedData.userId || null,
+          userId,
         },
       });
     }
@@ -306,7 +370,7 @@ export async function POST(request: NextRequest) {
     const order = await prisma.order.create({
       data: {
         orderNumber,
-        userId: validatedData.userId || null,
+        userId,
         email: validatedData.email,
         trackingNumber: validatedData.trackingNumber || null,
         carrier: validatedData.carrier || null,

@@ -282,6 +282,9 @@ export const productAPI = {
     limit?: number;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    minPrice?: number;
+    maxPrice?: number;
+    minRating?: number;
   }): Promise<{
     products: ApiProduct[];
     pagination: {

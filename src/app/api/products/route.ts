@@ -1,111 +1,108 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
-import { Product, Review } from '@prisma/client';
+import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
-type ProductWithReviews = Product & {
-  reviews: Review[];
-  _count: { reviews: number };
-};
-
-// GET /api/products - Get all products with optional filters
+// GET /api/products - Get all products with filtering and pagination
 export async function GET(request: NextRequest) {
   try {
     // Check if DATABASE_URL is available (for build-time compatibility)
     if (!process.env.DATABASE_URL) {
-      return NextResponse.json({
+      logger.warn('⚠️ DATABASE_URL not available, returning empty response for build');
+      return NextResponse.json({ 
         products: [],
         pagination: {
           page: 1,
           limit: 12,
           total: 0,
-          pages: 0,
-        },
+          pages: 0
+        }
       });
     }
 
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category');
-    const search = searchParams.get('search');
-    const idsParam = searchParams.get('ids');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
+    const category = searchParams.get('category');
+    const search = searchParams.get('search');
     const sortBy = searchParams.get('sortBy') || 'createdAt';
     const sortOrder = (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc';
+    const minPrice = searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice')!) : undefined;
+    const maxPrice = searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice')!) : undefined;
+    const minRating = searchParams.get('minRating') ? parseFloat(searchParams.get('minRating')!) : undefined;
 
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: Record<string, unknown> = {};
-    
+    const where: any = {
+      inStock: true, // Only show in-stock products by default
+    };
+
     if (category && category !== 'all') {
       where.category = category;
-    }
-    
-    if (idsParam) {
-      const ids = idsParam.split(',').map((id) => id.trim()).filter(Boolean);
-      if (ids.length > 0) {
-        where.id = { in: ids };
-      }
     }
 
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
-        { tags: { has: search } },
       ];
     }
 
-    // Build orderBy clause
-    const orderBy: Record<string, 'asc' | 'desc'> = {};
-    orderBy[sortBy] = sortOrder;
+    // Price range filter
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.price = {};
+      if (minPrice !== undefined) {
+        (where.price as any).gte = minPrice;
+      }
+      if (maxPrice !== undefined) {
+        (where.price as any).lte = maxPrice;
+      }
+    }
 
+    // Rating filter
+    if (minRating !== undefined) {
+      where.avgRating = {
+        gte: minRating,
+      };
+    }
+
+    // Get products and total count
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where,
+        skip,
+        take: limit,
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
         include: {
           images: {
-            orderBy: { position: 'asc' }
-          },
-          variants: true,
-          reviews: {
-            select: {
-              rating: true
-            }
+            orderBy: {
+              position: 'asc',
+            },
+            take: 1, // Only need the main image for listing
           },
           _count: {
             select: {
-              reviews: true
-            }
-          }
+              reviews: true,
+            },
+          },
         },
-        orderBy,
-        skip,
-        take: limit,
       }),
       prisma.product.count({ where }),
     ]);
 
-    // Calculate average ratings
-    const productsWithRatings = products.map((product: ProductWithReviews) => {
-      const ratings = product.reviews.map((r: Review) => r.rating);
-      const avgRating = ratings.length > 0 
-        ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length 
-        : 0;
-      
-      return {
-        ...product,
-        avgRating: Math.round(avgRating * 10) / 10,
-        reviewCount: product._count.reviews,
-        reviews: undefined, // Remove reviews from response
-        _count: undefined, // Remove _count from response
-      };
-    });
+    // Format products
+    const formattedProducts = products.map((product: any) => ({
+      ...product,
+      reviewCount: product._count.reviews,
+      _count: undefined,
+    }));
 
     return NextResponse.json({
-      products: productsWithRatings,
+      products: formattedProducts,
       pagination: {
         page,
         limit,
@@ -114,7 +111,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error fetching products:', error);
+    logger.error('Error fetching products:', error);
     return NextResponse.json(
       { error: 'Failed to fetch products' },
       { status: 500 }

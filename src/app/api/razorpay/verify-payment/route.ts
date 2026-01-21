@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { z } from 'zod';
+import { auth } from '@clerk/nextjs/server';
 
 // Validation schema
 const verifyPaymentSchema = z.object({
@@ -37,6 +38,15 @@ const razorpay = new Razorpay({
 
 export async function POST(request: NextRequest) {
   try {
+    // Require authentication before verifying payments
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Authentication required', success: false },
+        { status: 401 }
+      );
+    }
+
     // Parse and validate request body
     const body = await request.json();
     const validatedData = verifyPaymentSchema.parse(body);
@@ -111,9 +121,13 @@ export async function POST(request: NextRequest) {
       created_at: payment.created_at,
     };
 
-    // Save payment to database if order data is provided
+    // Save payment to database if order data is provided and DB is available
     if (order_data) {
-      await savePaymentToDatabase(paymentData, order_data);
+      if (!process.env.DATABASE_URL) {
+        console.warn('⚠️ DATABASE_URL not available, skipping DB update for payment verification');
+      } else {
+        await savePaymentToDatabase(paymentData, order_data);
+      }
     }
 
     // Log successful payment verification
@@ -162,10 +176,12 @@ export async function POST(request: NextRequest) {
   }
 }
 
+import { emailService } from '@/lib/email';
+
 async function savePaymentToDatabase(paymentData: PaymentData, orderData: { id: string; email: string; amount: number }) {
   try {
-    // Update order with payment information
-    await prisma.order.update({
+    // Update order with payment information and fetch details for email
+    const updatedOrder = await prisma.order.update({
       where: {
         id: orderData.id,
       },
@@ -174,11 +190,72 @@ async function savePaymentToDatabase(paymentData: PaymentData, orderData: { id: 
         financialStatus: 'paid',
         paymentMethod: 'razorpay',
         // updatedAt will auto-update via Prisma @updatedAt
-        // Persist minimal payment info to existing fields only
       },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                images: {
+                  take: 1,
+                  orderBy: { position: 'asc' }
+                }
+              }
+            }
+          }
+        },
+        shippingAddress: true,
+      }
     });
 
     console.log(`Order ${orderData.id} updated with payment information`);
+
+    // Send confirmation email
+    try {
+      if (updatedOrder.shippingAddress) {
+        await emailService.sendOrderConfirmationEmail({
+          email: updatedOrder.email,
+          orderNumber: updatedOrder.orderNumber,
+          orderId: updatedOrder.id,
+          customerName: `${updatedOrder.shippingAddress.firstName} ${updatedOrder.shippingAddress.lastName}`,
+          totalPrice: updatedOrder.totalPrice,
+          subtotal: updatedOrder.subtotal,
+          taxes: updatedOrder.taxes,
+          shipping: updatedOrder.shipping,
+          discount: updatedOrder.discount,
+          currency: updatedOrder.currency,
+          paymentMethod: 'Razorpay',
+          createdAt: updatedOrder.createdAt.toISOString(),
+          items: updatedOrder.items.map((item: any) => ({
+            name: item.product?.name || 'Product',
+            quantity: item.quantity,
+            price: item.price,
+            image: item.product?.images?.[0]?.src || '',
+            variants: item.variants as Record<string, unknown> || {}
+          })),
+          shippingAddress: {
+            firstName: updatedOrder.shippingAddress.firstName,
+            lastName: updatedOrder.shippingAddress.lastName,
+            company: updatedOrder.shippingAddress.company || undefined,
+            address1: updatedOrder.shippingAddress.address1,
+            address2: updatedOrder.shippingAddress.address2 || undefined,
+            city: updatedOrder.shippingAddress.city,
+            state: updatedOrder.shippingAddress.state,
+            zipCode: updatedOrder.shippingAddress.zipCode,
+            country: updatedOrder.shippingAddress.country,
+            phone: updatedOrder.shippingAddress.phone || undefined
+          }
+        });
+        console.log(`Confirmation email sent for order ${orderData.id}`);
+      } else {
+        console.warn(`Skipping email for order ${orderData.id}: No shipping address found`);
+      }
+    } catch (emailError) {
+      console.error('Failed to send confirmation email:', emailError);
+      // Continue without failing the request
+    }
+
   } catch (dbError) {
     console.error('Failed to save payment to database:', dbError);
     throw new Error('Failed to update order with payment information');

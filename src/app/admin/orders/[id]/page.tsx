@@ -7,7 +7,8 @@ import {
   CreditCardIcon,
   MapPinIcon,
   PencilIcon,
-  TruckIcon
+  TruckIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { useUser } from '@clerk/nextjs';
@@ -16,11 +17,11 @@ import Link from 'next/link';
 import { notFound, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { ChevronDownIcon, LinkIcon } from '@heroicons/react/24/outline';
+// Removed unused icons after simplifying Shipping Actions section
 
 interface Props {
   params: {
-    orderId: string;
+    id: string;
   };
 }
 
@@ -70,12 +71,12 @@ export default function AdminOrderDetailPage({ params }: Props) {
 
   useEffect(() => {
     const fetchOrder = async () => {
-      if (!params.orderId) return;
+      if (!params.id) return;
       setIsLoading(true);
       try {
         const res = await orderAPI.getOrders({ limit: 200 });
         const found = res.orders.find(
-          (o) => o.orderNumber === params.orderId || o.id === params.orderId
+          (o) => o.orderNumber === params.id || o.id === params.id
         );
         setOrder(found ?? null);
       } catch (error) {
@@ -88,7 +89,7 @@ export default function AdminOrderDetailPage({ params }: Props) {
     };
 
     fetchOrder();
-  }, [params.orderId]);
+  }, [params.id]);
 
   useEffect(() => {
     if (order) {
@@ -150,7 +151,7 @@ export default function AdminOrderDetailPage({ params }: Props) {
     }
   };
 
-  if (isLoading || status === 'loading') {
+  if (isLoading || !isLoaded) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-600"></div>
@@ -191,6 +192,31 @@ export default function AdminOrderDetailPage({ params }: Props) {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`/api/invoices/download/${order.id}`);
+                      if (!res.ok) throw new Error('Failed to download invoice');
+                      const blob = await res.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = `invoice-${order.invoiceNumber || order.orderNumber}.pdf`;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      window.URL.revokeObjectURL(url);
+                      toast.success('Invoice downloaded');
+                    } catch (e) {
+                      console.error('Invoice download failed:', e);
+                      toast.error('Invoice not ready or download failed');
+                    }
+                  }}
+                  className="flex items-center px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  <DocumentTextIcon className="h-4 w-4 mr-2" />
+                  Download Invoice
+                </button>
                 <button
                     onClick={() => {
                         const newFinancialStatus = prompt("Enter new financial status (e.g., paid, pending, refunded):", order.financialStatus);
@@ -395,87 +421,7 @@ export default function AdminOrderDetailPage({ params }: Props) {
               </div>
             </motion.div>
 
-            {/* Shipping Actions */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.35 }}
-              className="bg-white rounded-lg shadow p-6"
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Shipping</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Provider</label>
-                  <div className="relative">
-                    <select
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                      value={provider}
-                      onChange={(e) => setProvider(e.target.value as any)}
-                    >
-                      <option value="shiprocket">Shiprocket</option>
-                      <option value="delhivery">Delhivery</option>
-                      <option value="bluedart">Bluedart</option>
-                    </select>
-                    <ChevronDownIcon className="absolute right-2 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={handleGenerateLabel}
-                    className="px-3 py-2 bg-rose-600 text-white rounded-md text-sm hover:bg-rose-700"
-                  >
-                    Generate Label
-                  </button>
-                  <a
-                    href={order?.labelUrl || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-2 bg-gray-100 text-gray-800 rounded-md text-sm hover:bg-gray-200 inline-flex items-center"
-                  >
-                    <LinkIcon className="h-4 w-4 mr-1" /> Label
-                  </a>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Pickup Date</label>
-                  <input
-                    type="date"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                    value={pickupDate}
-                    onChange={(e) => setPickupDate(e.target.value)}
-                  />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={handleSchedulePickup}
-                    className="px-3 py-2 bg-emerald-600 text-white rounded-md text-sm hover:bg-emerald-700"
-                    disabled={!order?.awb}
-                  >
-                    Schedule Pickup
-                  </button>
-                  <a
-                    href={trackingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-                  >
-                    Track Shipment
-                  </a>
-                </div>
-
-                <div className="border-t border-gray-200 pt-4 mt-4 text-sm text-gray-700 space-y-1">
-                  <p><span className="font-medium">Carrier:</span> {order?.shippingCarrier || '—'}</p>
-                  <p><span className="font-medium">AWB:</span> {order?.awb || '—'}</p>
-                  {order?.labelUrl && (
-                    <p>
-                      <span className="font-medium">Label URL:</span>{' '}
-                      <a href={order.labelUrl} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">Open</a>
-                    </p>
-                  )}
-                </div>
-              </div>
-            </motion.div>
+            {/* Shipping Actions removed: placeholder until provider integration is implemented */}
           </div>
         </div>
       </div>

@@ -68,11 +68,6 @@ export default function OrderHistoryPage() {
   }, [user, isLoaded]);
 
   const handleDownloadInvoice = async (order: ApiOrder) => {
-    if (!order.invoiceFilePath) {
-      toast.error('Invoice not available for this order.');
-      return;
-    }
-
     try {
       // Create a download link for the invoice
       const response = await fetch(`/api/invoices/download/${order.id}`);
@@ -93,7 +88,7 @@ export default function OrderHistoryPage() {
       toast.success('Invoice downloaded successfully!');
     } catch (error) {
       console.error('Error downloading invoice:', error);
-      toast.error('Failed to download invoice. Please try again.');
+      toast.error('Invoice not ready or download failed. Please try again later.');
     }
   };
 

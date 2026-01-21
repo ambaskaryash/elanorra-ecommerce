@@ -59,17 +59,9 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  const [debouncedPriceRange] = useDebounce(priceRange, 500);
 
-  // Calculate actual price range from products
-  const actualPriceRange = useMemo(() => {
-    if (!products.length) return [0, 10000] as [number, number];
-    const prices = products.map(p => p.price);
-    return [Math.min(...prices), Math.max(...prices)] as [number, number];
-  }, [products]);
-
-  useEffect(() => {
-    setPriceRange(actualPriceRange);
-  }, [actualPriceRange]);
+  // Removed auto-update of priceRange from products to avoid loops with server-side filtering
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -102,6 +94,10 @@ export default function SearchPage() {
         if (query.trim()) params.set('search', query.trim());
         if (selectedCategory !== 'all') params.set('category', selectedCategory);
 
+        // Add price range
+        params.set('minPrice', debouncedPriceRange[0].toString());
+        params.set('maxPrice', debouncedPriceRange[1].toString());
+
         // Map sort options to API
         if (sortBy === 'price-asc') {
           params.set('sortBy', 'price');
@@ -113,7 +109,8 @@ export default function SearchPage() {
           params.set('sortBy', 'createdAt');
           params.set('sortOrder', 'desc');
         } else {
-          // relevance or bestselling: let API default, we’ll sort client-side
+          // relevance or bestselling
+          // Note: API doesn't fully support relevance scoring yet, but basic sort is there.
         }
 
         const res = await fetch(`/api/products?${params.toString()}`);
@@ -122,7 +119,7 @@ export default function SearchPage() {
           const apiProducts: ApiProduct[] = data.products || [];
           setProducts(apiProducts);
 
-          // derive categories from fetched products
+          // derive categories from fetched products (or ideally separate facet query)
           const map = new Map<string, number>();
           apiProducts.forEach((p) => {
             map.set(p.category, (map.get(p.category) || 0) + 1);
@@ -141,41 +138,10 @@ export default function SearchPage() {
       }
     };
     fetchProducts();
-  }, [query, selectedCategory, sortBy]);
+  }, [query, selectedCategory, sortBy, debouncedPriceRange]);
 
-  const searchResults = useMemo(() => {
-    let filtered = products;
-
-    // Client-side price filter
-    filtered = filtered.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
-
-    // Client-side sort when needed
-    const sorted = [...filtered].sort((a, b) => {
-      switch (sortBy) {
-        case 'price-asc':
-          return a.price - b.price;
-        case 'price-desc':
-          return b.price - a.price;
-        case 'newest':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case 'bestselling':
-          return (b.reviewCount || 0) - (a.reviewCount || 0);
-        case 'relevance':
-        default:
-          if (query.trim()) {
-            const searchTerm = query.toLowerCase().trim();
-            const aScore = a.name.toLowerCase().includes(searchTerm) ? 2 : a.description.toLowerCase().includes(searchTerm) ? 1 : 0;
-            const bScore = b.name.toLowerCase().includes(searchTerm) ? 2 : b.description.toLowerCase().includes(searchTerm) ? 1 : 0;
-            return bScore - aScore;
-          }
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }
-    });
-
-    return sorted;
-  }, [products, priceRange, sortBy, query]);
-
-  // Removed legacy mock-data converter; products are fetched as ApiProduct directly
+  // Client-side filtering replaced by server-side
+  const searchResults = products;
 
   const handlePriceRangeChange = (index: number, value: string) => {
     const numValue = parseInt(value) || 0;
@@ -238,7 +204,7 @@ export default function SearchPage() {
                   </p>
                 )}
                 <p className="text-lg text-gray-600">
-                  {searchResults.length} {searchResults.length === 1 ? 'product' : 'products'} found
+                  {products.length} {products.length === 1 ? 'product' : 'products'} found
                 </p>
               </div>
             ) : (
@@ -315,7 +281,7 @@ export default function SearchPage() {
                     />
                   </div>
                   <div className="text-xs text-gray-500">
-                    Range: ₹{actualPriceRange[0].toLocaleString()} - ₹{actualPriceRange[1].toLocaleString()}
+                    Range: ₹0 - ₹10,000+
                   </div>
                 </div>
               </div>
@@ -324,7 +290,7 @@ export default function SearchPage() {
               <button
                 onClick={() => {
                   setSelectedCategory('all');
-                  setPriceRange(actualPriceRange);
+                  setPriceRange([0, 10000]);
                   setSortBy('relevance');
                 }}
                 className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-sm"
@@ -347,7 +313,7 @@ export default function SearchPage() {
                   <span>Filters</span>
                 </button>
                 <p className="text-gray-600">
-                  Showing {searchResults.length} {searchResults.length === 1 ? 'result' : 'results'}
+                  Showing {products.length} {products.length === 1 ? 'result' : 'results'}
                   {query && ` for "${query}"`}
                 </p>
               </div>
