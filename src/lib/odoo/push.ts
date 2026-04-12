@@ -55,6 +55,19 @@ export async function pushOrderToOdoo(orderId: string) {
       if (partners.length > 0) {
         partnerId = partners[0].id;
       } else {
+        // Resolve Country ID
+        let countryId = null;
+        if (order.shippingAddress?.country) {
+          try {
+             const countries = await odoo.searchRead('res.country', [['name', 'ilike', order.shippingAddress.country]], { fields: ['id'], limit: 1 });
+             if (countries.length > 0) {
+               countryId = countries[0].id;
+             }
+          } catch (e: any) {
+            logger.warn('Failed to lookup country ID in Odoo', e);
+          }
+        }
+
         // Create new partner
         partnerId = await odoo.create('res.partner', {
           name: order.shippingAddress?.firstName + ' ' + order.shippingAddress?.lastName || 'Guest User',
@@ -64,7 +77,7 @@ export async function pushOrderToOdoo(orderId: string) {
           street2: order.shippingAddress?.address2,
           city: order.shippingAddress?.city,
           zip: order.shippingAddress?.zipCode,
-          // country_id lookup would be needed here ideally
+          country_id: countryId,
         });
         logger.info(`Created new Odoo partner: ${partnerId}`);
       }

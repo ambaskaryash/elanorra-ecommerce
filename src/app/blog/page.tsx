@@ -20,7 +20,7 @@ export default async function BlogPage() {
       <section className="relative h-[40vh] bg-gray-900 flex items-center justify-center text-center">
         <div className="absolute inset-0">
           <Image
-            src="/images/placeholder.svg"
+            src="/images/editorial-craft.png"
             alt="Blog"
             fill
             className="object-cover opacity-50"
@@ -40,19 +40,19 @@ export default async function BlogPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {posts.map((post: ApiBlogPost) => (
-                <Link key={post.id} href={`/blog/${post.slug}`} className="group border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+                <Link key={post.id} href={`/blog/${post.slug}`} className="group border border-gray-100 hover:border-gray-900 overflow-hidden transition-all duration-300">
                   <div className="relative h-48 w-full bg-gray-100">
                     <Image
-                      src={post.coverImage || '/images/placeholder.svg'}
+                      src={post.coverImage || '/images/editorial-craft.png'}
                       alt={post.title}
                       fill
-                      className="object-cover"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                   <div className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-rose-600 transition-colors">{post.title}</h3>
-                    {post.excerpt && <p className="mt-2 text-gray-600 line-clamp-2">{post.excerpt}</p>}
-                    <div className="mt-4 text-sm text-gray-500">
+                    <h3 className="text-sm font-serif uppercase tracking-widest text-gray-900 group-hover:text-gray-600 transition-colors mb-2">{post.title}</h3>
+                    {post.excerpt && <p className="mt-2 text-sm text-gray-500 line-clamp-2 tracking-wide">{post.excerpt}</p>}
+                    <div className="mt-4 text-[10px] uppercase tracking-widest text-gray-400">
                       {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : ''}
                     </div>
                   </div>

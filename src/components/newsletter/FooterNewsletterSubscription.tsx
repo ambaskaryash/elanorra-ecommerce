@@ -134,25 +134,20 @@ export default function FooterNewsletterSubscription({
 
   return (
     <div className={`text-center ${className}`}>
-      <h3 className="text-2xl font-bold mb-4 text-white">Join the ElanorraLiving Community</h3>
-      <p className="text-gray-300 mb-6">
-        Subscribe for exclusive offers, design inspiration, and the latest in luxury home living.
-      </p>
-
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row max-w-md mx-auto gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row max-w-md mx-auto gap-3">
         <input
           type="email"
           name="email"
           value={formData.email}
           onChange={handleInputChange}
           placeholder="Enter your email"
-          className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+          className="flex-1 px-4 py-3 bg-white border border-gray-300 focus:border-gray-900 rounded-none text-gray-900 placeholder-gray-400 focus:outline-none transition-colors"
           required
         />
         <button
           type="submit"
           disabled={isLoading}
-          className="bg-rose-600 hover:bg-rose-700 disabled:bg-rose-400 text-white px-6 py-3 rounded-md font-medium transition-colors flex items-center justify-center"
+          className="bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 text-white px-8 py-3 rounded-none text-xs tracking-widest uppercase transition-colors flex items-center justify-center font-medium"
         >
           {isLoading ? (
             <>
@@ -176,13 +171,11 @@ export default function FooterNewsletterSubscription({
       )}
 
       {/* Privacy Notice */}
-      <p className="text-xs text-gray-400 text-center mt-4 max-w-md mx-auto">
-        By subscribing, you agree to receive marketing emails from ElanorraLiving. 
-        You can unsubscribe at any time. View our{' '}
-        <a href="/privacy" className="text-rose-400 hover:text-rose-300 underline">
+      <p className="text-[10px] text-gray-500 text-center mt-4 max-w-md mx-auto uppercase tracking-wider">
+        By subscribing, you agree to receive marketing emails. View our{' '}
+        <a href="/privacy" className="text-gray-900 hover:text-gray-600 underline">
           Privacy Policy
         </a>
-        .
       </p>
     </div>
   );

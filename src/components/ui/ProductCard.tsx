@@ -56,16 +56,12 @@ export default function ProductCard({ product, className = '', variant = 'defaul
       transition={{ duration: 0.35, ease: cubicBezier(0.16, 1, 0.3, 1) }}
       className={`group relative rounded-2xl p-[1px] transition-all duration-300 ${className}`}
     >
-      {/* Decorative gradient border that appears on hover */}
+      {/* Decorative minimalist border that appears on hover */}
       <div
-        className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-[1px] ${
-          variant === 'homepage'
-            ? 'ribbon-bronze'
-            : 'bg-gradient-to-br from-gray-200 via-gray-200 to-gray-300'
-        }`}
+        className="absolute inset-0 border border-transparent group-hover:border-gray-200 transition-colors duration-300 pointer-events-none"
       />
 
-      <div className="relative bg-white rounded-2xl border border-gray-200/70 shadow-sm hover:shadow-xl overflow-hidden">
+      <div className="relative bg-white border border-gray-100 group-hover:border-gray-200 overflow-hidden transition-all duration-300">
         <Link href={`/products/${product.slug}`} className="block">
           {/* Product Image */}
           <div className="relative aspect-square overflow-hidden bg-stone-50">
@@ -95,68 +91,57 @@ export default function ProductCard({ product, className = '', variant = 'defaul
           }} />
 
           {/* Badges */}
-          <div className="absolute top-3 left-3 flex flex-col space-y-1">
+          <div className="absolute top-3 left-3 flex flex-col space-y-2 uppercase tracking-widest z-10 text-[9px]">
             {new Date(product.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000 && (
-              <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+              <span className="bg-white border border-gray-900 text-gray-900 px-2 py-1 font-medium shadow-sm w-fit">
                 New
               </span>
             )}
             {product.reviewCount > 10 && product.avgRating > 4.5 && (
-              <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+              <span className="bg-white border border-gray-900 text-gray-900 px-2 py-1 font-medium shadow-sm w-fit">
                 Bestseller
               </span>
             )}
             {discount > 0 && (
-              variant === 'homepage' ? (
-                <div className="absolute -top-2 -left-2">
-                  <div className="rotate-[-15deg] ribbon-bronze text-white text-[10px] px-3 py-1 shadow-md rounded-sm">
-                    {discount}% OFF
-                  </div>
-                </div>
-              ) : (
-                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                  {discount}% Off
-                </span>
-              )
+              <span className="bg-gray-900 text-white px-2 py-1 font-medium shadow-sm w-fit">
+                {discount}% Off
+              </span>
             )}
           </div>
 
           {/* Wishlist & Compare Buttons */}
           <button
             onClick={handleToggleWishlist}
-            className="absolute top-3 right-3 p-2.5 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full transition-all opacity-0 group-hover:opacity-100 duration-300 shadow-sm hover:shadow-md border border-gray-200/60"
+            className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm hover:bg-gray-900 hover:text-white rounded-none transition-all opacity-0 group-hover:opacity-100 duration-300 border border-gray-200 group/btn"
           >
             {isWishlisted ? (
-              <HeartSolidIcon className="h-5 w-5 text-[var(--accent)]" />
+              <HeartSolidIcon className="h-4 w-4 text-gray-900 group-hover/btn:text-white transition-colors" />
             ) : (
-              <HeartIcon className="h-5 w-5 text-gray-700" />
+              <HeartIcon className="h-4 w-4 text-gray-900 group-hover/btn:text-white transition-colors" />
             )}
           </button>
 
           <button
             onClick={handleToggleCompare}
-            className="absolute top-14 right-3 p-2.5 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full transition-all opacity-0 group-hover:opacity-100 duration-300 shadow-sm hover:shadow-md border border-gray-200/60"
+            className="absolute top-12 right-3 p-2 bg-white/90 backdrop-blur-sm hover:bg-gray-900 hover:text-white rounded-none transition-all opacity-0 group-hover:opacity-100 duration-300 border border-gray-200"
             aria-label={inCompare ? 'Remove from compare' : 'Add to compare'}
           >
-            <SquaresPlusIcon className={`h-5 w-5 ${inCompare ? 'text-[var(--accent)]' : 'text-gray-700'}`} />
+            <SquaresPlusIcon className={`h-4 w-4 ${inCompare ? 'text-gray-900 shrink-0' : 'text-gray-900'}`} />
           </button>
 
           {/* Quick Add to Cart */}
-          <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+          <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 text-center">
+            <button
               onClick={handleAddToCart}
               disabled={!product.inStock}
-              className={`w-full flex items-center justify-center space-x-2 py-3 px-4 text-sm font-light transition-all duration-300 rounded-lg ${
+              className={`w-full inline-flex items-center justify-center space-x-2 py-3 px-4 text-[10px] font-medium tracking-widest transition-all duration-300 rounded-none uppercase ${
                 product.inStock
-                  ? 'bg-[var(--accent)] hover:bg-[color:rgb(186,156,109)] text-white shadow-lg'
-                  : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  ? 'bg-gray-900 hover:bg-gray-800 text-white'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
               }`}
             >
-              <ShoppingBagIcon className="h-4 w-4" />
-              <span className="uppercase tracking-wider">{product.inStock ? 'Add to Cart' : 'Out of Stock'}</span>
-            </motion.button>
+              <span className="uppercase tracking-widest">{product.inStock ? 'Add to Cart' : 'Out of Stock'}</span>
+            </button>
           </div>
 
           {/* Out of Stock Overlay */}
@@ -182,55 +167,51 @@ export default function ProductCard({ product, className = '', variant = 'defaul
             <>
               {/* Category */}
               {product.category && (
-                <p className="text-xs text-gray-500 uppercase tracking-widest mb-2 font-light">
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-2">
                   {product.category}
                 </p>
               )}
 
               {/* Product Name */}
-              <h3 className="text-base font-light text-gray-900 mb-3 line-clamp-2 group-hover:text-gray-700 transition-colors leading-snug tracking-wide">
+              <h3 className="text-sm font-serif text-gray-900 mb-2 line-clamp-2 group-hover:text-gray-600 transition-colors uppercase tracking-widest">
                 {product.name}
               </h3>
 
               {/* Short Description */}
-              <p className="text-sm text-gray-500 mb-4 line-clamp-2 font-light leading-relaxed">
-                {product.description.length > 90 
-                  ? product.description.substring(0, 90) + '...' 
+              <p className="text-[11px] text-gray-500 mb-4 line-clamp-2 uppercase tracking-widest">
+                {product.description.length > 70 
+                  ? product.description.substring(0, 70) + '...' 
                   : product.description}
               </p>
 
               {/* Price */}
               <div className="flex items-center space-x-3 mb-2">
-                <span className="text-xl font-light text-gray-900 tracking-wide">
+                <span className="text-sm font-medium text-gray-900 tracking-wide">
                   {formatPrice(product.price)}
                 </span>
                 {product.compareAtPrice && product.compareAtPrice > product.price && (
-                  <span className="text-sm text-gray-400 line-through font-light">
+                  <span className="text-xs text-gray-400 line-through">
                     {formatPrice(product.compareAtPrice)}
                   </span>
                 )}
               </div>
 
               {/* Stock Status & Rating */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between border-t border-gray-100 pt-3 mt-3">
                 {product.inStock && product.inventory < 10 && (
-                  <p className="text-xs text-amber-600 font-light">
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest">
                     Only {product.inventory} left
                   </p>
                 )}
                 {product.reviewCount > 0 && (
-                  <div className="flex items-center space-x-1">
-                    <span className="text-xs text-gray-400">★</span>
-                    <span className="text-xs text-gray-500 font-light">
+                  <div className="flex items-center space-x-1 uppercase tracking-widest">
+                    <span className="text-[10px] text-gray-400">★</span>
+                    <span className="text-[10px] text-gray-500">
                       {product.avgRating} ({product.reviewCount})
                     </span>
                   </div>
                 )}
               </div>
-              {/* Decorative bottom accent for homepage variant */}
-              {variant === 'homepage' && (
-                <div className="mt-4 w-full divider-bronze" />
-              )}
             </>
           )}
         </div>

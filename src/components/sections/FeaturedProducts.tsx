@@ -55,11 +55,11 @@ export default function FeaturedProducts() {
 
   if (loading) {
     return (
-      <section className="py-20 bg-gradient-to-b from-white to-stone-50">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl heading-xl mb-6 tracking-wide">Featured Products</h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
+            <h2 className="text-3xl sm:text-4xl font-serif text-gray-900 mb-4 tracking-widest uppercase">Featured Products</h2>
+            <p className="text-sm text-gray-500 max-w-2xl mx-auto tracking-wide">
               Handpicked favorites that showcase the best of our craftsmanship and design.
             </p>
           </div>
@@ -92,7 +92,7 @@ export default function FeaturedProducts() {
   }
 
   return (
-    <section className="py-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-50 via-stone-50 to-white">
+    <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -102,11 +102,9 @@ export default function FeaturedProducts() {
         >
           {/* Section Header */}
           <motion.div variants={itemVariants} className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl heading-xl mb-3 tracking-wide">Featured Products</h2>
-            <div className="mx-auto h-1 w-24 rounded-full bg-gradient-to-r from-rose-500 via-pink-500 to-indigo-500" />
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
+            <h2 className="text-3xl sm:text-4xl font-serif text-gray-900 mb-4 tracking-widest uppercase">Featured Products</h2>
+            <p className="text-sm text-gray-500 max-w-2xl mx-auto tracking-wide">
               Handpicked favorites that showcase the best of our craftsmanship and design. 
-              Each piece is created with love and attention to detail.
             </p>
           </motion.div>
 
@@ -126,17 +124,9 @@ export default function FeaturedProducts() {
           <motion.div variants={itemVariants} className="text-center mt-16">
             <Link
               href="/shop"
-              className="inline-flex items-center px-8 py-4 bg-transparent border border-rose-600 text-rose-700 font-light hover:bg-rose-600 hover:text-white transition-all duration-300 tracking-wider uppercase text-sm rounded-lg"
+              className="inline-flex items-center px-10 py-3 border border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white transition-all duration-300 tracking-widest uppercase text-xs"
             >
               Shop All Products
-              <svg
-                className="ml-3 h-4 w-4 transform group-hover:translate-x-1 transition-transform"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
             </Link>
           </motion.div>
         </motion.div>

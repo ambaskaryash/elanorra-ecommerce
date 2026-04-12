@@ -414,18 +414,18 @@ export default function AdminDashboard() {
       <motion.div
         whileHover={{ y: -4, scale: 1.02 }}
         transition={{ duration: 0.2 }}
-        className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300"
+        className="bg-white rounded-none border border-gray-200 p-6 hover:border-gray-900 transition-all duration-300"
       >
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center space-x-3 mb-3">
-              <div className={`p-3 rounded-xl bg-gradient-to-br ${gradientClass} shadow-lg`}>
-                <Icon className="h-6 w-6 text-white" />
+              <div className="p-3 rounded-none bg-stone-50 border border-gray-100">
+                <Icon className="h-6 w-6 text-gray-900" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{title}</p>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{title}</p>
                 {description && (
-                  <p className="text-xs text-gray-500 mt-1">{description}</p>
+                  <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-1">{description}</p>
                 )}
               </div>
             </div>
@@ -484,12 +484,12 @@ export default function AdminDashboard() {
         {/* Logo and Brand */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 border border-gray-900 bg-gray-900 rounded-none flex items-center justify-center">
               <span className="text-white font-bold text-lg">E</span>
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">Elanorra</h2>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Admin Panel</p>
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest">Admin Panel</p>
             </div>
           </div>
           <button
@@ -511,10 +511,10 @@ export default function AdminDashboard() {
                 setActiveTab(item.id);
                 setSidebarOpen(false);
               }}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-none text-xs uppercase tracking-widest font-bold transition-all duration-200 ${
                 activeTab === item.id
-                  ? `${getActiveColorClass(item.color)} text-white shadow-lg`
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                  ? 'bg-gray-900 text-white'
+                  : 'text-gray-500 hover:bg-stone-50 hover:text-gray-900'
               }`}
             >
               <item.icon className="h-5 w-5" />
@@ -531,17 +531,17 @@ export default function AdminDashboard() {
 
         {/* User Info */}
         <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-50">
-            <div className="w-10 h-10 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-medium text-sm">
+          <div className="flex items-center space-x-3 p-3 rounded-none border border-gray-200 bg-stone-50">
+            <div className="w-10 h-10 bg-white border border-gray-200 rounded-none flex items-center justify-center">
+              <span className="text-gray-900 font-bold text-lg">
                 {user?.firstName?.charAt(0) || user?.emailAddresses?.[0]?.emailAddress?.charAt(0)?.toUpperCase() || 'A'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-xs uppercase tracking-widest font-bold text-gray-900 truncate">
                 {user?.firstName} {user?.lastName}
               </p>
-              <p className="text-xs text-gray-500 truncate">Administrator</p>
+              <p className="text-[10px] uppercase tracking-widest text-gray-500 truncate">Administrator</p>
             </div>
           </div>
         </div>
@@ -550,7 +550,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div className="min-h-screen bg-stone-50 flex">
       {/* Mobile sidebar overlay */}
       <AnimatePresence>
         {sidebarOpen && (
@@ -565,7 +565,7 @@ export default function AdminDashboard() {
               initial={{ x: -300 }}
               animate={{ x: 0 }}
               exit={{ x: -300 }}
-              className="absolute left-0 top-0 h-full w-80 bg-white shadow-2xl"
+              className="absolute left-0 top-0 h-full w-72 bg-white shadow-2xl"
             >
               <Sidebar />
             </motion.div>
@@ -573,15 +573,15 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-80 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-white shadow-xl border-r border-gray-200">
+      {/* Desktop sidebar — sticky, not fixed, so it stays in flow */}
+      <div className="hidden lg:flex lg:flex-col lg:w-72 lg:flex-shrink-0">
+        <div className="flex flex-col h-screen sticky top-0 bg-white border-r border-gray-200 overflow-y-auto">
           <Sidebar />
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="lg:pl-80">
+      {/* Main content — flex-1 so it fills remaining space next to sidebar */}
+      <div className="flex-1 min-w-0">
         {/* Top header with integrated nav */}
         <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-200">
           <div className="px-4 sm:px-6 lg:px-8 py-4">
@@ -600,17 +600,17 @@ export default function AdminDashboard() {
                       const Icon = current.icon;
                       return (
                         <div className="flex items-center space-x-2">
-                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                            <Icon className="h-5 w-5 text-gray-700" />
+                          <div className="w-8 h-8 rounded-none border border-gray-200 bg-stone-50 flex items-center justify-center">
+                            <Icon className="h-5 w-5 text-gray-900" />
                           </div>
-                          <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                          <h1 className="text-xl font-serif uppercase tracking-widest text-gray-900">
                             {current.name}
                           </h1>
                         </div>
                       );
                     })()}
                   </div>
-                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mt-1">
                     Welcome back, {user?.firstName || 'Admin'}!
                   </p>
                 </div>
@@ -620,7 +620,7 @@ export default function AdminDashboard() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => router.push('/')}
-                  className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="hidden sm:flex items-center space-x-2 px-6 py-4 bg-gray-900 border border-gray-900 text-white rounded-none uppercase tracking-widest font-bold text-[10px] hover:bg-white hover:text-gray-900 transition-all duration-200"
                 >
                   <HomeIcon className="h-4 w-4" />
                   <span>View Store</span>
@@ -637,9 +637,9 @@ export default function AdminDashboard() {
                     onClick={() => setActiveTab(item.id)}
                     className={`${
                       activeTab === item.id
-                        ? 'bg-gray-900 text-white shadow-sm'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    } flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors`}
+                        ? 'bg-gray-900 text-white shadow-none'
+                        : 'bg-stone-50 border border-gray-100 text-gray-500 hover:text-gray-900'
+                    } flex items-center space-x-2 px-6 py-3 rounded-none text-[10px] uppercase tracking-widest font-bold transition-all`}
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.name}</span>

@@ -203,9 +203,9 @@ export default function ContactPage() {
             transition={{ duration: 0.8 }}
             className="max-w-3xl px-4"
           >
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">Get In Touch</h1>
-            <p className="text-xl md:text-2xl text-white/90 leading-relaxed">
-              Let's create something beautiful together
+            <h1 className="text-3xl md:text-5xl font-serif uppercase tracking-[0.2em] mb-6">Get In Touch</h1>
+            <p className="text-xs md:text-sm text-white/80 uppercase tracking-widest leading-relaxed">
+              Let's curate something beautiful together
             </p>
           </motion.div>
         </div>
@@ -224,12 +224,12 @@ export default function ContactPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
               >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Send Us a Message</h2>
+                <h2 className="text-2xl font-serif uppercase tracking-widest text-gray-900 mb-8">Send Us a Message</h2>
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="name" className="block text-[10px] uppercase tracking-widest font-medium text-gray-500 mb-2">
                         Full Name *
                       </label>
                       <input
@@ -239,8 +239,8 @@ export default function ContactPage() {
                         required
                         value={formData.name}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors ${
-                          errors.name ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-3 border-gray-200 focus:border-gray-900 border rounded-none focus:ring-0 bg-stone-50/50 transition-colors ${
+                          errors.name ? 'border-red-500' : 'border-gray-200'
                         }`}
                         placeholder="Your full name"
                       />
@@ -250,7 +250,7 @@ export default function ContactPage() {
                     </div>
                     
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="email" className="block text-[10px] uppercase tracking-widest font-medium text-gray-500 mb-2">
                         Email Address *
                       </label>
                       <input
@@ -260,8 +260,8 @@ export default function ContactPage() {
                         required
                         value={formData.email}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors ${
-                          errors.email ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-3 border-gray-200 focus:border-gray-900 border rounded-none focus:ring-0 bg-stone-50/50 transition-colors ${
+                          errors.email ? 'border-red-500' : 'border-gray-200'
                         }`}
                         placeholder="your.email@example.com"
                       />
@@ -273,7 +273,7 @@ export default function ContactPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="phone" className="block text-[10px] uppercase tracking-widest font-medium text-gray-500 mb-2">
                         Phone Number
                       </label>
                       <input
@@ -282,8 +282,8 @@ export default function ContactPage() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors ${
-                          errors.phone ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-3 border-gray-200 focus:border-gray-900 border rounded-none focus:ring-0 bg-stone-50/50 transition-colors ${
+                          errors.phone ? 'border-red-500' : 'border-gray-200'
                         }`}
                         placeholder="+91 9876543210"
                       />
@@ -293,7 +293,7 @@ export default function ContactPage() {
                     </div>
                     
                     <div>
-                      <label htmlFor="service" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="service" className="block text-[10px] uppercase tracking-widest font-medium text-gray-500 mb-2">
                         Service Interest
                       </label>
                       <select
@@ -301,8 +301,8 @@ export default function ContactPage() {
                         name="service"
                         value={formData.service}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors ${
-                          errors.service ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-3 border-gray-200 focus:border-gray-900 border rounded-none focus:ring-0 bg-stone-50/50 transition-colors ${
+                          errors.service ? 'border-red-500' : 'border-gray-200'
                         }`}
                       >
                         <option value="">Select a service</option>
@@ -320,7 +320,7 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="subject" className="block text-[10px] uppercase tracking-widest font-medium text-gray-500 mb-2">
                       Subject *
                     </label>
                     <input
@@ -330,8 +330,8 @@ export default function ContactPage() {
                       required
                       value={formData.subject}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors ${
-                        errors.subject ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full px-4 py-3 border-gray-200 focus:border-gray-900 border rounded-none focus:ring-0 bg-stone-50/50 transition-colors ${
+                        errors.subject ? 'border-red-500' : 'border-gray-200'
                       }`}
                       placeholder="How can we help you?"
                     />
@@ -341,7 +341,7 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="message" className="block text-[10px] uppercase tracking-widest font-medium text-gray-500 mb-2">
                       Message *
                     </label>
                     <textarea
@@ -351,8 +351,8 @@ export default function ContactPage() {
                       required
                       value={formData.message}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-md focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors resize-none ${
-                        errors.message ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full px-4 py-3 border-gray-200 focus:border-gray-900 border rounded-none focus:ring-0 bg-stone-50/50 transition-colors resize-none ${
+                        errors.message ? 'border-red-500' : 'border-gray-200'
                       }`}
                       placeholder="Tell us about your project, questions, or how we can help..."
                     ></textarea>
@@ -367,11 +367,11 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`w-full py-4 px-6 rounded-md font-medium transition-colors ${
+                    className={`w-full py-4 px-6 rounded-none text-xs font-bold uppercase tracking-widest border border-gray-900 transition-colors ${
                       isSubmitting
-                        ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-rose-600 hover:bg-rose-700'
-                    } text-white`}
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                        : 'bg-gray-900 text-white hover:bg-white hover:text-gray-900'
+                    }`}
                   >
                     {isSubmitting ? 'Sending...' : 'Send Message'}
                   </button>
@@ -389,17 +389,17 @@ export default function ContactPage() {
                 className="space-y-8"
               >
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h3>
+                  <h3 className="text-xl font-serif uppercase tracking-widest text-gray-900 mb-8">Contact Information</h3>
                   <div className="space-y-6">
                     {contactInfo.map((item, index) => (
                       <div key={index} className="flex items-start">
-                        <div className="flex-shrink-0 p-3 bg-rose-100 rounded-xl">
-                          <item.icon className="h-6 w-6 text-rose-600" />
+                        <div className="flex-shrink-0 p-4 border border-gray-100 bg-stone-50 rounded-none">
+                          <item.icon className="h-5 w-5 text-gray-900" />
                         </div>
-                        <div className="ml-4">
-                          <h4 className="text-lg font-semibold text-gray-900">{item.title}</h4>
-                          <p className="text-gray-700 font-medium">{item.info}</p>
-                          <p className="text-gray-500 text-sm">{item.subInfo}</p>
+                        <div className="ml-5">
+                          <h4 className="text-xs font-serif uppercase tracking-widest text-gray-900">{item.title}</h4>
+                          <p className="text-gray-600 font-medium text-sm mt-1 mb-0.5">{item.info}</p>
+                          <p className="text-gray-400 text-[10px] uppercase tracking-widest">{item.subInfo}</p>
                         </div>
                       </div>
                     ))}
@@ -407,24 +407,22 @@ export default function ContactPage() {
                 </div>
 
                 {/* Quick Contact Cards */}
-                <div className="space-y-4">
-                  <div className="bg-gradient-to-r from-rose-500 to-pink-500 text-white p-6 rounded-2xl">
-                    <div className="flex items-center mb-3">
-                      <ChatBubbleLeftRightIcon className="h-6 w-6 mr-2" />
-                      <span className="font-semibold">Quick Response</span>
+                <div className="space-y-4 pt-6 border-t border-gray-100">
+                  <div className="bg-gray-900 text-white p-8 rounded-none border border-gray-900">
+                    <div className="flex items-center mb-4">
+                      <ChatBubbleLeftRightIcon className="h-5 w-5 mr-3" />
+                      <span className="font-serif tracking-widest uppercase text-xs">Quick Response</span>
                     </div>
-                    <p className="text-sm opacity-90">
-                      Need immediate assistance? Our team is available for urgent queries.
+                    <p className="text-xs opacity-70 leading-relaxed uppercase tracking-wide">
+                      Need immediate assistance? Our design team is available for urgent queries.
                     </p>
                     <button 
                       onClick={() => setIsChatOpen(true)}
-                      className="mt-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                      className="mt-6 w-full bg-white text-gray-900 hover:bg-gray-100 px-4 py-3 rounded-none text-[10px] uppercase tracking-widest font-bold border border-white transition-colors"
                     >
-                      Live Chat
+                      Start Live Chat
                     </button>
                   </div>
-
-
                 </div>
               </motion.div>
             </div>
@@ -433,7 +431,7 @@ export default function ContactPage() {
       </section>
 
       {/* Map Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-24 bg-stone-50/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             variants={containerVariants}
@@ -442,15 +440,15 @@ export default function ContactPage() {
             viewport={{ once: true, amount: 0.2 }}
           >
             <motion.div variants={itemVariants} className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-widest text-gray-900 mb-4">
                 Visit Our Showroom
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Experience our collections in person at our beautifully curated showroom in Mumbai
+              <p className="text-xs uppercase tracking-widest text-gray-500 max-w-2xl mx-auto">
+                Experience our curations in person at our minimalist showroom space.
               </p>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <motion.div variants={itemVariants} className="bg-white rounded-none border border-gray-100 overflow-hidden">
               <div className="aspect-w-16 aspect-h-9 h-96">
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3770.8267739562896!2d72.8200!3d19.0596!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c9c676018b43%3A0x7b1b1b1b1b1b1b1b!2sBandra%20West%2C%20Mumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1635000000000!5m2!1sen!2sin"

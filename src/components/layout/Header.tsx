@@ -29,6 +29,7 @@ export default function Header({ className }: HeaderProps) {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isMiniCartOpen, setIsMiniCartOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [collections, setCollections] = useState<any[]>([]);
   const { totalItems, items, subtotalPrice, totalPrice, toggleCart } = useCartStore();
   const { user, isSignedIn, isLoaded } = useUser();
@@ -68,6 +69,15 @@ export default function Header({ className }: HeaderProps) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isMiniCartOpen]);
+
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Create navigation structure from database collections
   const navigationItems = [
@@ -156,9 +166,9 @@ export default function Header({ className }: HeaderProps) {
   }, []);
 
   return (
-    <header className={`sticky top-0 z-50 glass ${className || ''}`}>
-      {/* Newsletter Banner */}
-      <div className="bg-[var(--muted)] text-center py-2 text-sm sm:text-base text-gray-700">
+    <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-sm' : 'bg-white/90 backdrop-blur-md'} ${className || ''}`}>
+      {/* Newsletter Banner - Hid on scroll for cleaner look */}
+      <div className={`bg-[var(--muted)] text-center transition-all duration-300 overflow-hidden ${isScrolled ? 'h-0 opacity-0' : 'h-8 py-1 opacity-100'} text-xs sm:text-sm text-gray-700`}>
         <span className="font-medium">✨ Welcome to ElanorraLiving</span>
         <span className="mx-2 text-gray-500">•</span>
         <span>Subscribe & get 15% off your first order</span>
@@ -166,38 +176,21 @@ export default function Header({ className }: HeaderProps) {
 
       {/* Main Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-md text-gray-700 hover:text-gray-900"
-            >
-              {isMenuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
-            </button>
-          </div>
+        <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-16' : 'h-20'}`}>
+          
+          {/* LEFT: Mobile menu button & Desktop Navigation */}
+          <div className="flex flex-1 items-center justify-start lg:space-x-8">
+            <div className="md:hidden">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 -ml-2 rounded-md text-gray-700 hover:text-gray-900"
+              >
+                {isMenuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
+              </button>
+            </div>
 
-          {/* Brand Logo + Wordmark */}
-          <div className="flex-shrink-0">
-            <Link href="/" className="flex items-center" aria-label="ElanorraLiving Home">
-              <Image
-                src="/icons/elanorra-emblem.svg"
-                alt="Elanorra EL emblem"
-                width={40}
-                height={40}
-                priority
-                className="mr-2"
-              />
-              <div className="text-lg sm:text-xl font-serif tracking-widest text-gray-900 flex items-baseline">
-                <span className="uppercase">Elanorra</span>
-                <span className="ml-1 font-serif normal-case tracking-normal text-gray-700">Living</span>
-              </div>
-            </Link>
-          </div>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
-            {navigationItems.map((item) => (
+            <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
+              {navigationItems.map((item) => (
               <div key={item.id} className="relative group">
                 {item.children ? (
                   <div
@@ -388,9 +381,22 @@ export default function Header({ className }: HeaderProps) {
               </div>
             ))}
           </nav>
+        </div>
 
-          {/* Right side icons */}
-          <div className="flex items-center space-x-4">
+          {/* CENTER: Brand Logo */}
+          <div className="flex flex-shrink-0 justify-center">
+            <Link href="/" className="flex flex-col items-center justify-center pt-1" aria-label="ElanorraLiving Home">
+              <div className="text-xl sm:text-2xl font-serif tracking-[0.2em] text-gray-900 uppercase">
+                ElanorraLiving
+              </div>
+              <div className="text-[0.6rem] tracking-widest text-gray-500 uppercase mt-0.5 hidden sm:block">
+                Bespoke Gifting & Tableware
+              </div>
+            </Link>
+          </div>
+
+          {/* RIGHT: Utilities */}
+          <div className="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
             {/* Search - Desktop */}
             <div className="hidden sm:block">
               <SearchBar className="w-80" />

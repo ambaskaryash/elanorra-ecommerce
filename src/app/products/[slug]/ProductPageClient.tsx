@@ -243,27 +243,27 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
             transition={{ duration: 0.6 }}
           >
             {/* Main Image */}
-            <div className="relative aspect-square mb-4 bg-gray-100 rounded-2xl overflow-hidden">
+            <div className="relative aspect-square mb-4 bg-stone-50/50 rounded-none border border-gray-100 overflow-hidden">
               <ImageZoom
                 src={product.images[selectedImage]?.src || '/images/placeholder.svg'}
                 alt={product.images[selectedImage]?.alt || product.name}
-                className="w-full h-full"
+                className="w-full h-full object-contain mix-blend-multiply"
               />
 
               {/* Badges */}
-              <div className="absolute top-4 left-4 space-y-2 z-10">
+              <div className="absolute top-4 left-4 space-y-2 z-10 flex flex-col uppercase tracking-widest text-[9px]">
                 {product.newArrival && (
-                  <span className="inline-block px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded-full">
+                  <span className="inline-block px-3 py-1 bg-white border border-gray-900 text-gray-900 font-medium shadow-sm w-fit">
                     New
                   </span>
                 )}
                 {product.bestseller && (
-                  <span className="inline-block px-3 py-1 bg-rose-600 text-white text-sm font-medium rounded-full">
+                  <span className="inline-block px-3 py-1 bg-white border border-gray-900 text-gray-900 font-medium shadow-sm w-fit">
                     Bestseller
                   </span>
                 )}
                 {product.compareAtPrice && (
-                  <span className="inline-block px-3 py-1 bg-green-600 text-white text-sm font-medium rounded-full">
+                  <span className="inline-block px-3 py-1 bg-gray-900 text-white font-medium shadow-sm w-fit">
                     Save {product.compareAtPrice - product.price} INR
                   </span>
                 )}
@@ -275,7 +275,7 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
               {product.images.map((img, idx) => (
                 <button
                   key={img.id}
-                  className={`relative aspect-square rounded-xl overflow-hidden border ${selectedImage === idx ? 'border-rose-600' : 'border-gray-200'}`}
+                  className={`relative aspect-square rounded-none overflow-hidden border ${selectedImage === idx ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200 opacity-60 hover:opacity-100'} transition-all`}
                   onClick={() => setSelectedImage(idx)}
                 >
                   <Image src={img.src} alt={img.alt} fill className="object-cover" />
@@ -293,27 +293,27 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
             <div className="space-y-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-                  <p className="mt-2 text-gray-600">{product.shortDescription || product.description}</p>
+                  <h1 className="text-2xl sm:text-3xl font-serif text-gray-900 uppercase tracking-widest leading-relaxed">{product.name}</h1>
+                  <p className="mt-4 text-xs tracking-wide text-gray-500 uppercase">{product.shortDescription || product.description}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleWishlist}
-                    className="p-2 rounded-full border hover:bg-gray-50"
+                    className="p-3 border border-gray-200 rounded-none hover:bg-gray-50 text-gray-900 transition-colors"
                     aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                   >
                     {isWishlisted ? (
-                      <HeartIconSolid className="h-6 w-6 text-rose-600" />
+                      <HeartIconSolid className="h-5 w-5 text-gray-900" />
                     ) : (
-                      <HeartIcon className="h-6 w-6 text-gray-700" />
+                      <HeartIcon className="h-5 w-5 text-gray-900" />
                     )}
                   </button>
                   <button
                     onClick={handleCompare}
-                    className="p-2 rounded-full border hover:bg-gray-50"
+                    className="p-3 border border-gray-200 rounded-none hover:bg-gray-50 text-gray-900 transition-colors"
                     aria-label={inCompare ? 'Remove from compare' : 'Add to compare'}
                   >
-                    <SquaresPlusIcon className={`h-6 w-6 ${inCompare ? 'text-rose-600' : 'text-gray-700'}`} />
+                    <SquaresPlusIcon className={`h-5 w-5 ${inCompare ? 'text-gray-900 shrink-0' : 'text-gray-900'}`} />
                   </button>
                 </div>
               </div>
@@ -323,16 +323,13 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
                 <div className="flex items-center">
                   {[0,1,2,3,4].map((i) => (
                     i < Math.round((rating as number) || 0) ? (
-                      <StarIconSolid key={i} className="h-5 w-5 text-yellow-400" />
+                      <StarIconSolid key={i} className="h-4 w-4 text-gray-900" />
                     ) : (
-                      <StarIcon key={i} className="h-5 w-5 text-gray-300" />
+                      <StarIcon key={i} className="h-4 w-4 text-gray-200" />
                     )
                   ))}
                 </div>
-                <span className="text-gray-600">{typeof rating === 'number' ? rating.toFixed(1) : 'N/A'} ({reviewCount} reviews)</span>
-                <button onClick={handleShare} className="ml-auto p-2 rounded-full border hover:bg-gray-50" aria-label="Share product">
-                  <ShareIcon className="h-5 w-5 text-gray-700" />
-                </button>
+                <span className="text-xs uppercase tracking-widest text-gray-500">{typeof rating === 'number' ? rating.toFixed(1) : 'N/A'} ({reviewCount} reviews)</span>
               </div>
 
               {/* Price */}
@@ -372,16 +369,16 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
               <div className="flex gap-4">
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 bg-rose-600 text-white py-3 px-6 rounded-lg hover:bg-rose-700 font-semibold"
+                  className="flex-1 bg-gray-900 text-white py-4 px-6 rounded-none hover:bg-gray-800 transition-colors text-xs font-bold tracking-widest uppercase border border-gray-900"
                 >
                   Add to Cart
                 </button>
                 <button
                   onClick={handleShare}
-                  className="p-3 border rounded-lg hover:bg-gray-50"
+                  className="p-4 border border-gray-200 rounded-none hover:bg-gray-50 text-gray-900 transition-colors flex items-center justify-center shrink-0"
                   aria-label="Share product"
                 >
-                  <ShareIcon className="h-6 w-6" />
+                  <ShareIcon className="h-5 w-5" />
                 </button>
               </div>
 

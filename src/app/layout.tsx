@@ -1,15 +1,12 @@
-import Cart from '@/components/layout/Cart';
-import Footer from '@/components/layout/Footer';
-import Header from '@/components/layout/Header';
+import ConditionalLayout from '@/components/layout/ConditionalLayout';
 import { Providers } from '@/components/providers/providers';
 import type { Metadata } from "next";
-import { Inter } from 'next/font/google';
+import { Inter, Playfair_Display } from 'next/font/google';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Toaster } from 'sonner';
 import Script from 'next/script';
 import "./globals.css";
-import PWAInstaller from '@/components/pwa/PWAInstaller';
 import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 
 
@@ -88,7 +85,14 @@ export const dynamic = 'force-dynamic';
 
 const inter = Inter({
   subsets: ['latin'],
-  display: 'swap'
+  display: 'swap',
+  variable: '--font-inter',
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-playfair',
 });
 
 export default async function RootLayout({
@@ -98,17 +102,11 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`theme-premium ${inter.className} antialiased`}>
+      <body className={`theme-premium ${inter.variable} ${inter.className} ${playfair.variable} font-sans antialiased`}>
         <Providers>
-          <div className="min-h-screen bg-background">
-            <Header />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-            <Cart />
-            <PWAInstaller />
-          </div>
+          <ConditionalLayout>
+            {children}
+          </ConditionalLayout>
           <ServiceWorkerRegistration />
           <Toaster />
           <ToastContainer

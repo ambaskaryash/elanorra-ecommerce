@@ -19,7 +19,7 @@ export default function ReturnsPage() {
           </p>
           <h2>Process</h2>
           <p>
-  Contact support@example.com with your order number and item details. We will provide return instructions.
+  Contact us at info@elanorraliving.in with your order number and item details. We will provide return instructions within 24 hours.
           </p>
           <h2>Refunds</h2>
           <p>

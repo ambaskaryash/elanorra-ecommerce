@@ -51,10 +51,10 @@ const values = [
 
 const team = [
   {
-    name: 'Sarah Mitchell',
-    role: 'Founder & Creative Director',
+    name: 'Anya Sharma',
+    role: 'Founder & Principal Designer',
     image: 'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/team/sarah-mitchell',
-    description: 'With over 15 years in interior design, Sarah founded Elanorr Living to make luxury accessible to everyone.',
+    description: 'With a discerning eye for minimalist detail, Anya founded Elanorra Living to bring high-end curations directly to the modern homeowner.',
   },
   {
     name: 'David Chen',
@@ -91,8 +91,8 @@ export default function AboutPage() {
             transition={{ duration: 0.8 }}
             className="max-w-3xl px-4"
           >
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">Our Story</h1>
-            <p className="text-xl md:text-2xl text-white/90 leading-relaxed">
+            <h1 className="text-3xl md:text-5xl font-serif uppercase tracking-[0.2em] mb-6">Our Story</h1>
+            <p className="text-xs md:text-sm text-white/80 uppercase tracking-widest leading-relaxed">
               Transforming houses into homes through curated luxury and timeless design
             </p>
           </motion.div>
@@ -100,41 +100,41 @@ export default function AboutPage() {
       </section>
 
       {/* Story Section */}
-      <section className="py-20 bg-white">
+      <section className="py-24 border-b border-gray-100 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"
           >
             <motion.div variants={itemVariants}>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+              <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-widest text-gray-900 mb-8 leading-snug">
                 Founded on a Vision of Elevated Living
               </h2>
-              <div className="space-y-4 text-gray-600 text-lg leading-relaxed">
+              <div className="space-y-6 text-gray-500 text-sm leading-relaxed tracking-wide">
                 <p>
-                  Elanorr Living was born from a simple belief: everyone deserves to live beautifully. 
-                  Founded in 2018, we started as a small team of design enthusiasts who noticed a gap 
-                  in the market for accessible luxury home decor.
+                  Elanorra Living was born from a simple belief: every space deserves to be curated beautifully. 
+                  We started as a dedicated team of design minimalists who noticed a gap 
+                  in the market for accessible, high-contrast luxury decor.
                 </p>
                 <p>
-                  What began as a passion project has grown into a curated marketplace where discerning 
-                  homeowners can discover exceptional pieces that tell a story. We partner with artisans, 
-                  designers, and makers who share our commitment to quality and sustainability.
+                  What began as a passion project has grown into an editorial marketplace where discerning 
+                  homeowners can discover exceptional, hand-crafted pieces. We partner with artisans, 
+                  designers, and makers who share our commitment to architectural purity and uncompromising quality.
                 </p>
                 <p>
-                  Today, Elanorr Living serves thousands of customers worldwide, helping them create 
-                  spaces that are not just beautiful, but meaningful and personal.
+                  Today, Elanorra Living serves a sophisticated clientele worldwide, helping them sculpt 
+                  spaces that are not just visually stunning, but uniquely personal.
                 </p>
               </div>
             </motion.div>
             <motion.div variants={itemVariants}>
-              <div className="relative h-96 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="relative h-[500px] border border-gray-100 overflow-hidden">
                 <Image
                   src="https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/banners/about-story"
-                  alt="Elanorr Living workspace"
+                  alt="Elanorra Living workspace"
                   fill
                   className="object-cover"
                 />
@@ -145,7 +145,7 @@ export default function AboutPage() {
       </section>
 
       {/* Values Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-24 bg-stone-50/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             variants={containerVariants}
@@ -154,11 +154,11 @@ export default function AboutPage() {
             viewport={{ once: true, amount: 0.2 }}
           >
             <motion.div variants={itemVariants} className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-widest text-gray-900 mb-4">
                 Our Values
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                These principles guide everything we do, from product curation to customer service
+              <p className="text-xs text-gray-500 uppercase tracking-widest max-w-2xl mx-auto">
+                These principles guide everything we do, from product curation to client relations
               </p>
             </motion.div>
 
@@ -167,11 +167,11 @@ export default function AboutPage() {
                 <motion.div
                   key={value.title}
                   variants={itemVariants}
-                  className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow text-center"
+                  className="bg-white p-10 border border-gray-100 hover:border-gray-900 transition-colors text-center group"
                 >
-                  <div className="text-4xl mb-4">{value.icon}</div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">{value.title}</h3>
-                  <p className="text-gray-600">{value.description}</p>
+                  <div className="text-3xl mb-6 grayscale group-hover:scale-110 transition-transform">{value.icon}</div>
+                  <h3 className="text-xs font-serif uppercase tracking-widest text-gray-900 mb-4">{value.title}</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">{value.description}</p>
                 </motion.div>
               ))}
             </div>
@@ -180,7 +180,7 @@ export default function AboutPage() {
       </section>
 
       {/* Team Section */}
-      <section className="py-20 bg-white">
+      <section className="py-24 border-t border-gray-100 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             variants={containerVariants}
@@ -188,33 +188,33 @@ export default function AboutPage() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
           >
-            <motion.div variants={itemVariants} className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Meet Our Team
+            <motion.div variants={itemVariants} className="text-center mb-20">
+              <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-widest text-gray-900 mb-4">
+                Meet The Curators
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                The passionate individuals behind Elanorr Living&apos;s success
+              <p className="text-xs text-gray-500 uppercase tracking-widest max-w-2xl mx-auto">
+                The meticulous eyes behind Elanorra Living&apos;s collections
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               {team.map((member) => (
                 <motion.div
                   key={member.name}
                   variants={itemVariants}
                   className="text-center group"
                 >
-                  <div className="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow">
+                  <div className="relative w-full aspect-[4/5] mx-auto mb-8 border border-gray-100 overflow-hidden group-hover:border-gray-900 transition-colors">
                     <Image
                       src={member.image}
                       alt={member.name}
                       fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 hover:scale-105"
                     />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-1">{member.name}</h3>
-                  <p className="text-rose-600 font-medium mb-3">{member.role}</p>
-                  <p className="text-gray-600">{member.description}</p>
+                  <h3 className="text-sm font-serif uppercase tracking-widest text-gray-900 mb-2">{member.name}</h3>
+                  <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-4">{member.role}</p>
+                  <p className="text-xs text-gray-500 leading-relaxed font-light px-4">{member.description}</p>
                 </motion.div>
               ))}
             </div>
@@ -223,7 +223,7 @@ export default function AboutPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gray-900 text-white">
+      <section className="py-32 bg-gray-900 text-white border-t border-gray-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -231,18 +231,18 @@ export default function AboutPage() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-widest mb-8">
               Ready to Transform Your Space?
             </h2>
-            <p className="text-xl text-white/90 mb-8 leading-relaxed">
-              Discover our curated collection of premium home decor and lifestyle products
+            <p className="text-xs uppercase tracking-widest text-gray-400 mb-12 max-w-xl mx-auto leading-relaxed">
+              Discover our curated collection of premium home decor and lifestyle artifacts.
             </p>
             <Link
               href="/shop"
-              className="inline-flex items-center px-8 py-4 bg-rose-600 text-white font-medium rounded-md hover:bg-rose-700 transition-colors text-lg"
+              className="inline-flex items-center px-10 py-5 bg-white text-gray-900 text-xs font-bold uppercase tracking-widest hover:bg-gray-100 transition-colors"
             >
               Shop Our Collection
-              <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="ml-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </Link>

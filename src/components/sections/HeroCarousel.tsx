@@ -13,7 +13,7 @@ const heroSlides = [
     subtitle: 'Exquisite ceramic tableware and bespoke gifting solutions',
     buttonText: 'Shop Tableware',
     buttonLink: '/shop?category=tableware',
-    image: 'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/vasant-collection_hero1',
+    image: '/images/hero-tableware.png',
   },
   {
     id: '2',
@@ -21,7 +21,7 @@ const heroSlides = [
     subtitle: 'From Anaar to Vasant - Discover stories in every piece',
     buttonText: 'Explore Collections',
     buttonLink: '/collections',
-    image: 'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/anaar-collection_hero2',
+    image: '/images/hero-collections.png',
   },
   {
     id: '3',
@@ -29,7 +29,7 @@ const heroSlides = [
     subtitle: 'Custom gifting solutions for your special moments',
     buttonText: 'Gift Sets',
     buttonLink: '/shop?category=gifting',
-    image: 'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/gulistan-collection_hero3',
+    image: '/images/hero-gifting.png',
   },
   {
     id: '4',
@@ -37,7 +37,7 @@ const heroSlides = [
     subtitle: 'Beautiful designs that cater to the whole family',
     buttonText: 'Kids Collection',
     buttonLink: '/collections/kids-victoria',
-    image: 'https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/hero/kids-victoria_hero4',
+    image: '/images/hero-kids.png',
   },
 ];
 
@@ -75,7 +75,7 @@ export default function HeroCarousel() {
   };
 
   return (
-    <section className="relative h-[85vh] overflow-hidden bg-stone-50">
+    <section className="relative h-screen min-h-[600px] overflow-hidden bg-stone-50">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSlide}
@@ -85,53 +85,63 @@ export default function HeroCarousel() {
           transition={{ duration: 0.8, ease: cubicBezier(0.16, 1, 0.3, 1) }}
           className="absolute inset-0"
         >
-          {/* Background Image */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-transparent z-10" />
+          {/* Background Image Overlay */}
+          <div className="absolute inset-0 bg-black/40 z-10" />
           <Image
             src={erroredSlides[currentSlide] ? '/images/placeholder.svg' : heroSlides[currentSlide].image}
             alt={heroSlides[currentSlide].title}
             fill
-            className="object-cover opacity-90"
+            className="object-cover"
             priority
             sizes="100vw"
             onError={() => setErroredSlides(prev => ({ ...prev, [currentSlide]: true }))}
           />
 
           {/* Content */}
-          <div className="relative z-20 h-full flex items-center">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-              <div className="max-w-3xl">
-                <motion.h1
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="text-4xl sm:text-5xl lg:text-7xl font-light text-white mb-6 leading-tight tracking-wide"
-                >
-                  {heroSlides[currentSlide].title}
-                </motion.h1>
-                
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
-                  className="text-xl sm:text-2xl text-white/95 mb-10 leading-relaxed font-light"
-                >
-                  {heroSlides[currentSlide].subtitle}
-                </motion.p>
+          <div className="relative z-20 h-full flex items-center justify-center text-center px-4">
+            <div className="max-w-4xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="hidden sm:mb-6 sm:flex sm:justify-center"
+              >
+                <div className="relative rounded-full px-4 py-1 text-xs tracking-widest uppercase text-white/80 ring-1 ring-white/20">
+                  New Collection
+                </div>
+              </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.6 }}
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="text-4xl sm:text-6xl lg:text-7xl font-serif text-white tracking-widest uppercase leading-tight"
+              >
+                {heroSlides[currentSlide].title}
+              </motion.h1>
+              
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                className="mt-6 text-base sm:text-lg text-white/90 font-light tracking-wide max-w-2xl mx-auto"
+              >
+                {heroSlides[currentSlide].subtitle}
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.7 }}
+                className="mt-10 flex items-center justify-center gap-x-6"
+              >
+                <Link
+                  href={heroSlides[currentSlide].buttonLink}
+                  className="text-xs uppercase tracking-[0.2em] text-white pb-2 border-b border-white hover:text-white/70 hover:border-white/70 transition-all duration-300"
                 >
-                  <Link
-                    href={heroSlides[currentSlide].buttonLink}
-                    className="inline-block bg-transparent border-2 border-white text-white px-10 py-4 text-lg font-light hover:bg-white hover:text-gray-900 transition-all duration-300 tracking-wide uppercase"
-                  >
-                    {heroSlides[currentSlide].buttonText}
-                  </Link>
-                </motion.div>
-              </div>
+                  {heroSlides[currentSlide].buttonText}
+                </Link>
+              </motion.div>
             </div>
           </div>
         </motion.div>

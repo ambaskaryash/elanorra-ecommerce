@@ -1,4 +1,7 @@
 import { logger } from './logger';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 // Check if DATABASE_URL is available (for build-time safety)
 const isDatabaseAvailable = !!process.env.DATABASE_URL;

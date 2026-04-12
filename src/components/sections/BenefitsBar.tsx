@@ -13,8 +13,8 @@ const items = [
 export default function BenefitsBar() {
   return (
     <section className="bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
           {items.map((item, idx) => (
             <motion.div
               key={idx}
@@ -22,15 +22,15 @@ export default function BenefitsBar() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.4 }}
               transition={{ duration: 0.5, ease: cubicBezier(0.16, 1, 0.3, 1) }}
-              className="group relative rounded-2xl p-[1px] bg-gradient-to-br from-rose-200 via-pink-200 to-indigo-200"
+              className="group relative"
             >
-              <div className="relative rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow px-5 py-6 flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <item.icon className="h-6 w-6 text-gray-800" />
+              <div className="group flex flex-col items-center text-center p-8 border border-gray-100 hover:border-gray-200 transition-colors bg-stone-50/30">
+                <div className="flex-shrink-0 mb-4">
+                  <item.icon className="h-8 w-8 text-gray-900 stroke-[1]" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{item.title}</p>
-                  <p className="text-sm text-gray-600 font-light">{item.desc}</p>
+                  <p className="text-sm font-serif uppercase tracking-widest text-gray-900 mb-2">{item.title}</p>
+                  <p className="text-xs text-gray-500 tracking-wide font-light">{item.desc}</p>
                 </div>
               </div>
             </motion.div>

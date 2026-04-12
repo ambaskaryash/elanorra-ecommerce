@@ -75,10 +75,10 @@ export default function FeaturedCollections() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-light text-gray-900 mb-6 tracking-wide">
+            <h2 className="text-3xl sm:text-4xl font-serif text-gray-900 mb-4 tracking-widest uppercase">
               Collections
             </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
+            <p className="text-sm text-gray-500 max-w-2xl mx-auto tracking-wide">
               Each collection tells a unique story through beautiful design and craftsmanship.
             </p>
           </div>
@@ -121,12 +121,11 @@ export default function FeaturedCollections() {
         >
           {/* Section Header */}
           <motion.div variants={itemVariants} className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-light text-gray-900 mb-6 tracking-wide">
+            <h2 className="text-3xl sm:text-4xl font-serif text-gray-900 mb-4 tracking-widest uppercase">
               Collections
             </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
+            <p className="text-sm text-gray-500 max-w-2xl mx-auto tracking-wide">
               Each collection tells a unique story through beautiful design and craftsmanship. 
-              From traditional Indian motifs to contemporary elegance.
             </p>
           </motion.div>
 
@@ -160,11 +159,11 @@ export default function FeaturedCollections() {
                   </div>
                   
                   {/* Content Below Image */}
-                  <div className="pt-4">
-                    <h3 className="text-xl font-light text-gray-900 mb-2 group-hover:text-gray-600 transition-colors tracking-wide">
+                  <div className="pt-6 text-center">
+                    <h3 className="text-lg font-serif text-gray-900 mb-2 tracking-widest uppercase">
                       {collection.name}
                     </h3>
-                    <p className="text-sm text-gray-500 line-clamp-2 mb-3 font-light">
+                    <p className="text-xs text-gray-500 line-clamp-2 mb-3 tracking-wide">
                       {collection.description}
                     </p>
                     <span className="inline-flex items-center text-xs font-medium text-gray-900 group-hover:text-gray-600 transition-colors uppercase tracking-wider">
@@ -188,17 +187,9 @@ export default function FeaturedCollections() {
           <motion.div variants={itemVariants} className="text-center mt-16">
             <Link
               href="/collections"
-              className="inline-flex items-center px-8 py-4 bg-transparent border border-gray-900 text-gray-900 font-light hover:bg-gray-900 hover:text-white transition-all duration-300 tracking-wider uppercase text-sm"
+              className="inline-flex items-center px-10 py-3 border border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white transition-all duration-300 tracking-widest uppercase text-xs"
             >
               View All Collections
-              <svg
-                className="ml-3 h-4 w-4 transform group-hover:translate-x-1 transition-transform"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
             </Link>
           </motion.div>
         </motion.div>

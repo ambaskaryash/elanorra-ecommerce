@@ -232,10 +232,10 @@ export default function SearchPage() {
                 <div className="space-y-2">
                   <button
                     onClick={() => setSelectedCategory('all')}
-                    className={`block w-full text-left px-3 py-2 rounded-md transition-colors ${
+                    className={`block w-full text-left px-3 py-2 transition-colors text-[10px] uppercase tracking-widest ${
                       selectedCategory === 'all'
-                        ? 'bg-rose-100 text-rose-700'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'bg-gray-900 text-white'
+                        : 'text-gray-500 hover:text-gray-900 hover:bg-stone-50'
                     }`}
                   >
                     All Categories ({products.length})
@@ -246,10 +246,10 @@ export default function SearchPage() {
                       <button
                         key={category.id}
                         onClick={() => setSelectedCategory(category.id)}
-                        className={`block w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        className={`block w-full text-left px-3 py-2 transition-colors text-[10px] uppercase tracking-widest ${
                           selectedCategory === category.id
-                            ? 'bg-rose-100 text-rose-700'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                            ? 'bg-gray-900 text-white'
+                            : 'text-gray-500 hover:text-gray-900 hover:bg-stone-50'
                         }`}
                       >
                         {capitalizeFirst(category.name)} ({count})
@@ -269,7 +269,7 @@ export default function SearchPage() {
                       placeholder="Min"
                       value={priceRange[0]}
                       onChange={(e) => handlePriceRangeChange(0, e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-none text-sm focus:outline-none focus:border-gray-900"
                     />
                     <span className="text-gray-500">to</span>
                     <input
@@ -326,7 +326,7 @@ export default function SearchPage() {
                   id="sort"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                  className="border border-gray-200 rounded-none px-3 py-2 text-xs uppercase tracking-widest focus:outline-none focus:border-gray-900"
                 >
                   {sortOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -373,7 +373,7 @@ export default function SearchPage() {
                     )}
                     <Link
                       href="/shop"
-                      className="inline-flex items-center px-6 py-2 bg-rose-600 text-white font-medium rounded-md hover:bg-rose-700 transition-colors"
+                      className="inline-flex items-center px-6 py-3 border border-gray-900 bg-gray-900 text-white text-[10px] uppercase tracking-widest hover:bg-white hover:text-gray-900 transition-all"
                     >
                       Browse Shop
                     </Link>

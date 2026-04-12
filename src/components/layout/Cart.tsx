@@ -85,7 +85,7 @@ export default function Cart() {
                               <div className="text-gray-500 mb-4">Your cart is empty</div>
                               <Link
                                 href="/shop"
-                                className="inline-block bg-[var(--accent)] text-white px-6 py-2 rounded-md hover:bg-[color:rgb(186,156,109)] transition-colors"
+                                className="inline-block bg-gray-900 border border-gray-900 text-white px-8 py-4 rounded-none text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-gray-900 transition-colors"
                                 onClick={toggleCart}
                               >
                                 Continue Shopping
@@ -95,7 +95,7 @@ export default function Cart() {
                             <ul role="list" className="-my-6 divide-y divide-gray-200">
                               {items.map((item) => (
                                 <li key={item.productId} className="flex py-6">
-                                  <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
+                                  <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-none border border-gray-100">
                                     <Image
                                       src={item.product.images[0]?.src || '/images/placeholder.svg'}
                                       alt={item.product.images[0]?.alt || item.product.name}
@@ -129,14 +129,14 @@ export default function Cart() {
                                       <div className="flex items-center space-x-2">
                                         <button
                                           onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                                          className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 hover:border-gray-400 transition-colors"
+                                          className="flex h-8 w-8 items-center justify-center rounded-none border border-gray-200 hover:border-gray-900 transition-colors"
                                         >
                                           <MinusIcon className="h-4 w-4" />
                                         </button>
-                                        <span className="text-gray-500 px-2">Qty {item.quantity}</span>
+                                        <span className="text-gray-900 px-2 text-xs uppercase tracking-widest">Qty {item.quantity}</span>
                                         <button
                                           onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                                          className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 hover:border-gray-400 transition-colors"
+                                          className="flex h-8 w-8 items-center justify-center rounded-none border border-gray-200 hover:border-gray-900 transition-colors"
                                         >
                                           <PlusIcon className="h-4 w-4" />
                                         </button>
@@ -159,7 +159,7 @@ export default function Cart() {
                                         <button
                                           type="button"
                                           onClick={() => removeItem(item.productId)}
-                                          className="font-medium text-[var(--ring)] hover:text-[var(--accent)]"
+                                          className="font-medium text-xs uppercase tracking-widest text-gray-500 hover:text-gray-900"
                                         >
                                           Remove
                                         </button>
@@ -190,7 +190,7 @@ export default function Cart() {
                                   value={couponCode}
                                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                                   placeholder="Enter code"
-                                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent"
+                                  className="flex-1 px-3 py-2 border border-gray-200 rounded-none text-xs uppercase tracking-widest focus:outline-none focus:ring-0 focus:border-gray-900"
                                 />
                                 <button
                                   onClick={async () => {
@@ -206,17 +206,17 @@ export default function Cart() {
                                     setIsApplyingCoupon(false);
                                   }}
                                   disabled={!couponCode.trim() || isApplyingCoupon}
-                                  className="px-4 py-2 bg-[var(--accent)] text-white text-sm font-medium rounded-md hover:bg-[color:rgb(186,156,109)] disabled:bg-gray-400 transition-colors"
+                                  className="px-4 py-2 border border-gray-900 bg-gray-900 text-white text-[10px] uppercase tracking-widest font-bold rounded-none hover:bg-white hover:text-gray-900 disabled:bg-gray-200 disabled:border-gray-200 disabled:text-gray-400 transition-colors"
                                 >
                                   {isApplyingCoupon ? 'Applying...' : 'Apply'}
                                 </button>
                               </div>
                             </div>
                           ) : (
-                            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-md p-3">
+                            <div className="flex items-center justify-between bg-stone-50 border border-gray-200 rounded-none p-3">
                               <div className="flex items-center space-x-2">
-                                <TagIcon className="h-4 w-4 text-green-600" />
-                                <span className="text-sm text-green-800 font-medium">
+                                <TagIcon className="h-4 w-4 text-gray-900" />
+                                <span className="text-xs uppercase tracking-widest text-gray-900 font-bold">
                                   Coupon {appliedCoupon} applied
                                 </span>
                               </div>
@@ -264,7 +264,7 @@ export default function Cart() {
                         <div className="mt-6">
                           <Link
                             href="/checkout"
-                            className="flex items-center justify-center rounded-md border border-transparent bg-[var(--accent)] px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-[color:rgb(186,156,109)] transition-colors"
+                            className="flex items-center justify-center rounded-none border border-gray-900 bg-gray-900 px-6 py-4 text-xs font-bold uppercase tracking-widest text-white hover:bg-white hover:text-gray-900 transition-colors"
                             onClick={toggleCart}
                           >
                             Checkout
@@ -276,7 +276,7 @@ export default function Cart() {
                             or{' '}
                             <button
                               type="button"
-                              className="font-medium text-[var(--ring)] hover:text-[var(--accent)]"
+                              className="font-medium text-gray-900 hover:text-gray-500 underline underline-offset-4 decoration-1 text-xs uppercase"
                               onClick={toggleCart}
                             >
                               Continue Shopping

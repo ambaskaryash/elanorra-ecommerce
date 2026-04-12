@@ -10,31 +10,27 @@ import NewsletterSubscription from '@/components/newsletter/FooterNewsletterSubs
 
 const footerLinks = {
   shop: [
-    { name: 'Tableware', href: '/shop/tableware' },
+    { name: 'Tableware', href: '/shop?category=tableware' },
     { name: 'Collections', href: '/collections' },
-    { name: 'Stationery', href: '/shop/stationery' },
-    { name: 'Gift Sets', href: '/shop/gift-sets' },
+    { name: 'Stationery', href: '/shop?category=stationery' },
+    { name: 'Gift Sets', href: '/shop?category=gifting' },
     { name: 'New Arrivals', href: '/shop?filter=new' },
   ],
   company: [
     { name: 'Our Story', href: '/about' },
     { name: 'Blog', href: '/blog' },
     { name: 'Contact', href: '/contact' },
-    { name: 'Careers', href: '/careers' },
-    { name: 'Press', href: '/press' },
   ],
   support: [
     { name: 'FAQ', href: '/faq' },
     { name: 'Shipping & Returns', href: '/shipping-returns' },
-    { name: 'Size Guide', href: '/size-guide' },
-    { name: 'Care Instructions', href: '/care' },
-    { name: 'Track Your Order', href: '/track-order' },
+    { name: 'Track Your Order', href: '/account/orders' },
   ],
   legal: [
-    { name: 'Privacy Policy', href: '/privacy' },
-    { name: 'Terms of Service', href: '/terms' },
+    { name: 'Privacy Policy', href: '/legal/privacy' },
+    { name: 'Terms of Service', href: '/legal/terms' },
     { name: 'Return Policy', href: '/returns' },
-    { name: 'Cookie Policy', href: '/cookies' },
+    { name: 'Cookie Policy', href: '/legal/cookies' },
   ],
 };
 
@@ -78,55 +74,56 @@ const socialLinks = [
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-white">
+    <footer className="bg-white text-gray-900 border-t border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Newsletter Signup */}
-        <div className="border-b border-gray-800 py-12">
-          <div className="max-w-2xl mx-auto">
+        <div className="border-b border-gray-100 py-16">
+          <div className="max-w-2xl mx-auto text-center">
+            <h3 className="text-sm font-serif uppercase tracking-widest mb-4">Join our Newsletter</h3>
+            <p className="text-gray-500 text-sm mb-6 max-w-sm mx-auto">Get updates on new collections and exclusive offers.</p>
             <NewsletterSubscription />
           </div>
         </div>
 
         {/* Main Footer Content */}
-        <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+        <div className="py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Company Info */}
           <div className="lg:col-span-2">
             <div className="mb-6">
-              <Link href="/" className="text-2xl font-bold">
+              <Link href="/" className="text-2xl font-serif uppercase tracking-widest text-gray-900">
                 ElanorraLiving
               </Link>
-              <p className="text-gray-300 mt-4 max-w-sm">
-                Transform your space with our curated collection of premium home decor and lifestyle products. 
-                Elevate your everyday living experience.
+              <p className="text-gray-500 mt-4 max-w-xs text-sm tracking-wide">
+                Transform your space with our curated collection of premium home decor and bespoke gifting. 
               </p>
             </div>
             
             {/* Contact Info */}
             <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <EnvelopeIcon className="h-5 w-5 text-[var(--accent)]" />
-                <span className="text-gray-300">info@elanorraliving.in</span>
+              <div className="flex items-center space-x-3 text-gray-500 text-sm tracking-wide">
+                <EnvelopeIcon className="h-5 w-5 stroke-1" />
+                <span>info@elanorraliving.in</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <PhoneIcon className="h-5 w-5 text-[var(--accent)]" />
-                <span className="text-gray-300">+91 9876543210</span>
+              <div className="flex items-center space-x-3 text-gray-500 text-sm tracking-wide">
+                <PhoneIcon className="h-5 w-5 stroke-1" />
+                <span>+91 9876543210</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <MapPinIcon className="h-5 w-5 text-[var(--accent)]" />
-                <span className="text-gray-300">Mumbai, Maharashtra, India</span>
+              <div className="flex items-center space-x-3 text-gray-500 text-sm tracking-wide">
+                <MapPinIcon className="h-5 w-5 stroke-1" />
+                <span>Mumbai, Maharashtra, India</span>
               </div>
             </div>
           </div>
 
           {/* Footer Links */}
           <div>
-            <h4 className="text-lg font-semibold mb-6">Shop</h4>
-            <ul className="space-y-3">
+            <h4 className="text-xs font-serif uppercase tracking-widest text-gray-900 mb-6">Shop</h4>
+            <ul className="space-y-4">
               {footerLinks.shop.map((link) => (
                 <li key={link.name}>
                   <Link 
                     href={link.href} 
-                    className="text-gray-300 hover:text-white transition-colors"
+                    className="text-xs text-gray-500 hover:text-gray-900 transition-colors uppercase tracking-widest"
                   >
                     {link.name}
                   </Link>
@@ -136,13 +133,13 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="text-lg font-semibold mb-6">Company</h4>
-            <ul className="space-y-3">
+            <h4 className="text-xs font-serif uppercase tracking-widest text-gray-900 mb-6">Company</h4>
+            <ul className="space-y-4">
               {footerLinks.company.map((link) => (
                 <li key={link.name}>
                   <Link 
                     href={link.href} 
-                    className="text-gray-300 hover:text-white transition-colors"
+                    className="text-xs text-gray-500 hover:text-gray-900 transition-colors uppercase tracking-widest"
                   >
                     {link.name}
                   </Link>
@@ -152,13 +149,13 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="text-lg font-semibold mb-6">Support</h4>
-            <ul className="space-y-3">
+            <h4 className="text-xs font-serif uppercase tracking-widest text-gray-900 mb-6">Support</h4>
+            <ul className="space-y-4">
               {footerLinks.support.map((link) => (
                 <li key={link.name}>
                   <Link 
                     href={link.href} 
-                    className="text-gray-300 hover:text-white transition-colors"
+                    className="text-xs text-gray-500 hover:text-gray-900 transition-colors uppercase tracking-widest"
                   >
                     {link.name}
                   </Link>
@@ -169,18 +166,18 @@ export default function Footer() {
         </div>
 
         {/* Bottom Footer */}
-        <div className="border-t border-gray-800 py-8">
+        <div className="border-t border-gray-100 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             {/* Social Media */}
             <div className="flex items-center space-x-6">
-              <span className="text-gray-300">Follow us:</span>
+              <span className="text-xs uppercase tracking-widest text-gray-900 border-r border-gray-200 pr-6">Follow us</span>
               {socialLinks.map((social) => (
                 <Link
                   key={social.name}
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-500 hover:text-gray-900 transition-colors"
                 >
                   <span className="sr-only">{social.name}</span>
                   {social.icon}
@@ -189,12 +186,12 @@ export default function Footer() {
             </div>
 
             {/* Legal Links */}
-            <div className="flex flex-wrap items-center space-x-6 text-sm">
+            <div className="flex flex-wrap items-center space-x-6 text-xs uppercase tracking-widest">
               {footerLinks.legal.map((link, index) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-500 hover:text-gray-900 transition-colors"
                 >
                   {link.name}
                 </Link>
@@ -203,9 +200,9 @@ export default function Footer() {
           </div>
 
           {/* Copyright */}
-          <div className="mt-6 pt-6 border-t border-gray-800 text-center">
-            <p className="text-gray-400 text-sm">
-              © {new Date().getFullYear()} ElanorraLiving. All rights reserved. Crafted with ❤ for luxury living.
+          <div className="mt-8 pt-8 border-t border-gray-100 text-center">
+            <p className="text-gray-400 text-xs tracking-widest uppercase">
+              © {new Date().getFullYear()} ElanorraLiving. All rights reserved. Crafted for bespoke living.
             </p>
           </div>
         </div>

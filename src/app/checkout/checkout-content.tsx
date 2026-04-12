@@ -458,7 +458,7 @@ export default function CheckoutContent() {
               >
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
                   currentStep >= step
-                    ? 'bg-rose-600 border-rose-600 text-white'
+                    ? 'uppercase tracking-widest text-[10px] text-white bg-gray-900 border border-gray-900 rounded-none'
                     : 'bg-white border-gray-300 text-gray-400'
                 }`}>
                   {currentStep > step ? (
@@ -489,11 +489,11 @@ export default function CheckoutContent() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
+              className="bg-white rounded-none border border-gray-200 overflow-hidden"
             >
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 border border-gray-100 bg-stone-50 rounded-none flex items-center justify-center">
                     <TruckIcon className="w-5 h-5 text-rose-600" />
                   </div>
                   <h2 className="text-xl font-bold text-gray-900">Delivery Information</h2>
@@ -508,13 +508,13 @@ export default function CheckoutContent() {
                       id="firstName"
                       value={billingAddress.firstName}
                       onChange={(e) => handleAddressChange('firstName', e.target.value, 'billing')}
-                      className="peer w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent placeholder-transparent"
+                      className="peer w-full px-4 py-3 border border-gray-200 rounded-none focus:ring-0 focus:border-gray-900 placeholder-transparent"
                       placeholder="First Name"
                       required
                     />
                     <label
                       htmlFor="firstName"
-                      className="absolute left-4 -top-2.5 bg-white px-2 text-sm font-medium text-gray-700 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-rose-600"
+                      className="absolute left-4 -top-2.5 bg-white px-2 uppercase tracking-widest text-[10px] text-gray-500 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-gray-900"
                     >
                       First Name *
                     </label>
@@ -526,13 +526,13 @@ export default function CheckoutContent() {
                       id="lastName"
                       value={billingAddress.lastName}
                       onChange={(e) => handleAddressChange('lastName', e.target.value, 'billing')}
-                      className="peer w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent placeholder-transparent"
+                      className="peer w-full px-4 py-3 border border-gray-200 rounded-none focus:ring-0 focus:border-gray-900 placeholder-transparent"
                       placeholder="Last Name"
                       required
                     />
                     <label
                       htmlFor="lastName"
-                      className="absolute left-4 -top-2.5 bg-white px-2 text-sm font-medium text-gray-700 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-rose-600"
+                      className="absolute left-4 -top-2.5 bg-white px-2 uppercase tracking-widest text-[10px] text-gray-500 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-gray-900"
                     >
                       Last Name *
                     </label>
@@ -545,13 +545,13 @@ export default function CheckoutContent() {
                     id="address1"
                     value={billingAddress.address1}
                     onChange={(e) => handleAddressChange('address1', e.target.value, 'billing')}
-                    className="peer w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent placeholder-transparent"
+                    className="peer w-full px-4 py-3 border border-gray-200 rounded-none focus:ring-0 focus:border-gray-900 placeholder-transparent"
                     placeholder="Street Address"
                     required
                   />
                   <label
                     htmlFor="address1"
-                    className="absolute left-4 -top-2.5 bg-white px-2 text-sm font-medium text-gray-700 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-rose-600"
+                    className="absolute left-4 -top-2.5 bg-white px-2 uppercase tracking-widest text-[10px] text-gray-500 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-gray-900"
                   >
                     Street Address *
                   </label>
@@ -564,13 +564,13 @@ export default function CheckoutContent() {
                       id="city"
                       value={billingAddress.city}
                       onChange={(e) => handleAddressChange('city', e.target.value, 'billing')}
-                      className="peer w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent placeholder-transparent"
+                      className="peer w-full px-4 py-3 border border-gray-200 rounded-none focus:ring-0 focus:border-gray-900 placeholder-transparent"
                       placeholder="City"
                       required
                     />
                     <label
                       htmlFor="city"
-                      className="absolute left-4 -top-2.5 bg-white px-2 text-sm font-medium text-gray-700 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-rose-600"
+                      className="absolute left-4 -top-2.5 bg-white px-2 uppercase tracking-widest text-[10px] text-gray-500 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-gray-900"
                     >
                       City *
                     </label>
@@ -582,13 +582,13 @@ export default function CheckoutContent() {
                       id="state"
                       value={billingAddress.state}
                       onChange={(e) => handleAddressChange('state', e.target.value, 'billing')}
-                      className="peer w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent placeholder-transparent"
+                      className="peer w-full px-4 py-3 border border-gray-200 rounded-none focus:ring-0 focus:border-gray-900 placeholder-transparent"
                       placeholder="State"
                       required
                     />
                     <label
                       htmlFor="state"
-                      className="absolute left-4 -top-2.5 bg-white px-2 text-sm font-medium text-gray-700 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-rose-600"
+                      className="absolute left-4 -top-2.5 bg-white px-2 uppercase tracking-widest text-[10px] text-gray-500 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-gray-900"
                     >
                       State *
                     </label>
@@ -600,13 +600,13 @@ export default function CheckoutContent() {
                       id="pincode"
                       value={billingAddress.pincode}
                       onChange={(e) => handleAddressChange('pincode', e.target.value, 'billing')}
-                      className="peer w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent placeholder-transparent"
+                      className="peer w-full px-4 py-3 border border-gray-200 rounded-none focus:ring-0 focus:border-gray-900 placeholder-transparent"
                       placeholder="PIN Code"
                       required
                     />
                     <label
                       htmlFor="pincode"
-                      className="absolute left-4 -top-2.5 bg-white px-2 text-sm font-medium text-gray-700 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-rose-600"
+                      className="absolute left-4 -top-2.5 bg-white px-2 uppercase tracking-widest text-[10px] text-gray-500 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-gray-900"
                     >
                       PIN Code *
                     </label>
@@ -619,13 +619,13 @@ export default function CheckoutContent() {
                     id="phone"
                     value={billingAddress.phone}
                     onChange={(e) => handleAddressChange('phone', e.target.value, 'billing')}
-                    className="peer w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent placeholder-transparent"
+                    className="peer w-full px-4 py-3 border border-gray-200 rounded-none focus:ring-0 focus:border-gray-900 placeholder-transparent"
                     placeholder="Phone Number"
                     required
                   />
                   <label
                     htmlFor="phone"
-                    className="absolute left-4 -top-2.5 bg-white px-2 text-sm font-medium text-gray-700 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-rose-600"
+                    className="absolute left-4 -top-2.5 bg-white px-2 uppercase tracking-widest text-[10px] text-gray-500 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-gray-900"
                   >
                     Phone Number *
                   </label>
@@ -637,13 +637,13 @@ export default function CheckoutContent() {
                     id="email"
                     value={billingAddress.email || ''}
                     onChange={(e) => handleAddressChange('email', e.target.value, 'billing')}
-                    className="peer w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent placeholder-transparent"
+                    className="peer w-full px-4 py-3 border border-gray-200 rounded-none focus:ring-0 focus:border-gray-900 placeholder-transparent"
                     placeholder="Email"
                     required
                   />
                   <label
                     htmlFor="email"
-                    className="absolute left-4 -top-2.5 bg-white px-2 text-sm font-medium text-gray-700 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-rose-600"
+                    className="absolute left-4 -top-2.5 bg-white px-2 uppercase tracking-widest text-[10px] text-gray-500 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-gray-900"
                   >
                     Email *
                   </label>
@@ -656,11 +656,11 @@ export default function CheckoutContent() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
+              className="bg-white rounded-none border border-gray-200 overflow-hidden"
             >
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 border border-gray-100 bg-stone-50 rounded-none flex items-center justify-center">
                     <ClockIcon className="w-5 h-5 text-blue-600" />
                   </div>
                   <h2 className="text-xl font-bold text-gray-900">Delivery Options</h2>
@@ -714,7 +714,7 @@ export default function CheckoutContent() {
                           }`} />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">{option.name}</h3>
+                          <h3 className="font-serif uppercase tracking-widest text-xs">{option.name}</h3>
                           <p className="text-sm text-gray-600 mb-1">{option.description}</p>
                           {option.estimatedDate && (
                             <div className="flex items-center space-x-2 text-xs text-gray-500">
@@ -724,7 +724,7 @@ export default function CheckoutContent() {
                           )}
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-gray-900">
+                          <p className="font-serif uppercase tracking-widest text-xs">
                             {option.price === 0 ? 'Free' : formatPrice(option.price)}
                           </p>
                           {deliveryEstimate && (
@@ -746,11 +746,11 @@ export default function CheckoutContent() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
+              className="bg-white rounded-none border border-gray-200 overflow-hidden"
             >
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 border border-gray-100 bg-stone-50 rounded-none flex items-center justify-center">
                     <CreditCardIcon className="w-5 h-5 text-green-600" />
                   </div>
                   <h2 className="text-xl font-bold text-gray-900">Payment Method</h2>
@@ -762,13 +762,13 @@ export default function CheckoutContent() {
               </div>
 
               <div className="p-6">
-                <div className="flex items-center p-4 border-2 border-rose-500 bg-rose-50 rounded-xl">
+                <div className="flex items-center p-4 bg-stone-50 border border-gray-200 rounded-none">
                   <div className="flex items-center space-x-4 flex-1">
-                    <div className="w-10 h-10 bg-rose-100 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 border border-gray-100 bg-stone-50 rounded-none flex items-center justify-center">
                       <CreditCardIcon className="w-5 h-5 text-rose-600" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">Pay with Razorpay</h3>
+                      <h3 className="font-serif uppercase tracking-widest text-xs">Pay with Razorpay</h3>
                       <p className="text-sm text-gray-600">Secure payment with cards, UPI, net banking & more</p>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -787,7 +787,7 @@ export default function CheckoutContent() {
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
+                className="bg-white rounded-none border border-gray-200 overflow-hidden"
               >
                 <div className="p-6 border-b border-gray-200">
                   <h2 className="text-xl font-bold text-gray-900">Order Summary</h2>
@@ -798,8 +798,8 @@ export default function CheckoutContent() {
                   {/* Order Items */}
                   <div className="space-y-4 mb-6">
                     {items.slice(0, 3).map((item) => (
-                      <div key={item.productId} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-                        <div className="relative w-16 h-16 bg-white rounded-lg overflow-hidden shadow-sm">
+                      <div key={item.productId} className="flex items-center space-x-4 p-4 bg-stone-50 border border-gray-200 rounded-none">
+                        <div className="relative w-16 h-16 bg-white rounded-none border border-gray-200 overflow-hidden">
                           <Image
                             src={item.product.images[0]?.src || '/placeholder.jpg'}
                             alt={item.product.name}
@@ -857,7 +857,7 @@ export default function CheckoutContent() {
                     )}
                     <div className="flex justify-between text-lg font-bold pt-3 border-t border-gray-200">
                       <span>Total</span>
-                      <span className="text-rose-600">{formatPrice(totalPrice)}</span>
+                      <span className="text-gray-900">{formatPrice(totalPrice)}</span>
                     </div>
                   </div>
 
@@ -869,9 +869,9 @@ export default function CheckoutContent() {
                         placeholder="Enter coupon code"
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-gray-200 rounded-none text-[10px] uppercase tracking-widest focus:ring-0 focus:border-gray-900 focus:border-transparent"
                       />
-                      <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
+                      <button className="px-4 py-2 border border-gray-900 bg-gray-900 text-white rounded-none text-[10px] uppercase tracking-widest font-bold hover:bg-white hover:text-gray-900 transition-colors">
                         Apply
                       </button>
                     </div>
@@ -881,7 +881,7 @@ export default function CheckoutContent() {
                   <button
                     onClick={handlePlaceOrder}
                     disabled={isProcessing}
-                    className="w-full bg-rose-600 text-white py-4 rounded-xl font-semibold text-lg hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center space-x-2"
+                    className="w-full bg-gray-900 text-white py-4 border border-gray-900 rounded-none uppercase tracking-widest font-bold text-xs hover:bg-white hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center space-x-2"
                   >
                     {isProcessing ? (
                       <>
@@ -900,12 +900,12 @@ export default function CheckoutContent() {
                   <div className="mt-6 pt-6 border-t border-gray-200">
                     <div className="grid grid-cols-2 gap-4 text-center">
                       <div className="flex flex-col items-center space-y-2">
-                        <ShieldCheckIcon className="w-8 h-8 text-green-600" />
-                        <span className="text-xs text-gray-600">Secure Payment</span>
+                        <ShieldCheckIcon className="w-8 h-8 text-gray-900" />
+                        <span className="text-[10px] uppercase tracking-widest text-gray-600">Secure Payment</span>
                       </div>
                       <div className="flex flex-col items-center space-y-2">
-                        <TruckIcon className="w-8 h-8 text-blue-600" />
-                        <span className="text-xs text-gray-600">Free Returns</span>
+                        <TruckIcon className="w-8 h-8 text-gray-900" />
+                        <span className="text-[10px] uppercase tracking-widest text-gray-600">Free Returns</span>
                       </div>
                     </div>
                     <div className="mt-4 text-center">

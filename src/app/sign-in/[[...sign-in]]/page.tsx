@@ -40,8 +40,8 @@ export default function SignInPage() {
             appearance={{
               elements: {
                 formButtonPrimary: 
-                  "bg-rose-500 hover:bg-rose-600 text-sm normal-case",
-                card: "shadow-lg",
+                  "bg-gray-900 hover:bg-gray-700 text-sm normal-case tracking-widest",
+                card: "shadow-none border border-gray-200 rounded-none",
                 headerTitle: "hidden",
                 headerSubtitle: "hidden",
               },

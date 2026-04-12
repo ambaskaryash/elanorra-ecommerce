@@ -56,8 +56,8 @@ export default function OrderConfirmationPage({ params }: Props) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-600"></div>
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border border-gray-900 border-t-transparent rounded-full"></div>
       </div>
     );
   }
@@ -116,24 +116,25 @@ export default function OrderConfirmationPage({ params }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Order Confirmed!</h1>
-            <p className="text-lg text-gray-600 mb-4">
-              Thank you for your order. We've received your purchase and will process it shortly.
+            <CheckCircleIcon className="h-14 w-14 text-gray-900 mx-auto mb-6" />
+            <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Thank you for your order</p>
+            <h1 className="text-3xl font-serif uppercase tracking-widest text-gray-900 mb-4">Order Confirmed</h1>
+            <p className="text-sm text-gray-500 mb-6 tracking-wide">
+              We've received your purchase and will process it shortly.
             </p>
-            <div className="bg-gray-50 rounded-lg p-4 inline-block">
-              <p className="text-sm text-gray-500">Order Number</p>
-              <p className="text-xl font-bold text-gray-900">{order.orderNumber}</p>
+            <div className="inline-block border border-gray-200 px-8 py-4">
+              <p className="text-[10px] uppercase tracking-widest text-gray-400">Order Number</p>
+              <p className="text-xl font-serif text-gray-900 mt-1">{order.orderNumber}</p>
             </div>
           </motion.div>
         </div>
@@ -154,20 +155,24 @@ export default function OrderConfirmationPage({ params }: Props) {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex items-center">
-                  <PaymentStatusIcon className="h-8 w-8 text-rose-600 mr-3" />
+                  <PaymentStatusIcon className="h-8 w-8 text-gray-900 mr-3" />
                   <div>
-                    <h3 className="font-medium text-gray-900">Payment Status</h3>
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.financialStatus)}`}>
+                    <h3 className="font-medium text-gray-900 text-xs uppercase tracking-widest">Payment Status</h3>
+                    <span className={`inline-flex px-2 py-1 text-[10px] uppercase tracking-widest font-medium ${
+                      order.financialStatus === 'paid' ? 'bg-stone-100 text-gray-900' : 'bg-gray-100 text-gray-500'
+                    }`}>
                       {order.financialStatus.replace('_', ' ').toUpperCase()}
                     </span>
                   </div>
                 </div>
                 
                 <div className="flex items-center">
-                  <FulfillmentStatusIcon className="h-8 w-8 text-rose-600 mr-3" />
+                  <FulfillmentStatusIcon className="h-8 w-8 text-gray-900 mr-3" />
                   <div>
-                    <h3 className="font-medium text-gray-900">Fulfillment Status</h3>
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.fulfillmentStatus)}`}>
+                    <h3 className="font-medium text-gray-900 text-xs uppercase tracking-widest">Fulfillment Status</h3>
+                    <span className={`inline-flex px-2 py-1 text-[10px] uppercase tracking-widest font-medium ${
+                      order.fulfillmentStatus === 'fulfilled' ? 'bg-stone-100 text-gray-900' : 'bg-gray-100 text-gray-500'
+                    }`}>
                       {order.fulfillmentStatus.replace('_', ' ').toUpperCase()}
                     </span>
                   </div>
@@ -313,14 +318,14 @@ export default function OrderConfirmationPage({ params }: Props) {
             >
               <Link
                 href="/shop"
-                className="w-full bg-rose-600 text-white py-3 px-4 rounded-md font-medium hover:bg-rose-700 transition-colors text-center block"
+                className="w-full bg-gray-900 border border-gray-900 text-white py-4 px-4 rounded-none text-[10px] uppercase tracking-widest font-bold hover:bg-white hover:text-gray-900 transition-all text-center block"
               >
                 Continue Shopping
               </Link>
               
               <Link
                 href="/account/orders"
-                className="w-full bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-md font-medium hover:bg-gray-50 transition-colors text-center block"
+                className="w-full bg-white border border-gray-200 text-gray-700 py-4 px-4 rounded-none text-[10px] uppercase tracking-widest font-bold hover:border-gray-900 transition-all text-center block"
               >
                 View Order History
               </Link>
@@ -329,16 +334,20 @@ export default function OrderConfirmationPage({ params }: Props) {
                   href={getTrackingUrl(order.carrier, order.trackingNumber)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full bg-white border border-green-600 text-green-700 py-3 px-4 rounded-md font-medium hover:bg-green-50 transition-colors text-center block"
+                  className="w-full bg-white border border-gray-200 text-gray-700 py-4 px-4 rounded-none text-[10px] uppercase tracking-widest font-bold hover:border-gray-900 transition-all text-center block"
                 >
                   Track Package
                 </a>
               )}
               
-              <button className="w-full bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-md font-medium hover:bg-gray-50 transition-colors flex items-center justify-center">
-                <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
+              <a
+                href={`/api/invoices/${order.id}`}
+                download
+                className="w-full bg-white border border-gray-200 text-gray-700 py-4 px-4 rounded-none text-[10px] uppercase tracking-widest font-bold hover:border-gray-900 transition-all flex items-center justify-center"
+              >
+                <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                 Download Receipt
-              </button>
+              </a>
             </motion.div>
           </div>
         </div>
@@ -348,24 +357,25 @@ export default function OrderConfirmationPage({ params }: Props) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-12 bg-blue-50 rounded-lg p-6 text-center"
+          className="mt-12 border border-gray-200 p-8 text-center"
         >
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Need Help?</h3>
-          <p className="text-gray-600 mb-4">
-            Have questions about your order? Our customer service team is here to help.
+          <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Need Help?</p>
+          <h3 className="text-xl font-serif uppercase tracking-widest text-gray-900 mb-3">We're Here for You</h3>
+          <p className="text-sm text-gray-500 mb-6 tracking-wide">
+            Have questions about your order? Our customer service team is happy to assist.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/contact"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-8 py-3 bg-gray-900 border border-gray-900 text-white text-[10px] uppercase tracking-widest hover:bg-white hover:text-gray-900 transition-all"
             >
               Contact Support
             </Link>
             <Link
-              href="/help"
-              className="inline-flex items-center px-4 py-2 bg-white border border-blue-300 text-blue-700 font-medium rounded-md hover:bg-blue-50 transition-colors"
+              href="/faq"
+              className="inline-flex items-center px-8 py-3 bg-white border border-gray-200 text-gray-700 text-[10px] uppercase tracking-widest hover:border-gray-900 transition-all"
             >
-              Visit Help Center
+              Visit FAQ
             </Link>
           </div>
         </motion.div>

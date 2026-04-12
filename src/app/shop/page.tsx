@@ -152,7 +152,7 @@ export default function ShopPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-gray-50 border-b">
+      <div className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -160,10 +160,10 @@ export default function ShopPage() {
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-3xl sm:text-4xl font-serif text-gray-900 mb-4 uppercase tracking-widest">
               Shop All Products
             </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-sm text-gray-500 max-w-2xl mx-auto tracking-wide uppercase">
               Discover our complete collection of handcrafted tableware and stationery, 
               each piece telling its own unique story.
             </p>
@@ -176,15 +176,15 @@ export default function ShopPage() {
           {/* Advanced Sidebar Filters */}
           <div className={`lg:w-64 space-y-6 ${isFilterOpen ? 'block' : 'hidden lg:block'}`}>
             {/* Categories Filter */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
-              <div className="space-y-2">
+            <div className="bg-stone-50/50 border border-gray-100 p-6">
+              <h3 className="text-xs font-serif uppercase tracking-widest text-gray-900 mb-6">Categories</h3>
+              <div className="space-y-3">
                 <button
                   onClick={() => handleCategoryChange('all')}
-                  className={`block w-full text-left px-3 py-2 rounded-md transition-colors ${
+                  className={`block w-full text-left px-4 py-2 transition-all uppercase tracking-widest text-[10px] ${
                     selectedCategory === 'all'
-                      ? 'bg-rose-100 text-rose-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'border-l-2 border-gray-900 bg-white text-gray-900 font-medium'
+                      : 'border-l-2 border-transparent text-gray-500 hover:text-gray-900'
                   }`}
                 >
                   All Products
@@ -193,10 +193,10 @@ export default function ShopPage() {
                   <button
                     key={category.id}
                     onClick={() => handleCategoryChange(category.id)}
-                    className={`block w-full text-left px-3 py-2 rounded-md transition-colors ${
+                    className={`block w-full text-left px-4 py-2 transition-all uppercase tracking-widest text-[10px] ${
                       selectedCategory === category.id
-                        ? 'bg-rose-100 text-rose-700'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'border-l-2 border-gray-900 bg-white text-gray-900 font-medium'
+                        : 'border-l-2 border-transparent text-gray-500 hover:text-gray-900'
                     }`}
                   >
                     {category.name} ({category.count})
@@ -206,8 +206,8 @@ export default function ShopPage() {
             </div>
             
             {/* Price Range Filter */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Price Range</h3>
+            <div className="bg-stone-50/50 border border-gray-100 p-6">
+              <h3 className="text-xs font-serif uppercase tracking-widest text-gray-900 mb-6">Price Range</h3>
               <div className="space-y-4">
                 <div className="flex space-x-2">
                   <input
@@ -240,25 +240,25 @@ export default function ShopPage() {
             </div>
             
             {/* Rating Filter */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Minimum Rating</h3>
-              <div className="space-y-2">
+            <div className="bg-stone-50/50 border border-gray-100 p-6">
+              <h3 className="text-xs font-serif uppercase tracking-widest text-gray-900 mb-6">Minimum Rating</h3>
+              <div className="space-y-3">
                 {[4, 3, 2, 1, 0].map((rating) => (
                   <button
                     key={rating}
                     onClick={() => handleRatingChange(rating)}
-                    className={`flex items-center w-full px-3 py-2 rounded-md transition-colors ${
+                    className={`flex items-center w-full px-4 py-2 transition-all uppercase tracking-widest text-[10px] ${
                       minRating === rating
-                        ? 'bg-rose-100 text-rose-700'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'border-l-2 border-gray-900 bg-white text-gray-900 font-medium'
+                        : 'border-l-2 border-transparent text-gray-500 hover:text-gray-900'
                     }`}
                   >
                     <div className="flex items-center">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <svg
                           key={star}
-                          className={`h-4 w-4 ${
-                            star <= rating ? 'text-yellow-400' : 'text-gray-300'
+                          className={`h-3 w-3 mr-0.5 ${
+                            star <= rating ? 'text-gray-900' : 'text-gray-200'
                           }`}
                           fill="currentColor"
                           viewBox="0 0 20 20"
@@ -358,10 +358,10 @@ export default function ShopPage() {
                             <button
                               key={page}
                               onClick={() => setCurrentPage(page)}
-                              className={`px-3 py-2 text-sm border border-gray-300 rounded-md ${
+                              className={`px-4 py-2 text-xs border uppercase tracking-widest transition-colors rounded-none ${
                                 currentPage === page
-                                  ? 'bg-rose-600 text-white border-rose-600'
-                                  : 'hover:bg-gray-50'
+                                  ? 'bg-gray-900 text-white border-gray-900'
+                                  : 'border-gray-200 hover:bg-gray-50 text-gray-600'
                               }`}
                             >
                               {page}
