@@ -36,7 +36,7 @@ const faqs = [
       },
       {
         q: 'Can I request custom or personalized products?',
-        a: 'Absolutely. We offer bespoke gifting solutions for corporate and personal orders. Please contact us at info@elanorraliving.in with your requirements and we'll get back to you within 48 hours.',
+        a: "Absolutely. We offer bespoke gifting solutions for corporate and personal orders. Please contact us at info@elanorraliving.in with your requirements and we'll get back to you within 48 hours.",
       },
       {
         q: 'Are the ceramics food-safe?',

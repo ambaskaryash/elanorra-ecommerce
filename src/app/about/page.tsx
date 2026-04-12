@@ -53,19 +53,19 @@ const team = [
   {
     name: 'Anya Sharma',
     role: 'Founder & Principal Designer',
-    image: 'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/team/sarah-mitchell',
+    image: '/images/editorial-craft.png',
     description: 'With a discerning eye for minimalist detail, Anya founded Elanorra Living to bring high-end curations directly to the modern homeowner.',
   },
   {
     name: 'David Chen',
     role: 'Head of Product Curation',
-    image: 'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/team/david-chen',
+    image: '/images/hero-tableware.png',
     description: 'David travels the world to discover unique pieces that combine traditional craftsmanship with modern aesthetics.',
   },
   {
     name: 'Maya Patel',
     role: 'Sustainability Director',
-    image: 'https://res.cloudinary.com/demo/image/upload/w_400,h_400,c_fill/ecommerce/team/maya-patel',
+    image: '/images/category-stationery.png',
     description: 'Maya ensures our commitment to sustainable practices while maintaining the highest quality standards.',
   },
 ];
@@ -77,8 +77,8 @@ export default function AboutPage() {
       <section className="relative h-[60vh] bg-gray-900 overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/banners/about-hero"
-            alt="Elanorr Living Story"
+            src="/images/about-hero-minimalist.png"
+            alt="Elanorra Living Story"
             fill
             className="object-cover opacity-60"
             priority
@@ -133,7 +133,7 @@ export default function AboutPage() {
             <motion.div variants={itemVariants}>
               <div className="relative h-[500px] border border-gray-100 overflow-hidden">
                 <Image
-                  src="https://res.cloudinary.com/demo/image/upload/w_800,h_600,c_fill/ecommerce/banners/about-story"
+                  src="/images/about-story-workspace.png"
                   alt="Elanorra Living workspace"
                   fill
                   className="object-cover"

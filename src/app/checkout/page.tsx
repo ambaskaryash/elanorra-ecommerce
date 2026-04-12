@@ -2,15 +2,17 @@
 
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
-import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 // Loading component
 function CheckoutLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-stone-50">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600 mx-auto mb-4"></div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Loading Checkout...</h2>
+        <div className="animate-spin h-10 w-10 border border-gray-900 border-t-transparent rounded-full mx-auto mb-6"></div>
+        <h2 className="text-sm font-serif uppercase tracking-[0.2em] text-gray-900">Preparing Checkout</h2>
       </div>
     </div>
   );
@@ -26,14 +28,22 @@ const CheckoutContent = dynamic(
 );
 
 export default function CheckoutPage() {
+  const { isLoaded, isSignedIn } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/sign-in?redirect_url=/checkout');
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  if (!isLoaded || !isSignedIn) {
+    return <CheckoutLoading />;
+  }
+
   return (
     <Suspense fallback={<CheckoutLoading />}>
-      <SignedIn>
-        <CheckoutContent />
-      </SignedIn>
-      <SignedOut>
-        <RedirectToSignIn redirectUrl="/checkout" />
-      </SignedOut>
+      <CheckoutContent />
     </Suspense>
   );
 }

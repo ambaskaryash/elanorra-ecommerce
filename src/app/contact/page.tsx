@@ -64,8 +64,8 @@ const contactInfo = [
   {
     icon: PhoneIcon,
     title: 'Call Us',
-    info: '+91 9876543210',
-    subInfo: 'Mon-Sat 9AM-8PM',
+    info: '+91 91234 56789',
+    subInfo: 'Mon-Sat 10AM-6PM IST',
   },
   {
     icon: MapPinIcon,
@@ -76,8 +76,8 @@ const contactInfo = [
   {
     icon: ClockIcon,
     title: 'Business Hours',
-    info: 'Mon-Sat: 9AM-8PM',
-    subInfo: 'Sunday: 10AM-6PM',
+    info: 'Mon-Sat: 10AM-6PM',
+    subInfo: 'Closed on Sundays',
   },
 ];
 
@@ -189,7 +189,7 @@ export default function ContactPage() {
       <section className="relative h-[50vh] bg-gray-900 overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://res.cloudinary.com/demo/image/upload/w_1600,h_900,c_fill/ecommerce/banners/contact-hero"
+            src="/images/contact-hero-desk.png"
             alt="Contact Elanorra Living"
             fill
             className="object-cover opacity-60"
