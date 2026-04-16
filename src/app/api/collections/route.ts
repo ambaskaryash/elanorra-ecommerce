@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Collection, Product, ProductImage, ProductCollection } from '@prisma/client';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
+import { listMedusaCollections } from '@/lib/medusa/catalog';
+import { logger } from '@/lib/logger';
 
 type CollectionWithProducts = Collection & {
   _count: { products: number };
@@ -14,6 +17,22 @@ type CollectionWithProducts = Collection & {
 // GET /api/collections - Get all collections
 export async function GET(request: NextRequest) {
   try {
+    if (isMedusaCatalogEnabled()) {
+      try {
+        const collections = await listMedusaCollections();
+        return NextResponse.json({
+          collections,
+          source: 'medusa',
+        });
+      } catch (error) {
+        logger.error('Medusa collections error:', error);
+        return NextResponse.json(
+          { error: 'Failed to fetch collections from Medusa' },
+          { status: 500 }
+        );
+      }
+    }
+
     // Check if DATABASE_URL is available (for build-time compatibility)
     if (!process.env.DATABASE_URL) {
       return NextResponse.json({

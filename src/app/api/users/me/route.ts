@@ -3,6 +3,9 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { syncUserFromClerk } from '@/lib/rbac';
 import { z } from 'zod';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
+import * as medusaCustomer from '@/lib/medusa/customer';
+import { logger } from '@/lib/logger';
 
 const updateProfileSchema = z.object({
   firstName: z.string().min(1).optional(),
@@ -58,6 +61,20 @@ export async function GET() {
           createdAt: true,
         },
       });
+
+      // Medusa Integration: Sync Customer
+      if (isMedusaCatalogEnabled() && newUser?.email) {
+        try {
+          await medusaCustomer.createCustomer({
+            email: newUser.email,
+            first_name: newUser.firstName || '',
+            last_name: newUser.lastName || '',
+            phone: newUser.phone || '',
+          });
+        } catch (error) {
+          logger.warn('Failed to sync user with Medusa Customer', { error, email: newUser.email });
+        }
+      }
 
       return NextResponse.json({ user: newUser });
     }

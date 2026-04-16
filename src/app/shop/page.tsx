@@ -99,23 +99,10 @@ export default function ShopPage() {
   
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/products');
+      const response = await fetch('/api/categories');
       if (response.ok) {
         const data = await response.json();
-        
-        // Generate categories from products
-        const categoryMap = new Map<string, number>();
-        data.products.forEach((product: ApiProduct) => {
-          categoryMap.set(product.category, (categoryMap.get(product.category) || 0) + 1);
-        });
-        
-        const categoryList: Category[] = Array.from(categoryMap, ([name, count]) => ({
-          id: name,
-          name: name.charAt(0).toUpperCase() + name.slice(1),
-          count,
-        }));
-        
-        setCategories(categoryList);
+        setCategories(data.categories);
       }
     } catch (error) {
       console.error('Failed to fetch categories:', error);

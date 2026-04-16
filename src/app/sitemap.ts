@@ -1,5 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import type { MetadataRoute } from 'next';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
+import { listMedusaProducts, listMedusaCollections } from '@/lib/medusa/catalog';
+import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 
@@ -21,8 +24,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let dynamicRoutes: MetadataRoute.Sitemap = [];
 
-  // Fetch dynamic routes if database is available
-  if (process.env.DATABASE_URL) {
+  // Fetch dynamic routes from Medusa if enabled
+  if (isMedusaCatalogEnabled()) {
+    try {
+      const [{ products }, collections] = await Promise.all([
+        listMedusaProducts({ limit: 1000 }),
+        listMedusaCollections(100),
+      ]);
+
+      const medusaProductRoutes: MetadataRoute.Sitemap = products.map((product) => ({
+        url: `${baseUrl}/products/${product.slug}`,
+        lastModified: new Date(product.updatedAt || now),
+        changeFrequency: 'daily',
+        priority: 0.8,
+      }));
+
+      const medusaCollectionRoutes: MetadataRoute.Sitemap = collections.map((collection) => ({
+        url: `${baseUrl}/collections/${collection.slug}`,
+        lastModified: now,
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      }));
+
+      dynamicRoutes = [...medusaProductRoutes, ...medusaCollectionRoutes];
+    } catch (error) {
+      logger.warn('Failed to generate Medusa sitemap routes:', { error });
+    }
+  }
+
+  // Fetch local dynamic routes if database is available and Medusa is not primary or as fallback
+  if (process.env.DATABASE_URL && dynamicRoutes.length === 0) {
     try {
       const [products, collections] = await Promise.all([
         prisma.product.findMany({

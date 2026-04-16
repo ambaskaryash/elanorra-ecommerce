@@ -3,10 +3,85 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
+import { listMedusaProducts } from '@/lib/medusa/catalog';
 
 // GET /api/products - Get all products with filtering and pagination
 export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '12');
+    const category = searchParams.get('category');
+    const search = searchParams.get('search');
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortOrder = (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc';
+    const minPrice = searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice')!) : undefined;
+    const maxPrice = searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice')!) : undefined;
+    const minRating = searchParams.get('minRating') ? parseFloat(searchParams.get('minRating')!) : undefined;
+
+    if (isMedusaCatalogEnabled()) {
+      try {
+        const medusaResult = await listMedusaProducts({
+          page,
+          limit,
+          search: search || undefined,
+          category: category && category !== 'all' ? category : undefined,
+        });
+
+        let products = medusaResult.products;
+
+        if (minPrice !== undefined) {
+          products = products.filter((product) => product.price >= minPrice);
+        }
+
+        if (maxPrice !== undefined) {
+          products = products.filter((product) => product.price <= maxPrice);
+        }
+
+        if (minRating !== undefined) {
+          products = products.filter((product) => product.avgRating >= minRating);
+        }
+
+        products = [...products].sort((a, b) => {
+          const first = (a as any)[sortBy];
+          const second = (b as any)[sortBy];
+
+          if (typeof first === 'number' && typeof second === 'number') {
+            return sortOrder === 'asc' ? first - second : second - first;
+          }
+
+          return sortOrder === 'asc'
+            ? String(first || '').localeCompare(String(second || ''))
+            : String(second || '').localeCompare(String(first || ''));
+        });
+
+        const appliedLocalFilters =
+          minPrice !== undefined ||
+          maxPrice !== undefined ||
+          minRating !== undefined;
+        const total = appliedLocalFilters
+          ? products.length
+          : medusaResult.pagination.total;
+
+        return NextResponse.json({
+          products,
+          pagination: {
+            ...medusaResult.pagination,
+            total,
+            pages: Math.ceil(total / limit),
+          },
+          source: 'medusa',
+        });
+      } catch (error) {
+        logger.error('Medusa catalog error:', error);
+        return NextResponse.json(
+          { error: 'Failed to fetch products from Medusa' },
+          { status: 500 }
+        );
+      }
+    }
+
     // Check if DATABASE_URL is available (for build-time compatibility)
     if (!process.env.DATABASE_URL) {
       logger.warn('⚠️ DATABASE_URL not available, returning empty response for build');
@@ -20,17 +95,6 @@ export async function GET(request: NextRequest) {
         }
       });
     }
-
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '12');
-    const category = searchParams.get('category');
-    const search = searchParams.get('search');
-    const sortBy = searchParams.get('sortBy') || 'createdAt';
-    const sortOrder = (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc';
-    const minPrice = searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice')!) : undefined;
-    const maxPrice = searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice')!) : undefined;
-    const minRating = searchParams.get('minRating') ? parseFloat(searchParams.get('minRating')!) : undefined;
 
     const skip = (page - 1) * limit;
 

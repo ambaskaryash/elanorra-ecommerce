@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Product, Review } from '@prisma/client';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
+import { listMedusaProducts } from '@/lib/medusa/catalog';
+import { logger } from '@/lib/logger';
 
 type RouteParamsPromise = Promise<{ slug: string }>;
 
@@ -15,15 +18,32 @@ export async function GET(
   { params }: { params: RouteParamsPromise }
 ) {
   try {
-    // Check if DATABASE_URL is available (for build-time compatibility)
-    if (!process.env.DATABASE_URL) {
-      return NextResponse.json(
-        { error: 'Collection not found' },
-        { status: 404 }
-      );
+    const { slug } = await params;
+
+    if (isMedusaCatalogEnabled()) {
+      try {
+        const result = await listMedusaProducts({
+          handle: slug,
+        });
+
+        // For Medusa, we might need to fetch the collection separately if listMedusaProducts 
+        // doesn't return the collection metadata. 
+        // For now, we'll assume the products are returned and we can mock the collection.
+        return NextResponse.json({
+          collection: { name: slug, slug },
+          products: result.products,
+          source: 'medusa',
+        });
+      } catch (error) {
+        logger.error('Medusa collection error:', { slug, error });
+        return NextResponse.json(
+          { error: 'Failed to fetch collection from Medusa' },
+          { status: 500 }
+        );
+      }
     }
 
-    const { slug } = await params;
+    // Check if DATABASE_URL is available (for build-time compatibility)
 
     const collection = await prisma.collection.findUnique({
       where: { slug },

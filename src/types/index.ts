@@ -22,6 +22,7 @@ export interface Product {
   };
   avgRating?: number; // Added for stored average rating
   reviewCount?: number; // Added for stored count of reviews
+  variants?: ProductVariant[];
   featured: boolean;
   bestseller: boolean;
   newArrival: boolean;

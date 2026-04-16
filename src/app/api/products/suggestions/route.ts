@@ -1,4 +1,6 @@
 import { prisma } from '@/lib/prisma';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
+import { listMedusaProducts } from '@/lib/medusa/catalog';
 import Fuse from 'fuse.js';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -17,13 +19,35 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Query parameter "q" is required' }, { status: 400 });
     }
 
-    const products = await prisma.product.findMany({
-      select: {
-        name: true,
-        tags: true,
-        category: true,
-      },
-    });
+    let products: ProductData[];
+
+    if (isMedusaCatalogEnabled()) {
+      try {
+        const result = await listMedusaProducts({ limit: 100 });
+        products = result.products.map((product) => ({
+          name: product.name,
+          tags: product.tags,
+          category: product.category,
+        }));
+      } catch (error) {
+        console.warn('Medusa suggestions unavailable, falling back to local product suggestions', error);
+        products = await prisma.product.findMany({
+          select: {
+            name: true,
+            tags: true,
+            category: true,
+          },
+        });
+      }
+    } else {
+      products = await prisma.product.findMany({
+        select: {
+          name: true,
+          tags: true,
+          category: true,
+        },
+      });
+    }
 
     const searchData = products.flatMap((p: ProductData) => [
         p.name, 

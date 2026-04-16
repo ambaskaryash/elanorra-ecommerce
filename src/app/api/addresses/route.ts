@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
 import { createCSRFProtectedHandler } from '@/lib/csrf';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
+import * as medusaCustomer from '@/lib/medusa/customer';
+import { logger } from '@/lib/logger';
 
 // Ensure this API route is always dynamic and not statically pre-rendered
 export const dynamic = 'force-dynamic';
@@ -100,6 +103,35 @@ async function handlePOST(request: NextRequest) {
     const address = await prisma.address.create({
       data: addressData,
     });
+
+    // Medusa Integration: Sync Address
+    if (isMedusaCatalogEnabled()) {
+      try {
+        const user = await prisma.user.findUnique({
+          where: { clerkId: userId },
+          select: { email: true }
+        });
+
+        if (user?.email) {
+          const customer = await medusaCustomer.getCustomer(user.email);
+          if (customer) {
+            await medusaCustomer.addAddress(customer.id, {
+              first_name: validatedData.firstName,
+              last_name: validatedData.lastName,
+              address_1: validatedData.address1,
+              address_2: validatedData.address2,
+              city: validatedData.city,
+              country_code: validatedData.country.toLowerCase() === 'india' ? 'in' : validatedData.country.toLowerCase(),
+              province: validatedData.state,
+              postal_code: validatedData.zipCode,
+              phone: validatedData.phone,
+            });
+          }
+        }
+      } catch (error) {
+        logger.warn('Failed to sync address with Medusa Customer', { error });
+      }
+    }
 
     return NextResponse.json({ address }, { status: 201 });
   } catch (error) {

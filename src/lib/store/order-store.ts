@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Order, OrderLineItem } from '@/types';
 import { orderAPI, ApiError } from '@/lib/services/api';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
+import * as medusaOrder from '@/lib/medusa/order';
+import { mapMedusaOrderToOrder } from '@/lib/medusa/mappers';
 
 interface OrderState {
   orders: Order[];
@@ -14,6 +17,7 @@ interface OrderState {
   updateOrderStatus: (orderId: string, status: Order['financialStatus'] | Order['fulfillmentStatus'], type: 'financial' | 'fulfillment') => void;
   clearOrders: () => void;
   clearError: () => void;
+  syncWithMedusaOrder: (order: any) => Order;
 }
 
 interface CreateOrderData {
@@ -43,9 +47,21 @@ export const useOrderStore = create<OrderState>()(
       fetchOrders: async (params) => {
         set({ isLoading: true, error: null });
         try {
-          // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          set({ isLoading: false });
+          const queryParams = new URLSearchParams();
+          if (params?.userId) queryParams.append('userId', params.userId);
+          if (params?.status) queryParams.append('status', params.status);
+          if (params?.page) queryParams.append('page', params.page.toString());
+          if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+          const response = await fetch(`/api/orders?${queryParams.toString()}`);
+          if (!response.ok) throw new Error('Failed to fetch orders');
+          
+          const data = await response.json();
+          const orders = data.orders.map((o: any) => 
+            data.source === 'medusa' ? get().syncWithMedusaOrder(o) : o
+          );
+          
+          set({ orders, isLoading: false });
         } catch (error) {
           set({ isLoading: false, error: 'Failed to fetch orders' });
         }
@@ -55,7 +71,23 @@ export const useOrderStore = create<OrderState>()(
         set({ isLoading: true });
         
         try {
-          // Simulate API call
+          if (isMedusaCatalogEnabled()) {
+             // For Medusa, we expect order creation to happen via Cart Completion in API
+             // Here we just fetch the order after it's completed
+             const orderId = orderData.email; // HACK: if we pass orderId here
+             if (orderId.startsWith('order_')) {
+                const medOrder = await medusaOrder.getOrder(orderId);
+                const order = get().syncWithMedusaOrder(medOrder);
+                set((state) => ({
+                  orders: [order, ...state.orders],
+                  currentOrder: order,
+                  isLoading: false,
+                }));
+                return { success: true, orderId: order.id };
+             }
+          }
+
+          // Simulate API call for local
           await new Promise(resolve => setTimeout(resolve, 2000));
           
           const orderId = `EL${Date.now()}`;
@@ -97,32 +129,15 @@ export const useOrderStore = create<OrderState>()(
             isLoading: false,
           }));
 
-          // Simulate order processing - update status after a delay
-          setTimeout(() => {
-            set((state) => ({
-              orders: state.orders.map(order =>
-                order.id === orderId
-                  ? { ...order, financialStatus: 'paid' as const }
-                  : order
-              ),
-            }));
-          }, 3000);
-
-          setTimeout(() => {
-            set((state) => ({
-              orders: state.orders.map(order =>
-                order.id === orderId
-                  ? { ...order, fulfillmentStatus: 'fulfilled' as const }
-                  : order
-              ),
-            }));
-          }, 8000);
-
           return { success: true, orderId };
         } catch (error) {
           set({ isLoading: false });
           return { success: false, error: 'Failed to create order' };
         }
+      },
+
+      syncWithMedusaOrder: (order: any): Order => {
+        return mapMedusaOrderToOrder(order);
       },
 
       getOrder: (orderId: string) => {

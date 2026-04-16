@@ -2,6 +2,9 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
+import * as medusaOrder from '@/lib/medusa/order';
+import { logger } from '@/lib/logger';
 
 const returnRequestSchema = z.object({
   orderId: z.string(),
@@ -16,6 +19,17 @@ export async function GET() {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  if (isMedusaCatalogEnabled()) {
+    try {
+      const returns = await medusaOrder.listReturns();
+      return NextResponse.json(returns);
+    } catch (error) {
+      logger.warn('Medusa returns unavailable, falling back to local returns API', {
+        error,
+      });
+    }
   }
 
   // Get user from database
@@ -61,6 +75,22 @@ export async function POST(req: NextRequest) {
   }
 
   const { orderId, reason, items } = validation.data;
+
+  if (isMedusaCatalogEnabled() && orderId.startsWith('order_')) {
+    try {
+      const returnRequest = await medusaOrder.createReturn(orderId, items, reason);
+      return NextResponse.json(returnRequest);
+    } catch (error) {
+      logger.error('Medusa return creation failed', {
+        orderId,
+        error,
+      });
+      return NextResponse.json(
+        { error: 'Return creation failed' },
+        { status: 500 }
+      );
+    }
+  }
 
   const newReturnRequest = await (prisma as any).ReturnRequest.create({
     data: {

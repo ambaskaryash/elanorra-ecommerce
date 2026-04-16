@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Script from 'next/script';
 import { StarIcon, HeartIcon, ShareIcon, MinusIcon, PlusIcon, SquaresPlusIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { useUser } from '@clerk/nextjs';
 import { useCartStore } from '@/lib/store/cart-store';
 import { useWishlistStore } from '@/lib/store/wishlist-store';
 import { useCompareStore } from '@/lib/store/compare-store';
@@ -25,6 +26,7 @@ interface ProductPageClientProps {
 }
 
 export default function ProductPageClient({ product, canonicalUrl }: ProductPageClientProps) {
+  const { user } = useUser();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [variantPriceAdjustment, setVariantPriceAdjustment] = useState(0);
@@ -65,6 +67,22 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
   };
 
   const handleAddToCart = () => {
+    // Determine the variant ID
+    let selectedVariantId = product.variants?.[0]?.id || product.id;
+    
+    // If we have selected variants from the UI, try to find the matching variant
+    if (product.variants && product.variants.length > 0) {
+      // For Medusa, the variants are already mapped.
+      // If only one variant, use it.
+      if (product.variants.length === 1) {
+        selectedVariantId = product.variants[0].id;
+      } else {
+        // Try to match based on selected options if UI supports it
+        // For now, if no explicit variant selection logic, we'll use the first one
+        // but the addItem now supports variantId
+      }
+    }
+
     const selectedVariantEntries = Object.entries(selectedVariants).map(([key, value], index) => ({
       id: `${product.id}-var-${index + 1}`,
       name: key,
@@ -77,11 +95,21 @@ export default function ProductPageClient({ product, canonicalUrl }: ProductPage
     const apiProductForCart: ApiProduct = {
       ...apiProductBase,
       price: apiProductBase.price + variantPriceAdjustment,
-      variants: selectedVariantEntries,
+      variants: selectedVariantEntries.length > 0 
+        ? selectedVariantEntries 
+        : (product.variants?.map(v => ({
+            id: v.id,
+            name: v.name,
+            value: v.value,
+            priceAdjustment: 0,
+            inStock: true,
+            inventory: 999
+          })) || []),
       updatedAt: new Date().toISOString(),
     };
 
-    addItem(apiProductForCart, quantity);
+    const email = user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress;
+    addItem(apiProductForCart, quantity, selectedVariantId, email);
     toast.success(`${product.name} added to cart!`);
   };
 

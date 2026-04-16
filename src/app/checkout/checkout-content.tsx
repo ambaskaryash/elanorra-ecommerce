@@ -1,6 +1,8 @@
 'use client';
 
 import { useAuth } from '@/lib/contexts/auth-context';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
+import * as medusaCart from '@/lib/medusa/cart';
 import {
   createRazorpayOptions,
   loadRazorpayScript,
@@ -75,6 +77,8 @@ export default function CheckoutContent() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [shippingOptions, setShippingOptions] = useState<any[]>([]);
+  const [selectedShippingOption, setSelectedShippingOption] = useState<string | null>(null);
   const [billingAddress, setBillingAddress] = useState<Address>({
     firstName: '',
     lastName: '',
@@ -325,6 +329,55 @@ export default function CheckoutContent() {
         return;
       }
 
+      // Medusa Integration: Sync address and create payment session
+      if (isMedusaCatalogEnabled()) {
+        const cartId = useCartStore.getState().cartId;
+        if (cartId) {
+          try {
+            toast.loading('Syncing with checkout...', { id: 'medusa-sync' });
+            
+            const medusaAddress = {
+              first_name: billingAddress.firstName,
+              last_name: billingAddress.lastName,
+              address_1: billingAddress.address1,
+              address_2: billingAddress.address2 || '',
+              city: billingAddress.city,
+              province: billingAddress.state,
+              postal_code: billingAddress.pincode,
+              country_code: 'in', // Medusa expects lowercase country code
+              phone: billingAddress.phone,
+            };
+
+            await medusaCart.updateCart(cartId, {
+              shipping_address: medusaAddress,
+              billing_address: medusaAddress,
+              email: emailToUse,
+            });
+
+            // Fetch shipping options
+            const options = await medusaCart.listShippingOptions(cartId);
+            setShippingOptions(options);
+            
+            if (options.length > 0) {
+              // If we have options, we should let the user select one
+              // but for now we'll auto-select the first one or the cheapest one
+              const cheapest = options.sort((a, b) => (a.amount || 0) - (b.amount || 0))[0];
+              await medusaCart.addShippingMethod(cartId, cheapest.id);
+              setSelectedShippingOption(cheapest.id);
+            }
+
+            await medusaCart.createPaymentSessions(cartId);
+            
+            toast.success('Ready for payment', { id: 'medusa-sync' });
+          } catch (error) {
+            console.error('Medusa sync error:', error);
+            toast.error('Failed to sync checkout details', { id: 'medusa-sync' });
+            setIsProcessing(false);
+            return;
+          }
+        }
+      }
+
       // Process Razorpay payment
       await processOnlinePayment();
     } catch (error) {
@@ -336,7 +389,10 @@ export default function CheckoutContent() {
 
   const createOrderInSystem = async (paymentResponse?: RazorpayResponse): Promise<{ success: boolean; orderId?: string; error?: string }> => {
     try {
+      const cartId = isMedusaCatalogEnabled() ? useCartStore.getState().cartId : undefined;
+
       const apiPayload = {
+        cartId, // For Medusa integration
         email: user?.email || billingAddress.email || '',
         items: items.map(item => ({
           productId: item.productId,
@@ -383,8 +439,23 @@ export default function CheckoutContent() {
 
       const json = await res.json();
 
-      if (!res.ok || !json.order?.id) {
+      if (!res.ok || (!json.order?.id && !json.order?.displayId)) {
         return { success: false, error: json.error || 'Order creation failed' };
+      }
+
+      // If Medusa order, fetch full details using OrderStore
+      if (isMedusaCatalogEnabled() && json.order.id) {
+         await useOrderStore.getState().createOrder({
+            email: json.order.id, // HACK: passing orderId as email to createOrder to fetch it
+            lineItems: [],
+            shippingAddress: {},
+            billingAddress: {},
+            subtotal: 0,
+            taxes: 0,
+            shipping: 0,
+            totalPrice: 0,
+            currency: 'INR'
+         });
       }
 
       return { success: true, orderId: json.order.id };

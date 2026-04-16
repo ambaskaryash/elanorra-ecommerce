@@ -1,8 +1,24 @@
 'use client';
 
-import { ClerkProvider } from '@clerk/nextjs';
+import { ClerkProvider, useUser } from '@clerk/nextjs';
 import { AuthProvider } from '@/lib/contexts/auth-context';
 import SessionManager from '@/components/auth/SessionManager';
+import { useEffect } from 'react';
+import { useCartStore } from '@/lib/store/cart-store';
+
+function CartInitializer() {
+  const initializeCart = useCartStore((state) => state.initializeCart);
+  const { user, isLoaded } = useUser();
+
+  useEffect(() => {
+    if (isLoaded) {
+      const email = user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress;
+      initializeCart(email);
+    }
+  }, [initializeCart, user, isLoaded]);
+
+  return null;
+}
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -26,6 +42,7 @@ export function Providers({ children }: ProvidersProps) {
       signUpFallbackRedirectUrl="/"
     >
       <AuthProvider>
+        <CartInitializer />
         <SessionManager>
           {children}
         </SessionManager>

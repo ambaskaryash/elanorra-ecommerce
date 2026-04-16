@@ -3,6 +3,11 @@ import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import type { Product, ProductVariant } from '@prisma/client';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
+import * as medusaCart from '@/lib/medusa/cart';
+import * as medusaOrder from '@/lib/medusa/order';
+import { mapMedusaOrderToOrder } from '@/lib/medusa/mappers';
+import { logger } from '@/lib/logger';
 
 // Local types used to ensure strong typing for Prisma results in this route
 type ProductVariantForPricing = {
@@ -28,6 +33,27 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
+
+    if (isMedusaCatalogEnabled()) {
+      try {
+        const medOrders = await medusaOrder.listOrders(userId || undefined);
+        const orders = medOrders.map(mapMedusaOrderToOrder);
+        return NextResponse.json({
+          orders,
+          pagination: {
+            page: 1,
+            limit: orders.length,
+            total: orders.length,
+            pages: 1,
+          },
+          source: 'medusa',
+        });
+      } catch (error) {
+        logger.warn('Medusa orders unavailable, falling back to local orders API', {
+          error,
+        });
+      }
+    }
 
     const skip = (page - 1) * limit;
 
@@ -100,6 +126,7 @@ export async function GET(request: NextRequest) {
 // POST /api/orders - Create a new order
 const createOrderSchema = z.object({
   userId: z.string().optional(),
+  cartId: z.string().optional(), // For Medusa integration
   email: z.string().email(),
   items: z.array(z.object({
     productId: z.string(),
@@ -149,7 +176,34 @@ const createOrderSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Require authentication
+    const body = await request.json();
+    const validatedData = createOrderSchema.parse(body);
+
+    // Medusa Integration: Complete cart to create order
+    if (isMedusaCatalogEnabled() && validatedData.cartId) {
+      try {
+        const order = await medusaOrder.placeOrder(validatedData.cartId);
+        return NextResponse.json({
+          order: {
+            id: order.id,
+            displayId: order.display_id,
+            email: order.email,
+          },
+          source: 'medusa',
+        });
+      } catch (error) {
+        logger.error('Medusa order creation failed', {
+          cartId: validatedData.cartId,
+          error,
+        });
+        return NextResponse.json(
+          { error: 'Order completion failed' },
+          { status: 500 }
+        );
+      }
+    }
+
+    // Require authentication for local order creation
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) {
       return NextResponse.json(
@@ -211,9 +265,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to sync user profile' }, { status: 500 });
       }
     }
-
-    const body = await request.json();
-    const validatedData = createOrderSchema.parse(body);
 
     // Fetch product data to compute server-side pricing and validate inventory
     const productIds = validatedData.items.map(item => item.productId);

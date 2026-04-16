@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
 import { logger } from '@/lib/logger';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
+import { getMedusaProductBySlug } from '@/lib/medusa/catalog';
 
 type RouteParamsPromise = Promise<{ slug: string }>;
 
@@ -12,6 +14,24 @@ export async function GET(
   { params }: { params: RouteParamsPromise }
 ) {
   try {
+    const { slug } = await params;
+
+    if (isMedusaCatalogEnabled()) {
+      try {
+        const product = await getMedusaProductBySlug(slug);
+
+        if (product) {
+          return NextResponse.json({ product, source: 'medusa' });
+        }
+      } catch (error) {
+        logger.error('Medusa product error:', { slug, error });
+        return NextResponse.json(
+          { error: 'Failed to fetch product from Medusa' },
+          { status: 500 }
+        );
+      }
+    }
+
     // Check if DATABASE_URL is available (for build-time compatibility)
     if (!process.env.DATABASE_URL) {
       logger.warn('⚠️ DATABASE_URL not available, returning empty response for build');
@@ -20,8 +40,6 @@ export async function GET(
         { status: 503 }
       );
     }
-
-    const { slug } = await params;
 
     const product = await prisma.product.findUnique({
       where: { slug },

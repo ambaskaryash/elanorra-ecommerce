@@ -13,7 +13,15 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "medusa:dev": "cd medusa-backend && npm run dev",
+    "medusa:build": "cd medusa-backend && npm run build",
+    "medusa:seed": "cd medusa-backend && npm run seed",
+    "medusa:db:setup": "cd medusa-backend && npx medusa db:setup",
+    "medusa:db:migrate": "cd medusa-backend && npx medusa db:migrate",
+    "medusa:user": "cd medusa-backend && npx medusa user",
+    "medusa:db:up": "docker compose -f docker-compose.medusa.yml up -d",
+    "medusa:db:down": "docker compose -f docker-compose.medusa.yml down"
   },
   "engines": {
     "node": ">=22.x",
