@@ -12,6 +12,9 @@ export const medusaConfig = {
   regionId:
     process.env.NEXT_PUBLIC_MEDUSA_REGION_ID ||
     DEFAULT_MEDUSA_REGION_ID,
+  salesChannelId:
+    process.env.NEXT_PUBLIC_MEDUSA_SALES_CHANNEL_ID ||
+    'sc_01KPAR7V31W1NWNQ96ZJ8NGWQC',
 };
 
 export function isMedusaCatalogEnabled() {

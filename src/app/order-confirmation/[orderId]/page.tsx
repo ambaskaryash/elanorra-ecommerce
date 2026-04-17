@@ -29,13 +29,17 @@ export default function OrderConfirmationPage({ params }: Props) {
   const { clearCart } = useCartStore();
 
   useEffect(() => {
-    const fetchOrder = async () => {
+    const fetchOrder = async (retries = 3) => {
       try {
         const resolvedParams = await params;
         const res = await fetch(`/api/orders/${resolvedParams.orderId}`);
         
         if (!res.ok) {
-           // Handle error gracefully
+           if (retries > 0) {
+             // Wait 1 second and retry
+             setTimeout(() => fetchOrder(retries - 1), 1000);
+             return;
+           }
            console.error('Failed to fetch order:', res.statusText);
            setIsLoading(false);
            return;
@@ -43,11 +47,16 @@ export default function OrderConfirmationPage({ params }: Props) {
 
         const data = await res.json();
         setOrder(data);
+        // Clear cart again just in case, though it should be handled by checkout
         clearCart();
       } catch (error) {
         console.error('Error fetching order:', error);
+        if (retries > 0) {
+          setTimeout(() => fetchOrder(retries - 1), 1000);
+          return;
+        }
       } finally {
-        setIsLoading(false);
+        if (retries === 0) setIsLoading(false);
       }
     };
 

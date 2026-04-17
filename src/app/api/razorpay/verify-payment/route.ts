@@ -186,12 +186,10 @@ async function savePaymentToDatabase(paymentData: PaymentData, orderData: { id: 
     // Medusa Integration: Update order payment status
     if (isMedusaCatalogEnabled() && orderData.id.startsWith('order_')) {
       try {
-        // In Medusa, capturing payment usually happens via payment collections or automatic workflows.
-        // For this integration, we'll assume the payment is already associated with the order/cart.
-        // We might need to call a specific Medusa endpoint to capture if not automatic.
-        logger.info('Medusa payment verified, updating order status', { orderId: orderData.id });
+        logger.info('Medusa payment verified, capturing payment in Medusa...', { orderId: orderData.id });
+        await medusaOrder.captureOrderPayment(orderData.id);
       } catch (error) {
-        logger.error('Failed to update Medusa order payment status', { error, orderId: orderData.id });
+        logger.error('Failed to capture Medusa order payment', { error, orderId: orderData.id });
       }
     }
 

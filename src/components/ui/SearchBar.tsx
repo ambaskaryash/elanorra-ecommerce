@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { products } from '@/lib/data/mock-data';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -14,32 +13,49 @@ interface SearchBarProps {
 export default function SearchBar({ className = '' }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [suggestions, setSuggestions] = useState<typeof products>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const categories = ['Tableware', 'Gifting', 'Kids Collection', 'Home Decor', 'Stationery'];
   const trending = ['Dinner Set', 'Tea Set', 'Gift Hampers', 'Notebooks', 'Glassware'];
 
-  // Generate suggestions based on query
+  // Fetch real-time suggestions from Medusa API
   useEffect(() => {
     if (query.trim().length < 2) {
       setSuggestions([]);
       return;
     }
 
-    const searchTerm = query.toLowerCase().trim();
-    const filtered = products
-      .filter(product => 
-        product.name.toLowerCase().includes(searchTerm) ||
-        product.description.toLowerCase().includes(searchTerm) ||
-        product.category.toLowerCase().includes(searchTerm) ||
-        product.tags.some(tag => tag.toLowerCase().includes(searchTerm))
-      )
-      .slice(0, 6); // Limit to 6 suggestions
+    // Clear previous timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
 
-    setSuggestions(filtered);
+    // Set a new timer to debounce the API call
+    debounceTimerRef.current = setTimeout(async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api/products?search=${encodeURIComponent(query.trim())}&limit=6`);
+        if (response.ok) {
+          const data = await response.json();
+          setSuggestions(data.products || []);
+        }
+      } catch (error) {
+        console.error('Search error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 300); // 300ms debounce
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
   }, [query]);
 
   // Handle click outside to close suggestions
@@ -103,7 +119,7 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
     inputRef.current?.focus();
   };
 
-  const handleSuggestionClick = (product: typeof products[0]) => {
+  const handleSuggestionClick = (product: any) => {
     setQuery('');
     setIsOpen(false);
     setSelectedIndex(-1);

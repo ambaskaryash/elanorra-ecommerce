@@ -5,6 +5,7 @@ export type MedusaCart = {
   id: string;
   items?: any[];
   region_id?: string;
+  sales_channel_id?: string;
   shipping_address?: any;
   billing_address?: any;
   email?: string;
@@ -13,6 +14,7 @@ export type MedusaCart = {
   shipping_total?: number;
   discount_total?: number;
   total?: number;
+  payment_collection?: any;
 };
 
 export async function createCart() {
@@ -20,6 +22,7 @@ export async function createCart() {
     method: 'POST',
     body: JSON.stringify({
       region_id: medusaConfig.regionId,
+      sales_channel_id: (medusaConfig as any).salesChannelId,
     }),
   });
   return response.cart;
@@ -119,8 +122,25 @@ export async function removePromotions(cartId: string, promoCodes: string[]) {
 }
 
 export async function selectPaymentSession(cartId: string, providerId: string) {
-  // Medusa 2.0 uses payment collections. For simplicity, we'll assume the cart completion 
-  // will handle the default payment collection if sessions are created.
-  // In some versions, you need to initialize the payment session.
+  // In Medusa v2, you might need to select a session if multiple exist
   return true; 
+}
+
+export async function authorizePaymentSession(cartId: string) {
+  // 1. Get the cart to find the payment collection ID
+  const cart = await getCart(cartId);
+  const paymentCollectionId = cart.payment_collection?.id;
+  
+  if (!paymentCollectionId) {
+    throw new Error('No payment collection found for cart');
+  }
+
+  // 2. Authorize the collection
+  // In Medusa v2, completing the cart usually handles authorization if sessions are initialized.
+  // But for external providers like Razorpay, we can trigger authorization explicitly.
+  const response = await medusaFetch<any>(`/store/payment-collections/${paymentCollectionId}/authorize`, {
+    method: 'POST',
+  });
+  
+  return response;
 }

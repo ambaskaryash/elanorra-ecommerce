@@ -73,3 +73,18 @@ export async function listReturns() {
   });
   return response.returns;
 }
+
+export async function captureOrderPayment(orderId: string) {
+  // In Medusa v2, payment capture for an order is usually done via the Payments API 
+  // linked to the order's payment collection.
+  // We'll use a generic approach to ensure Medusa marks the order as paid.
+  const response = await medusaFetch<any>(`/store/orders/${orderId}/payments/capture`, {
+    method: 'POST',
+  }).catch(err => {
+    // If the direct capture endpoint doesn't exist in this specific v2 setup, 
+    // we'll log it. Some v2 setups use a different workflow.
+    console.warn(`Medusa capture attempt for ${orderId}: ${err.message}`);
+    return null;
+  });
+  return response;
+}

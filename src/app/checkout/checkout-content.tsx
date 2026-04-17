@@ -77,6 +77,7 @@ export default function CheckoutContent() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isOrderSuccess, setIsOrderSuccess] = useState(false);
   const [shippingOptions, setShippingOptions] = useState<any[]>([]);
   const [selectedShippingOption, setSelectedShippingOption] = useState<string | null>(null);
   const [billingAddress, setBillingAddress] = useState<Address>({
@@ -200,10 +201,17 @@ export default function CheckoutContent() {
       const verifyResult = await verifyResponse.json();
 
       if (verifyResponse.ok && verifyResult.success) {
-        // Payment verified successfully
+        // 1. Mark as success to prevent "Empty Cart" flicker
+        setIsOrderSuccess(true);
+        
+        // 2. Clear cart
         clearCart();
+        
+        // 3. Inform user
         toast.success('Payment successful! Order placed.', { id: 'payment-verification' });
-        router.push(`/order-confirmation/${orderResult.orderId}`);
+        
+        // 4. Redirect to summary
+        router.replace(`/order-confirmation/${orderResult.orderId}`);
       } else {
         throw new Error(verifyResult.message || 'Payment verification failed');
       }
@@ -466,7 +474,7 @@ export default function CheckoutContent() {
     }
   };
 
-  if (items.length === 0) {
+  if (items.length === 0 && !isOrderSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
