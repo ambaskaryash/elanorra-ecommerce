@@ -178,228 +178,220 @@ export default function Header({ className }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-16' : 'h-20'}`}>
           
-          {/* LEFT: Mobile menu button & Desktop Navigation */}
-          <div className="flex flex-1 items-center justify-start lg:space-x-8">
-            <div className="md:hidden">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2 -ml-2 rounded-md text-gray-700 hover:text-gray-900"
-              >
-                {isMenuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
-              </button>
+          {/* LEFT: Logo & Navigation */}
+          <div className="flex items-center space-x-6 lg:space-x-10">
+            {/* Brand Logo */}
+            <div className="flex-shrink-0">
+              <Link href="/" className="flex flex-col items-start justify-center pt-1" aria-label="ElanorraLiving Home">
+                <div className="text-xl sm:text-2xl font-serif tracking-[0.1em] text-gray-900 uppercase">
+                  ElanorraLiving
+                </div>
+                <div className="text-[0.6rem] tracking-[0.2em] text-gray-500 uppercase mt-0.5 hidden sm:block">
+                  Bespoke Gifting & Tableware
+                </div>
+              </Link>
             </div>
 
+            {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
               {navigationItems.map((item) => (
-              <div key={item.id} className="relative group">
-                {item.children ? (
-                  <div
-                    onMouseEnter={() => handleMouseEnter(item.id)}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <button
-                      onClick={() => handleDropdownToggle(item.id)}
+                <div key={item.id} className="relative group">
+                  {item.children ? (
+                    <div
+                      onMouseEnter={() => handleMouseEnter(item.id)}
+                      onMouseLeave={handleMouseLeave}
+                    >
+                      <button
+                        onClick={() => handleDropdownToggle(item.id)}
+                        className={`nav-link whitespace-nowrap ${pathname.startsWith(item.href) ? 'nav-link--active' : ''}`}
+                      >
+                        {item.name}
+                        <ChevronDownIcon className="ml-1 h-4 w-4 text-current" />
+                      </button>
+                      
+                      <AnimatePresence>
+                        {activeDropdown === item.id && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{ duration: 0.3, ease: cubicBezier(0.16, 1, 0.3, 1) }}
+                            className={`absolute left-0 mt-3 bg-white shadow-2xl border border-gray-100 z-50 ${
+                              item.name === 'Shop' 
+                                ? 'w-[95vw] max-w-4xl xl:max-w-6xl rounded-2xl' 
+                                : 'w-64 rounded-lg'
+                            }`}
+                          >
+                            {item.name === 'Shop' ? (
+                              // Mega Menu for Shop
+                              <div className="p-8">
+                                <div className="grid grid-cols-3 gap-8">
+                                  {/* Left Column - Tableware */}
+                                  <div>
+                                    <div className="mb-6">
+                                      <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                                        <span className="w-2 h-2 bg-[var(--accent)] rounded-full mr-3"></span>
+                                        Tableware
+                                      </h3>
+                                      <div className="space-y-3">
+                                        {item.children.find(child => child.name === 'Tableware')?.children?.map((subItem) => (
+                                          <Link
+                                            key={subItem.id}
+                                            href={subItem.href}
+                                            className="block text-sm text-gray-600 hover:text-[var(--ring)] hover:translate-x-1 transition-all duration-200 py-1"
+                                            onClick={closeAllDropdowns}
+                                          >
+                                            {subItem.name}
+                                          </Link>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Featured Image */}
+                                    <div className="relative h-32 bg-gradient-to-br from-[var(--muted)] to-white rounded-lg overflow-hidden group cursor-pointer">
+                                      <div className="absolute inset-0 bg-gradient-to-br from-[color:rgba(138,106,63,0.15)] to-[color:rgba(255,255,255,0.2)] group-hover:from-[color:rgba(138,106,63,0.25)] group-hover:to-[color:rgba(255,255,255,0.25)] transition-all duration-300"></div>
+                                      <div className="absolute bottom-3 left-3 right-3">
+                                        <p className="text-xs font-medium text-gray-700 mb-1">Elevate Your Everyday</p>
+                                        <p className="text-xs text-gray-500">Premium Home Decor</p>
+                                      </div>
+                                    </div>
+                                  </div>
+  
+                                  {/* Middle Column - Collections */}
+                                  <div>
+                                    <div className="mb-6">
+                                      <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                                        <span className="w-2 h-2 bg-amber-500 rounded-full mr-3"></span>
+                                        Collections
+                                      </h3>
+                                      <div className="space-y-3">
+                                        {item.children.find(child => child.name === 'Collections')?.children?.slice(0, 6).map((subItem) => (
+                                          <Link
+                                            key={subItem.id}
+                                            href={subItem.href}
+                                            className="block text-sm text-gray-600 hover:text-[var(--ring)] hover:translate-x-1 transition-all duration-200 py-1"
+                                            onClick={closeAllDropdowns}
+                                          >
+                                            {subItem.name}
+                                          </Link>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    
+                                    {/* View All Collections Link */}
+                                    <Link
+                                      href="/collections"
+                                      className="inline-flex items-center text-sm font-medium text-[var(--ring)] hover:text-[var(--accent)] group"
+                                      onClick={closeAllDropdowns}
+                                    >
+                                      View All Collections
+                                      <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                      </svg>
+                                    </Link>
+                                  </div>
+  
+                                  {/* Right Column - Other Categories & Featured */}
+                                  <div>
+                                    <div className="mb-6">
+                                      <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                                        <span className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></span>
+                                        More
+                                      </h3>
+                                      <div className="space-y-3">
+                                        {item.children.filter(child => !['Tableware', 'Collections'].includes(child.name)).map((subItem) => (
+                                          <Link
+                                            key={subItem.id}
+                                            href={subItem.href}
+                                            className="block text-sm text-gray-600 hover:text-[var(--ring)] hover:translate-x-1 transition-all duration-200 py-1"
+                                            onClick={closeAllDropdowns}
+                                          >
+                                            {subItem.name}
+                                          </Link>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Special Offer Badge */}
+                                    <div className="bg-gradient-to-r from-[var(--accent)] to-[color:rgb(186, 156, 109)] text-white p-4 rounded-lg text-center">
+                                      <p className="text-xs font-medium mb-1">New Customer?</p>
+                                      <p className="text-sm font-bold mb-2">Get 15% OFF</p>
+                                      <p className="text-xs opacity-90">on your first order</p>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {/* Bottom CTA */}
+                                <div className="mt-8 pt-6 border-t border-gray-100 flex items-center justify-between">
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-900">Discover Our Story</p>
+                                    <p className="text-xs text-gray-500">Curated luxury living experiences</p>
+                                  </div>
+                                  <Link
+                                    href="/about"
+                                    className="inline-flex items-center px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors"
+                                    onClick={closeAllDropdowns}
+                                  >
+                                    Learn More
+                                  </Link>
+                                </div>
+                              </div>
+                            ) : (
+                              // Regular dropdown for other items
+                              <div className="py-2">
+                                {item.children.map((subItem) => (
+                                  <div key={subItem.id}>
+                                    {subItem.children ? (
+                                      <div>
+                                        <div className="px-4 py-2 text-sm font-medium text-gray-900 bg-gray-50">
+                                          {subItem.name}
+                                        </div>
+                                        {subItem.children.map((subSubItem) => (
+                                          <Link
+                                            key={subSubItem.id}
+                                            href={subSubItem.href}
+                                            className="block px-6 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                            onClick={closeAllDropdowns}
+                                          >
+                                            {subSubItem.name}
+                                          </Link>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <Link
+                                        href={subItem.href}
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                        onClick={closeAllDropdowns}
+                                      >
+                                        {subItem.name}
+                                      </Link>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  ) : (
+                    <Link
+                      href={item.href}
                       className={`nav-link whitespace-nowrap ${pathname.startsWith(item.href) ? 'nav-link--active' : ''}`}
                     >
                       {item.name}
-                      <ChevronDownIcon className="ml-1 h-4 w-4 text-current" />
-                    </button>
-                    
-                    <AnimatePresence>
-                      {activeDropdown === item.id && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          transition={{ duration: 0.3, ease: cubicBezier(0.16, 1, 0.3, 1) }}
-                          className={`absolute left-0 mt-3 bg-white shadow-2xl border border-gray-100 z-50 ${
-                            item.name === 'Shop' 
-                              ? 'w-[95vw] max-w-4xl xl:max-w-6xl rounded-2xl' 
-                              : 'w-64 rounded-lg'
-                          }`}
-                        >
-                          {item.name === 'Shop' ? (
-                            // Mega Menu for Shop
-                            <div className="p-8">
-                              <div className="grid grid-cols-3 gap-8">
-                                {/* Left Column - Tableware */}
-                                <div>
-                                  <div className="mb-6">
-                                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                                      <span className="w-2 h-2 bg-[var(--accent)] rounded-full mr-3"></span>
-                                      Tableware
-                                    </h3>
-                                    <div className="space-y-3">
-                                      {item.children.find(child => child.name === 'Tableware')?.children?.map((subItem) => (
-                                        <Link
-                                          key={subItem.id}
-                                          href={subItem.href}
-                                          className="block text-sm text-gray-600 hover:text-[var(--ring)] hover:translate-x-1 transition-all duration-200 py-1"
-                                          onClick={closeAllDropdowns}
-                                        >
-                                          {subItem.name}
-                                        </Link>
-                                      ))}
-                                    </div>
-                                  </div>
-                                  
-                                  {/* Featured Image */}
-                                  <div className="relative h-32 bg-gradient-to-br from-[var(--muted)] to-white rounded-lg overflow-hidden group cursor-pointer">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-[color:rgba(138,106,63,0.15)] to-[color:rgba(255,255,255,0.2)] group-hover:from-[color:rgba(138,106,63,0.25)] group-hover:to-[color:rgba(255,255,255,0.25)] transition-all duration-300"></div>
-                                    <div className="absolute bottom-3 left-3 right-3">
-                                      <p className="text-xs font-medium text-gray-700 mb-1">Elevate Your Everyday</p>
-                                      <p className="text-xs text-gray-500">Premium Home Decor</p>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Middle Column - Collections */}
-                                <div>
-                                  <div className="mb-6">
-                                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                                      <span className="w-2 h-2 bg-amber-500 rounded-full mr-3"></span>
-                                      Collections
-                                    </h3>
-                                    <div className="space-y-3">
-                                      {item.children.find(child => child.name === 'Collections')?.children?.slice(0, 6).map((subItem) => (
-                                        <Link
-                                          key={subItem.id}
-                                          href={subItem.href}
-                                          className="block text-sm text-gray-600 hover:text-[var(--ring)] hover:translate-x-1 transition-all duration-200 py-1"
-                                          onClick={closeAllDropdowns}
-                                        >
-                                          {subItem.name}
-                                        </Link>
-                                      ))}
-                                    </div>
-                                  </div>
-                                  
-                                  {/* View All Collections Link */}
-                                  <Link
-                                    href="/collections"
-                                    className="inline-flex items-center text-sm font-medium text-[var(--ring)] hover:text-[var(--accent)] group"
-                                    onClick={closeAllDropdowns}
-                                  >
-                                    View All Collections
-                                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                  </Link>
-                                </div>
-
-                                {/* Right Column - Other Categories & Featured */}
-                                <div>
-                                  <div className="mb-6">
-                                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                                      <span className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></span>
-                                      More
-                                    </h3>
-                                    <div className="space-y-3">
-                                      {item.children.filter(child => !['Tableware', 'Collections'].includes(child.name)).map((subItem) => (
-                                        <Link
-                                          key={subItem.id}
-                                          href={subItem.href}
-                                          className="block text-sm text-gray-600 hover:text-[var(--ring)] hover:translate-x-1 transition-all duration-200 py-1"
-                                          onClick={closeAllDropdowns}
-                                        >
-                                          {subItem.name}
-                                        </Link>
-                                      ))}
-                                    </div>
-                                  </div>
-                                  
-                                  {/* Special Offer Badge */}
-                                  <div className="bg-gradient-to-r from-[var(--accent)] to-[color:rgb(186, 156, 109)] text-white p-4 rounded-lg text-center">
-                                    <p className="text-xs font-medium mb-1">New Customer?</p>
-                                    <p className="text-sm font-bold mb-2">Get 15% OFF</p>
-                                    <p className="text-xs opacity-90">on your first order</p>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              {/* Bottom CTA */}
-                              <div className="mt-8 pt-6 border-t border-gray-100 flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-gray-900">Discover Our Story</p>
-                                  <p className="text-xs text-gray-500">Curated luxury living experiences</p>
-                                </div>
-                                <Link
-                                  href="/about"
-                                  className="inline-flex items-center px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors"
-                                  onClick={closeAllDropdowns}
-                                >
-                                  Learn More
-                                </Link>
-                              </div>
-                            </div>
-                          ) : (
-                            // Regular dropdown for other items
-                            <div className="py-2">
-                              {item.children.map((subItem) => (
-                                <div key={subItem.id}>
-                                  {subItem.children ? (
-                                    <div>
-                                      <div className="px-4 py-2 text-sm font-medium text-gray-900 bg-gray-50">
-                                        {subItem.name}
-                                      </div>
-                                      {subItem.children.map((subSubItem) => (
-                                        <Link
-                                          key={subSubItem.id}
-                                          href={subSubItem.href}
-                                          className="block px-6 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                                          onClick={closeAllDropdowns}
-                                        >
-                                          {subSubItem.name}
-                                        </Link>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <Link
-                                      href={subItem.href}
-                                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                                      onClick={closeAllDropdowns}
-                                    >
-                                      {subItem.name}
-                                    </Link>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className={`nav-link whitespace-nowrap ${pathname.startsWith(item.href) ? 'nav-link--active' : ''}`}
-                  >
-                    {item.name}
-                  </Link>
-                )}
-              </div>
-            ))}
-          </nav>
-        </div>
-
-          {/* CENTER: Brand Logo */}
-          <div className="flex flex-shrink-0 justify-center">
-            <Link href="/" className="flex flex-col items-center justify-center pt-1" aria-label="ElanorraLiving Home">
-              <div className="text-xl sm:text-2xl font-serif tracking-[0.2em] text-gray-900 uppercase">
-                ElanorraLiving
-              </div>
-              <div className="text-[0.6rem] tracking-widest text-gray-500 uppercase mt-0.5 hidden sm:block">
-                Bespoke Gifting & Tableware
-              </div>
-            </Link>
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </nav>
           </div>
 
-          {/* RIGHT: Utilities */}
-          <div className="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
+          {/* RIGHT: Utilities & Search */}
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Search - Desktop */}
-            <div className="hidden sm:block">
-              <SearchBar className="w-80" />
+            <div className="hidden lg:block">
+              <SearchBar className="lg:w-64 xl:w-80" />
             </div>
             
             {/* Search - Mobile */}
