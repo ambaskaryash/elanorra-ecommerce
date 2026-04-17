@@ -121,13 +121,14 @@ export default async function RootLayout({
             pauseOnHover
           />
         </Providers>
-        {process.env.NEXT_PUBLIC_RYBBIT_HOST && (
+        {/* 
+          {process.env.NEXT_PUBLIC_RYBBIT_HOST && (
           <Script
             src={`${process.env.NEXT_PUBLIC_RYBBIT_HOST}/api/script.js`}
             data-site-id="af2ffdb21c7c"
             strategy="afterInteractive"
           />
-        )}
+        )} */}
       </body>
     </html>
   );
