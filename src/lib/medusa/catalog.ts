@@ -171,6 +171,7 @@ export async function listMedusaProducts(params: MedusaProductListParams = {}) {
       collection_id: params.collection_id,
       handle: params.handle,
       region_id: medusaConfig.regionId,
+      currency_code: 'inr',
       fields: '*variants.calculated_price,*images,*categories,*collection,*tags,*type',
     },
     next: {
@@ -194,6 +195,7 @@ export async function listMedusaCollections(limit: number = 100) {
     query: {
       limit,
       region_id: medusaConfig.regionId,
+      currency_code: 'inr',
       fields: '*products,*products.images,*products.variants.calculated_price',
     },
     next: {
