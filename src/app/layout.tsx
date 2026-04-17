@@ -123,7 +123,7 @@ export default async function RootLayout({
         </Providers>
         {process.env.NEXT_PUBLIC_RYBBIT_HOST && (
           <Script
-            src="/api/script.js"
+            src={`${process.env.NEXT_PUBLIC_RYBBIT_HOST}/api/script.js`}
             data-site-id="af2ffdb21c7c"
             strategy="afterInteractive"
           />
