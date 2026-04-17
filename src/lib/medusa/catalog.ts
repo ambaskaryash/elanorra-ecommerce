@@ -193,6 +193,7 @@ export async function listMedusaCollections(limit: number = 100) {
   const response = await medusaFetch<ListMedusaCollectionsResponse>('/store/collections', {
     query: {
       limit,
+      region_id: medusaConfig.regionId,
       fields: '*products,*products.images,*products.variants.calculated_price',
     },
     next: {

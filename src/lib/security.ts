@@ -28,7 +28,7 @@ export const getCSPHeader = (nonce?: string): string => {
     "font-src 'self' https://fonts.gstatic.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com",
     "img-src 'self' data: blob: https: http:",
     "media-src 'self' https:",
-    "connect-src 'self' https://api.elanorraliving.in https://api.razorpay.com https://lumberjack.razorpay.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com https://api.clerk.com https://*.api.clerk.com https://tracking.anifun.store",
+    "connect-src 'self' https://api.elanorraliving.in https://api.razorpay.com https://lumberjack.razorpay.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com https://api.clerk.com https://*.api.clerk.com https://clerk-telemetry.com https://tracking.anifun.store",
     "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com",
     "object-src 'none'",
     "base-uri 'self'",
