@@ -74,7 +74,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com",
-              "connect-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com https://api.clerk.com https://*.api.clerk.com https://tracking.anifun.store",
+              "connect-src 'self' https://api.elanorraliving.in https://api.razorpay.com https://checkout.razorpay.com https://lumberjack.razorpay.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com https://api.clerk.com https://*.api.clerk.com https://tracking.anifun.store",
               "frame-src 'self' https://checkout.razorpay.com https://js.stripe.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com",
               "worker-src 'self' blob:",
               "object-src 'none'",
