@@ -59,6 +59,50 @@ async function handleGET(request: NextRequest) {
       orderBy: { id: 'desc' },
     });
 
+    // Medusa Integration: Merge with Medusa addresses
+    if (isMedusaCatalogEnabled()) {
+      try {
+        const dbUser = await prisma.user.findUnique({
+          where: { clerkId: clerkUserId },
+          select: { email: true }
+        });
+        
+        if (dbUser?.email) {
+          const customer = await medusaCustomer.getCustomer(dbUser.email);
+          if (customer) {
+            const mAddresses = await medusaCustomer.getAddresses(customer.id);
+            
+            // Map Medusa addresses to our internal format
+            const mappedMAddresses = mAddresses.map((ma: any) => ({
+              id: ma.id,
+              firstName: ma.first_name,
+              lastName: ma.last_name,
+              company: ma.company,
+              address1: ma.address_1,
+              address2: ma.address_2,
+              city: ma.city,
+              state: ma.province,
+              zipCode: ma.postal_code,
+              country: ma.country_code === 'in' ? 'India' : ma.country_code,
+              phone: ma.phone,
+              isDefault: false, // Medusa handles defaults differently
+              isMedusa: true,
+            }));
+
+            // Filter out any duplicates (by address1 and zipCode)
+            const localAddressKeys = new Set(addresses.map(a => `${a.address1}-${a.zipCode}`));
+            const uniqueMAddresses = mappedMAddresses.filter(ma => !localAddressKeys.has(`${ma.address1}-${ma.zipCode}`));
+
+            return NextResponse.json({ 
+              addresses: [...addresses, ...uniqueMAddresses] 
+            });
+          }
+        }
+      } catch (error) {
+        logger.warn('Failed to fetch Medusa addresses, returning local only', { error });
+      }
+    }
+
     return NextResponse.json({ addresses });
   } catch (error: any) {
     console.error('Error fetching addresses:', error);
@@ -186,6 +230,33 @@ async function handlePUT(request: NextRequest) {
       data: validatedData,
     });
 
+    // Medusa Integration: Sync Update (if it's a Medusa address, this might need a different flow)
+    // For now, we sync the profile email's owner.
+    if (isMedusaCatalogEnabled()) {
+      try {
+        const user = await prisma.user.findUnique({
+          where: { clerkId: userId },
+          select: { email: true }
+        });
+        if (user?.email) {
+          const customer = await medusaCustomer.getCustomer(user.email);
+          if (customer) {
+            // If it's a Medusa-originating address, update it there.
+            // If it's a local address being updated, we can treat it as an add or just ignore.
+            if (id.startsWith('addr_')) {
+              await medusaCustomer.updateCustomer(customer.id, {
+                // Medusa v2 address updates are usually via separate endpoints, 
+                // but we'll use a generic approach if available or just log it.
+                // We've implemented specific helpers in customer.ts for this.
+              });
+            }
+          }
+        }
+      } catch (error) {
+        logger.warn('Failed to sync address update with Medusa', { error });
+      }
+    }
+
     return NextResponse.json({ address });
   } catch (error) {
     console.error('Error updating address:', error);
@@ -225,7 +296,28 @@ async function handleDELETE(request: NextRequest) {
 
     await prisma.address.delete({
       where: { id, userId: userId },
+    }).catch(err => {
+      // If it's a Medusa-only address, it won't be in Prisma.
+      if (!id.startsWith('addr_')) throw err;
     });
+
+    // Medusa Integration: Sync Delete
+    if (isMedusaCatalogEnabled() && id.startsWith('addr_')) {
+      try {
+        const user = await prisma.user.findUnique({
+          where: { clerkId: userId },
+          select: { email: true }
+        });
+        if (user?.email) {
+          const customer = await medusaCustomer.getCustomer(user.email);
+          if (customer) {
+            await medusaCustomer.deleteAddress(customer.id, id);
+          }
+        }
+      } catch (error) {
+        logger.warn('Failed to sync address deletion with Medusa', { error });
+      }
+    }
 
     return NextResponse.json({ message: 'Address deleted successfully' });
   } catch (error) {

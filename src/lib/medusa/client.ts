@@ -44,6 +44,13 @@ export async function medusaFetch<T>(
     requestHeaders.set('x-publishable-api-key', medusaConfig.publishableKey);
   }
 
+  // Support for server-side admin sync (e.g. updating customers, syncing addresses)
+  // This should only be used in server environments (checked via process.env availability)
+  const adminToken = process.env.MEDUSA_ADMIN_TOKEN;
+  if (adminToken && typeof window === 'undefined' && adminToken !== 'place_your_admin_api_token_here') {
+    requestHeaders.set('Authorization', `Bearer ${adminToken}`);
+  }
+
   // Medusa v2 pricing context via headers
   if (medusaConfig.regionId) {
     requestHeaders.set('x-region-id', medusaConfig.regionId);

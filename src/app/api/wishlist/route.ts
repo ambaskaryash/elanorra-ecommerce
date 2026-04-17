@@ -21,6 +21,38 @@ export async function GET(request: NextRequest) {
 
     const items = await prisma.wishlistItem.findMany({
       where: { userId: user.id },
+      select: { productId: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (items.length === 0) {
+      return NextResponse.json({ products: [] });
+    }
+
+    const productIds = items.map((it) => it.productId);
+
+    // Medusa Integration: Fetch live product data
+    if (isMedusaCatalogEnabled()) {
+      try {
+        const { getMedusaProductsByIds } = await import('@/lib/medusa/catalog');
+        const medusaProducts = await getMedusaProductsByIds(productIds);
+        
+        if (medusaProducts.length > 0) {
+          // Sort products to match the wishlist's "createdAt" order
+          const sortedProducts = productIds
+            .map(id => medusaProducts.find(p => p.id === id))
+            .filter(Boolean);
+            
+          return NextResponse.json({ products: sortedProducts });
+        }
+      } catch (error) {
+        console.warn('Failed to fetch live Medusa products for wishlist', { error });
+      }
+    }
+
+    // Fallback: Fetch from local database if Medusa fails or is disabled
+    const localItems = await prisma.wishlistItem.findMany({
+      where: { userId: user.id },
       include: {
         product: {
           include: {
@@ -34,7 +66,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    const products = items.map((it) => {
+    const products = localItems.map((it) => {
       const product = it.product as any;
       const ratings = product.reviews.map((r: any) => r.rating);
       const avgRating = ratings.length > 0

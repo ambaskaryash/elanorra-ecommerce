@@ -39,19 +39,16 @@ export async function createCustomer(data: {
   return response.customer;
 }
 
-export async function getCustomer(email?: string) {
-  // Medusa doesn't have a direct "get by email" store endpoint for customers without auth
-  // But we can list customers if we have admin privileges, or rely on the current session.
-  // In a real storefront, we'd use the JWT from Medusa auth.
-  // For now, we'll try to list and filter if possible, or assume we create/update.
-  const response = await medusaFetch<{ customers: MedusaCustomer[] }>('/store/customers', {
-    query: { email },
+export async function getCustomer(email: string) {
+  // Use Admin API to find customer by email
+  const response = await medusaFetch<{ customers: MedusaCustomer[] }>('/admin/customers', {
+    query: { q: email },
   });
-  return response.customers[0] || null;
+  return response.customers.find(c => c.email === email) || null;
 }
 
 export async function updateCustomer(customerId: string, data: Partial<MedusaCustomer>) {
-  const response = await medusaFetch<{ customer: MedusaCustomer }>(`/store/customers/me`, {
+  const response = await medusaFetch<{ customer: MedusaCustomer }>(`/admin/customers/${customerId}`, {
     method: 'POST',
     body: JSON.stringify(data),
   });
@@ -59,14 +56,25 @@ export async function updateCustomer(customerId: string, data: Partial<MedusaCus
 }
 
 export async function addAddress(customerId: string, address: MedusaAddress) {
-  const response = await medusaFetch<{ customer: MedusaCustomer }>(`/store/customers/me/addresses`, {
+  const response = await medusaFetch<{ customer: MedusaCustomer }>(`/admin/customers/${customerId}/addresses`, {
     method: 'POST',
     body: JSON.stringify({ address }),
   });
   return response.customer;
 }
 
-export async function getAddresses() {
-  const response = await medusaFetch<{ addresses: MedusaAddress[] }>('/store/customers/me/addresses');
-  return response.addresses;
+export async function getAddresses(customerId: string) {
+  const response = await medusaFetch<{ customer: MedusaCustomer }>(`/admin/customers/${customerId}`, {
+    query: {
+      fields: '*addresses',
+    },
+  });
+  return response.customer?.addresses || [];
+}
+
+export async function deleteAddress(customerId: string, addressId: string) {
+  const response = await medusaFetch<any>(`/admin/customers/${customerId}/addresses/${addressId}`, {
+    method: 'DELETE',
+  });
+  return response;
 }

@@ -127,6 +127,22 @@ export async function PUT(request: NextRequest) {
       },
     });
 
+    // Medusa Integration: Sync Customer Profile
+    if (isMedusaCatalogEnabled() && updated.email) {
+      try {
+        const customer = await medusaCustomer.getCustomer(updated.email);
+        if (customer) {
+          await medusaCustomer.updateCustomer(customer.id, {
+            first_name: updated.firstName || undefined,
+            last_name: updated.lastName || undefined,
+            phone: updated.phone || undefined,
+          });
+        }
+      } catch (error) {
+        logger.warn('Failed to sync updated profile with Medusa Customer', { error, email: updated.email });
+      }
+    }
+
     return NextResponse.json({ user: updated });
   } catch (error) {
     if (error instanceof z.ZodError) {

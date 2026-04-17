@@ -257,3 +257,19 @@ export async function getMedusaProductBySlug(slug: string) {
 
   return response.products[0] || null;
 }
+
+export async function getMedusaProductsByIds(ids: string[]) {
+  if (!ids.length) return [];
+
+  const response = await medusaFetch<ListMedusaProductsResponse>('/store/products', {
+    query: {
+      id: ids.join(','),
+      fields: '*variants.calculated_price,*images,*categories,*collection,*tags,*type',
+    },
+    next: {
+      revalidate: 60,
+    },
+  });
+
+  return response.products.map(mapMedusaProductToApiProduct);
+}

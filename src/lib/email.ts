@@ -201,21 +201,21 @@ interface InvoiceEmailData {
 
 // Helper function to replace template variables
 function replaceTemplateVariables(
-  content: string, 
+  content: string,
   variables: Record<string, string> = {}
 ): string {
   let processedContent = content;
-  
+
   // Replace all {{VARIABLE}} placeholders with actual values
   Object.entries(variables).forEach(([key, value]) => {
     const placeholder = `{{${key}}}`;
     const regex = new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
     processedContent = processedContent.replace(regex, value || '');
   });
-  
+
   // Remove any remaining unreplaced placeholders (optional - you might want to keep them)
   // processedContent = processedContent.replace(/\{\{[^}]+\}\}/g, '');
-  
+
   return processedContent;
 }
 
@@ -241,25 +241,25 @@ class EmailService {
   }
 
   async sendWeeklyNewsletter(data: WeeklyNewsletterData): Promise<boolean> {
-    const { 
-      email, 
-      firstName, 
-      lastName, 
-      unsubscribeUrl, 
-      weekNumber, 
-      featuredProducts = [], 
-      designTips = [], 
-      specialOffers = [], 
+    const {
+      email,
+      firstName,
+      lastName,
+      unsubscribeUrl,
+      weekNumber,
+      featuredProducts = [],
+      designTips = [],
+      specialOffers = [],
       blogPosts = [],
       newArrivals = []
     } = data;
-    
+
     const displayName = firstName ? (lastName ? `${firstName} ${lastName}` : firstName) : 'Valued Customer';
-    const currentDate = new Date().toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    const currentDate = new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
 
     const html = `
@@ -485,7 +485,7 @@ class EmailService {
           <!-- Footer -->
           <div style="background: #f8fafc; padding: 25px; text-align: center; border-top: 1px solid #e2e8f0;">
             <p style="color: #94a3b8; font-size: 12px; margin: 0 0 8px 0; font-weight: 500;">
-              © 2024 ElanorraLiving. All rights reserved.
+              © 2026 ElanorraLiving. All rights reserved.
             </p>
             <p style="color: #64748b; font-size: 11px; margin: 0; line-height: 1.4;">
               ElanorraLiving - Premium Home Furniture & Décor<br>
@@ -574,7 +574,7 @@ class EmailService {
       Unsubscribe: ${unsubscribeUrl}
       Update Preferences: ${process.env.NEXTAUTH_URL}/newsletter/preferences?email=${encodeURIComponent(email)}
       
-      © 2024 ElanorraLiving. All rights reserved.
+      © 2026 ElanorraLiving. All rights reserved.
       ElanorraLiving - Premium Home Furniture & Décor
       Transforming houses into luxury homes since 2024
       For support, visit: ${process.env.NEXTAUTH_URL}/contact
@@ -612,7 +612,7 @@ class EmailService {
 
     try {
       const mailOptions: any = {
-        from: `"Elanorra Living" <info@elanorraliving.in>`,
+        from: `"ElanorraLiving" <info@elanorraliving.in>`,
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -642,7 +642,7 @@ class EmailService {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Reset Your Password - Elanorra</title>
+        <title>Reset Your Password - ElanorraLiving</title>
       </head>
       <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); min-height: 100vh;">
         <div style="max-width: 600px; margin: 0 auto; background: #ffffff; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); border-radius: 16px; overflow: hidden;">
@@ -750,14 +750,14 @@ class EmailService {
       If you're having trouble with the link, copy and paste it into your web browser.
       
       Best regards,
-      The Elanorra Team
+      The ElanorraLiving Team
       
       This is an automated message, please do not reply to this email.
     `;
 
     return this.sendEmail({
       to: email,
-      subject: 'Reset Your Password - Elanorra',
+      subject: 'Reset Your Password - ElanorraLiving',
       html,
       text,
     });
@@ -772,7 +772,7 @@ class EmailService {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Welcome to Elanorra - Your Journey Begins</title>
+        <title>Welcome to ElanorraLiving - Your Journey Begins</title>
       </head>
       <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); min-height: 100vh;">
         <div style="max-width: 600px; margin: 0 auto; background: #ffffff; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); border-radius: 16px; overflow: hidden;">
@@ -782,7 +782,7 @@ class EmailService {
             <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; display: inline-block;">
               ${this.getLogoBlock(48)}
               <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); letter-spacing: -0.5px;">
-                Elanorra
+                ElanorraLiving
               </h1>
               <p style="color: rgba(255, 255, 255, 0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">
                 Welcome to Premium Living
@@ -794,7 +794,7 @@ class EmailService {
           <div style="padding: 50px 40px;">
             <div style="text-align: center; margin-bottom: 40px;">
               <h2 style="color: #1e293b; font-size: 32px; font-weight: 700; margin: 0 0 16px 0; line-height: 1.2;">
-                Welcome to Elanorra! 🎉
+                Welcome to ElanorraLiving! 🎉
               </h2>
               <div style="width: 60px; height: 4px; background: linear-gradient(90deg, #059669, #10b981); margin: 0 auto; border-radius: 2px;"></div>
             </div>
@@ -915,7 +915,7 @@ class EmailService {
     `;
 
     const text = `
-      Welcome to Elanorra!
+      Welcome to ElanorraLiving!
       
       Hello ${firstName || 'there'},
       
@@ -953,9 +953,9 @@ class EmailService {
 
   async sendOrderConfirmationEmail(orderData: OrderConfirmationEmailData): Promise<boolean> {
     try {
-      const customerName = orderData.customerName || 
+      const customerName = orderData.customerName ||
         `${orderData.shippingAddress.firstName} ${orderData.shippingAddress.lastName}`;
-      
+
       const orderDate = new Date(orderData.createdAt).toLocaleDateString('en-IN', {
         year: 'numeric',
         month: 'long',
@@ -985,10 +985,10 @@ class EmailService {
       const itemsHtml = orderData.items.map(item => {
         const variantsText = item.variants && Object.keys(item.variants).length > 0
           ? `<br><small style="color: #666;">${Object.entries(item.variants)
-              .map(([key, value]) => `${key}: ${value}`)
-              .join(', ')}</small>`
+            .map(([key, value]) => `${key}: ${value}`)
+            .join(', ')}</small>`
           : '';
-        
+
         return `
           <tr>
             <td style="padding: 15px; border-bottom: 1px solid #eee;">
@@ -1016,131 +1016,128 @@ class EmailService {
         <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Order Confirmation - ${orderData.orderNumber}</title>
+          <title>Order Confirmed - ${orderData.orderNumber}</title>
         </head>
-        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-            <!-- Header -->
-            <div style="background: linear-gradient(135deg, #e11d48 0%, #be185d 100%); padding: 40px 30px; text-align: center;">
-              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">
-                Order Confirmed!
+        <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
+          <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0;">
+            <!-- Header Banner -->
+            <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 60px 40px; text-align: center;">
+              <div style="margin-bottom: 24px;">
+                ${this.getLogoBlock(48)}
+              </div>
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em;">
+                Thank you for your order.
               </h1>
-              <p style="color: #fecaca; margin: 10px 0 0 0; font-size: 16px;">
-                Thank you for your purchase, ${customerName}
+              <p style="color: #94a3b8; margin: 12px 0 0 0; font-size: 16px; font-weight: 500;">
+                We've received your order and are preparing it for delivery.
               </p>
             </div>
 
-            <!-- Order Details -->
-            <div style="padding: 30px;">
-              <div style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-                <h2 style="margin: 0 0 15px 0; color: #1e293b; font-size: 20px;">Order Details</h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <!-- Main Body -->
+            <div style="padding: 40px;">
+              <!-- Quick Info Card -->
+              <div style="background-color: #f8fafc; border-radius: 12px; padding: 24px; margin-bottom: 40px; border: 1px solid #f1f5f9;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
                   <div>
-                    <strong style="color: #475569;">Order Number:</strong><br>
-                    <span style="color: #e11d48; font-weight: 600;">${orderData.orderNumber}</span>
+                    <p style="color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 8px 0;">Order Number</p>
+                    <p style="color: #e11d48; font-size: 16px; font-weight: 700; margin: 0;">${orderData.orderNumber}</p>
                   </div>
                   <div>
-                    <strong style="color: #475569;">Order Date:</strong><br>
-                    ${orderDate}
-                  </div>
-                  <div>
-                    <strong style="color: #475569;">Payment Method:</strong><br>
-                    ${orderData.paymentMethod || 'Online Payment'}
-                  </div>
-                  <div>
-                    <strong style="color: #475569;">Total Amount:</strong><br>
-                    <span style="color: #059669; font-weight: 600; font-size: 18px;">${formatCurrency(orderData.totalPrice)}</span>
+                    <p style="color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 8px 0;">Order Date</p>
+                    <p style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0;">${orderDate}</p>
                   </div>
                 </div>
               </div>
 
-              <!-- Items -->
-              <h3 style="color: #1e293b; margin-bottom: 20px;">Items Ordered</h3>
-              <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
-                <thead>
-                  <tr style="background-color: #f8fafc;">
-                    <th style="padding: 15px; text-align: left; color: #475569; font-weight: 600;">Product</th>
-                    <th style="padding: 15px; text-align: center; color: #475569; font-weight: 600;">Quantity</th>
-                    <th style="padding: 15px; text-align: right; color: #475569; font-weight: 600;">Price</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${itemsHtml}
-                </tbody>
-              </table>
-
-              <!-- Order Summary -->
-              <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-                <h3 style="margin: 0 0 15px 0; color: #1e293b;">Order Summary</h3>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                  <span>Subtotal:</span>
-                  <span>${formatCurrency(orderData.subtotal)}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                  <span>Shipping:</span>
-                  <span>${formatCurrency(orderData.shipping)}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                  <span>Taxes:</span>
-                  <span>${formatCurrency(orderData.taxes)}</span>
-                </div>
-                ${orderData.discount && orderData.discount > 0 ? `
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #059669;">
-                  <span>Discount:</span>
-                  <span>-${formatCurrency(orderData.discount)}</span>
-                </div>
-                ` : ''}
-                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 15px 0;">
-                <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 18px; color: #1e293b;">
-                  <span>Total:</span>
-                  <span style="color: #059669;">${formatCurrency(orderData.totalPrice)}</span>
-                </div>
+              <!-- Item List -->
+              <h3 style="color: #0f172a; font-size: 18px; font-weight: 700; margin: 0 0 20px 0;">Order Itemization</h3>
+              <div style="border: 1px solid #f1f5f9; border-radius: 12px; overflow: hidden; margin-bottom: 40px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tbody>
+                    ${itemsHtml}
+                  </tbody>
+                </table>
               </div>
 
-              <!-- Shipping Address -->
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
-                <div>
-                  <h3 style="color: #1e293b; margin-bottom: 15px;">Shipping Address</h3>
-                  <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; line-height: 1.6;">
+              <!-- Totals & Addresses Grid -->
+              <div style="display: flex; flex-wrap: wrap; gap: 40px; margin-bottom: 40px;">
+                <!-- Summary -->
+                <div style="flex: 1; min-width: 240px;">
+                  <h3 style="color: #0f172a; font-size: 16px; font-weight: 700; margin: 0 0 16px 0;">Payment Summary</h3>
+                  <div style="color: #475569; font-size: 14px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                      <span>Subtotal</span>
+                      <span>${formatCurrency(orderData.subtotal)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                      <span>Shipping</span>
+                      <span>${formatCurrency(orderData.shipping)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                      <span>Estimated Tax</span>
+                      <span>${formatCurrency(orderData.taxes)}</span>
+                    </div>
+                    ${orderData.discount && orderData.discount > 0 ? `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #059669;">
+                      <span>Discount Applied</span>
+                      <span>-${formatCurrency(orderData.discount)}</span>
+                    </div>
+                    ` : ''}
+                    <div style="padding-top: 12px; margin-top: 12px; border-top: 2px solid #f1f5f9; display: flex; justify-content: space-between; color: #0f172a; font-weight: 700; font-size: 18px;">
+                      <span>Order Total</span>
+                      <span style="color: #e11d48;">${formatCurrency(orderData.totalPrice)}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Shipping Address -->
+                <div style="flex: 1; min-width: 240px;">
+                  <h3 style="color: #0f172a; font-size: 16px; font-weight: 700; margin: 0 0 16px 0;">Shipping Designation</h3>
+                  <div style="background-color: #f8fafc; border-radius: 12px; padding: 20px; color: #475569; font-size: 14px; line-height: 1.6; border: 1px solid #f1f5f9;">
                     ${formatAddress(orderData.shippingAddress)}
                   </div>
                 </div>
-                <div>
-                  <h3 style="color: #1e293b; margin-bottom: 15px;">Billing Address</h3>
-                  <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; line-height: 1.6;">
-                    ${formatAddress(orderData.billingAddress || orderData.shippingAddress)}
-                  </div>
-                </div>
               </div>
 
-              <!-- Track Order Button -->
-              <div style="text-align: center; margin-bottom: 30px;">
-                <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/order-confirmation/${orderData.orderId}" 
-                   style="display: inline-block; background: linear-gradient(135deg, #e11d48 0%, #be185d 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                  Track Your Order
+              <!-- Roadmap / Arriving Next -->
+              <div style="background-color: #fff1f2; border: 1px solid #ffe4e6; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 40px;">
+                <h3 style="color: #e11d48; font-size: 16px; font-weight: 700; margin: 0 0 12px 0;">What's next?</h3>
+                <p style="color: #9f1239; font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">
+                  You'll receive a detailed shipping confirmation with tracking information as soon as your premium items are dispatched.
+                </p>
+                <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/account/orders" 
+                   style="display: inline-block; background-color: #e11d48; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                  Manage Your Order
                 </a>
-              </div>
-
-              <!-- What's Next -->
-              <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
-                <h3 style="color: #1e40af; margin: 0 0 10px 0;">What's Next?</h3>
-                <ul style="color: #1e40af; margin: 0; padding-left: 20px;">
-                  <li>We'll send you a shipping confirmation email with tracking details once your order ships</li>
-                  <li>You can track your order status anytime using the link above</li>
-                  <li>Expected delivery: 3-7 business days</li>
-                </ul>
               </div>
             </div>
 
             <!-- Footer -->
-            <div style="background-color: #1f2937; padding: 30px; text-align: center;">
-              <h3 style="color: #ffffff; margin: 0 0 15px 0;">Elanorra</h3>
-              <p style="color: #9ca3af; margin: 0 0 15px 0; font-size: 14px;">
-                Premium Home Decor & Lifestyle Products
+            <div style="background-color: #f8fafc; padding: 40px; text-align: center; border-top: 1px solid #f1f5f9;">
+              <p style="color: #64748b; font-size: 14px; margin: 0 0 16px 0;">
+                Experience the fine art of living.
               </p>
-              <p style="color: #6b7280; margin: 0; font-size: 12px;">
-                If you have any questions, please contact us at 
-                <a href="mailto:support@elanorra.com" style="color: #e11d48;">support@elanorra.com</a>
+              <div style="color: #94a3b8; font-size: 12px;">
+                If you have any questions, our concierge team is always here to help.<br>
+                <a href="mailto:info@elanorraliving.in" style="color: #e11d48; text-decoration: none;">info@elanorraliving.in</a>
+              </div>
+              <p style="color: #cbd5e1; font-size: 11px; margin-top: 24px;">
+                © 2026 ElanorraLiving. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+            <!-- Footer -->
+            <div style="background-color: #1f2937; padding: 40px; text-align: center;">
+              <h3 style="color: #ffffff; margin: 0 0 16px 0; font-size: 18px;">ElanorraLiving</h3>
+              <p style="color: #94a3b8; margin: 0 0 16px 0; font-size: 14px;">
+                Premium Home Decor & Luxury Lifestyle
+              </p>
+              <p style="color: #64748b; margin: 0; font-size: 12px;">
+                Questions? Visit our <a href="${process.env.NEXTAUTH_URL}/contact" style="color: #e11d48; text-decoration: none;">contact page</a> or email <a href="mailto:info@elanorraliving.in" style="color: #e11d48; text-decoration: none;">info@elanorraliving.in</a>
               </p>
             </div>
           </div>
@@ -1149,39 +1146,39 @@ class EmailService {
       `;
 
       const textContent = `
-Order Confirmation - ${orderData.orderNumber}
+Order Confirmation - ${ orderData.orderNumber }
 
-Dear ${customerName},
+Dear ${ customerName },
 
 Thank you for your order! We're excited to confirm that we've received your order and it's being processed.
 
 Order Details:
-- Order Number: ${orderData.orderNumber}
-- Order Date: ${orderDate}
-- Total Amount: ${formatCurrency(orderData.totalPrice)}
+      - Order Number: ${ orderData.orderNumber }
+      - Order Date: ${ orderDate }
+      - Total Amount: ${ formatCurrency(orderData.totalPrice) }
 
 Items Ordered:
-${orderData.items.map(item => `- ${item.name} (Qty: ${item.quantity}) - ${formatCurrency(item.price)}`).join('\n')}
+${ orderData.items.map(item => `- ${item.name} (Qty: ${item.quantity}) - ${formatCurrency(item.price)}`).join('\n') }
 
 Shipping Address:
-${orderData.shippingAddress.firstName} ${orderData.shippingAddress.lastName}
-${orderData.shippingAddress.address1}
-${orderData.shippingAddress.address2 ? orderData.shippingAddress.address2 + '\n' : ''}${orderData.shippingAddress.city}, ${orderData.shippingAddress.state} ${orderData.shippingAddress.zipCode}
-${orderData.shippingAddress.country}
+${ orderData.shippingAddress.firstName } ${ orderData.shippingAddress.lastName }
+${ orderData.shippingAddress.address1 }
+${ orderData.shippingAddress.address2 ? orderData.shippingAddress.address2 + '\n' : '' }${ orderData.shippingAddress.city }, ${ orderData.shippingAddress.state } ${ orderData.shippingAddress.zipCode }
+${ orderData.shippingAddress.country }
 
-Track your order: ${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/order-confirmation/${orderData.orderId}
+Track your order: ${ process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000' } /order-confirmation/${ orderData.orderId }
 
 We'll send you a shipping confirmation email with tracking details once your order ships.
 
-Thank you for choosing Elanorra!
+Thank you for choosing ElanorraLiving!
 
 Best regards,
-The Elanorra Team
+          The ElanorraLiving Team
       `;
 
       return await this.sendEmail({
         to: orderData.email,
-        subject: `Order Confirmation - ${orderData.orderNumber}`,
+        subject: `Order Confirmation - ${ orderData.orderNumber } `,
         html: htmlContent,
         text: textContent
       });
@@ -1194,7 +1191,7 @@ The Elanorra Team
   async sendShippingNotificationEmail(orderData: ShippingNotificationEmailData): Promise<boolean> {
     try {
       const customerName = orderData.customerName || 
-        `${orderData.shippingAddress.firstName} ${orderData.shippingAddress.lastName}`;
+        `${ orderData.shippingAddress.firstName } ${ orderData.shippingAddress.lastName } `;
 
       const formatAddress = (address: any) => {
         const parts = [
@@ -1202,7 +1199,7 @@ The Elanorra Team
           address.company,
           address.address1,
           address.address2,
-          `${address.city}, ${address.state} ${address.zipCode}`,
+          `${ address.city }, ${ address.state } ${ address.zipCode } `,
           address.country,
           address.phone
         ].filter(Boolean);
@@ -1210,125 +1207,132 @@ The Elanorra Team
       };
 
       const itemsHtml = orderData.items.map(item => `
-        <tr>
-          <td style="padding: 15px; border-bottom: 1px solid #eee;">
-            <div style="display: flex; align-items: center;">
-              ${item.image ? `<img src="${item.image}" alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 15px; border-radius: 6px;">` : ''}
-              <div>
-                <strong>${item.name}</strong>
-              </div>
-            </div>
+        < tr >
+        <td style="padding: 15px; border-bottom: 1px solid #eee;" >
+          <div style="display: flex; align-items: center;" >
+            ${ item.image ? `<img src="${item.image}" alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 15px; border-radius: 6px;">` : '' }
+      <div>
+        <strong>${ item.name } </strong>
+          </div>
+          </div>
           </td>
-          <td style="padding: 15px; border-bottom: 1px solid #eee; text-align: center;">
-            ${item.quantity}
-          </td>
+          < td style = "padding: 15px; border-bottom: 1px solid #eee; text-align: center;" >
+            ${ item.quantity }
+      </td>
         </tr>
-      `).join('');
+          `).join('');
 
       const htmlContent = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Your Order Has Shipped - ${orderData.orderNumber}</title>
-        </head>
-        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-            <!-- Header -->
-            <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 40px 30px; text-align: center;">
-              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">
+        < !DOCTYPE html >
+          <html lang="en" >
+            <head>
+            <meta charset="UTF-8" >
+              <meta name="viewport" content = "width=device-width, initial-scale=1.0" >
+                <title>Your Order Has Shipped - ${ orderData.orderNumber } </title>
+                  </head>
+                  < body style = "margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa;" >
+                    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;" >
+                      <!--Header -->
+                        <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 40px 30px; text-align: center;" >
+                          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;" >
                 📦 Your Order Has Shipped!
-              </h1>
-              <p style="color: #a7f3d0; margin: 10px 0 0 0; font-size: 16px;">
-                Great news, ${customerName}! Your order is on its way.
+        </h1>
+        < p style = "color: #a7f3d0; margin: 10px 0 0 0; font-size: 16px;" >
+          Great news, ${ customerName } !Your order is on its way.
               </p>
             </div>
 
-            <!-- Shipping Details -->
-            <div style="padding: 30px;">
-              <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #059669;">
-                <h2 style="margin: 0 0 15px 0; color: #1e293b; font-size: 20px;">Shipping Information</h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                  <div>
-                    <strong style="color: #475569;">Order Number:</strong><br>
-                    <span style="color: #e11d48; font-weight: 600;">${orderData.orderNumber}</span>
-                  </div>
-                  ${orderData.trackingNumber ? `
+            < !--Shipping Details-- >
+              <div style="padding: 30px;" >
+                <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #059669;" >
+                  <h2 style="margin: 0 0 15px 0; color: #1e293b; font-size: 20px;" > Shipping Information </h2>
+                    < div style = "display: grid; grid-template-columns: 1fr 1fr; gap: 15px;" >
+                      <div>
+                      <strong style="color: #475569;" > Order Number: </strong><br>
+                        < span style = "color: #e11d48; font-weight: 600;" > ${ orderData.orderNumber } </span>
+                          </div>
+                  ${
+        orderData.trackingNumber ? `
                   <div>
                     <strong style="color: #475569;">Tracking Number:</strong><br>
                     <span style="color: #059669; font-weight: 600;">${orderData.trackingNumber}</span>
                   </div>
-                  ` : ''}
-                  ${orderData.carrier ? `
+                  ` : ''
+      }
+                  ${
+        orderData.carrier ? `
                   <div>
                     <strong style="color: #475569;">Carrier:</strong><br>
                     ${orderData.carrier}
                   </div>
-                  ` : ''}
-                  ${orderData.estimatedDelivery ? `
+                  ` : ''
+      }
+                  ${
+        orderData.estimatedDelivery ? `
                   <div>
                     <strong style="color: #475569;">Estimated Delivery:</strong><br>
                     <span style="color: #059669; font-weight: 600;">${orderData.estimatedDelivery}</span>
                   </div>
-                  ` : ''}
-                </div>
-              </div>
+                  ` : ''
+      }
+      </div>
+        </div>
 
-              <!-- Items Shipped -->
-              <h3 style="color: #1e293b; margin-bottom: 20px;">Items Shipped</h3>
-              <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
-                <thead>
-                  <tr style="background-color: #f8fafc;">
-                    <th style="padding: 15px; text-align: left; color: #475569; font-weight: 600;">Product</th>
-                    <th style="padding: 15px; text-align: center; color: #475569; font-weight: 600;">Quantity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${itemsHtml}
-                </tbody>
-              </table>
+        < !--Items Shipped-- >
+          <h3 style="color: #1e293b; margin-bottom: 20px;" > Items Shipped </h3>
+            < table style = "width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;" >
+              <thead>
+              <tr style="background-color: #f8fafc;" >
+                <th style="padding: 15px; text-align: left; color: #475569; font-weight: 600;" > Product </th>
+                  < th style = "padding: 15px; text-align: center; color: #475569; font-weight: 600;" > Quantity </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                  ${ itemsHtml }
+      </tbody>
+        </table>
 
-              <!-- Shipping Address -->
-              <div style="margin-bottom: 30px;">
-                <h3 style="color: #1e293b; margin-bottom: 15px;">Shipping To</h3>
-                <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; line-height: 1.6;">
-                  ${formatAddress(orderData.shippingAddress)}
-                </div>
-              </div>
+        < !--Shipping Address-- >
+          <div style="margin-bottom: 30px;" >
+            <h3 style="color: #1e293b; margin-bottom: 15px;" > Shipping To </h3>
+              < div style = "background-color: #f8fafc; padding: 20px; border-radius: 8px; line-height: 1.6;" >
+                ${ formatAddress(orderData.shippingAddress) }
+      </div>
+        </div>
 
-              <!-- Track Package Button -->
-              ${orderData.trackingNumber ? `
+        < !--Track Package Button-- >
+          ${
+        orderData.trackingNumber ? `
               <div style="text-align: center; margin-bottom: 30px;">
                 <a href="${this.getTrackingUrl(orderData.carrier, orderData.trackingNumber)}" 
                    style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px;">
                   Track Your Package
                 </a>
               </div>
-              ` : ''}
+              ` : ''
+      }
 
-              <!-- Delivery Information -->
-              <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
-                <h3 style="color: #1e40af; margin: 0 0 10px 0;">Delivery Information</h3>
-                <ul style="color: #1e40af; margin: 0; padding-left: 20px;">
-                  <li>Your package is on its way and will be delivered to the address above</li>
-                  ${orderData.estimatedDelivery ? `<li>Expected delivery: ${orderData.estimatedDelivery}</li>` : '<li>Expected delivery: 3-7 business days</li>'}
-                  ${orderData.trackingNumber ? '<li>You can track your package using the tracking number above</li>' : ''}
-                  <li>Someone should be available to receive the package</li>
-                  <li>If you're not available, the carrier may leave a delivery notice</li>
-                </ul>
-              </div>
-            </div>
+      <!--Delivery Information-- >
+        <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;" >
+          <h3 style="color: #1e40af; margin: 0 0 10px 0;" > Delivery Information </h3>
+            < ul style = "color: #1e40af; margin: 0; padding-left: 20px;" >
+              <li>Your package is on its way and will be delivered to the address above </li>
+                  ${ orderData.estimatedDelivery ? `<li>Expected delivery: ${orderData.estimatedDelivery}</li>` : '<li>Expected delivery: 3-7 business days</li>' }
+                  ${ orderData.trackingNumber ? '<li>You can track your package using the tracking number above</li>' : '' }
+      <li>Someone should be available to receive the package </li>
+        < li > If you're not available, the carrier may leave a delivery notice</li>
+          </ul>
+          </div>
+          </div>
 
             <!-- Footer -->
-            <div style="background-color: #1f2937; padding: 30px; text-align: center;">
-              <h3 style="color: #ffffff; margin: 0 0 15px 0;">Elanorra</h3>
-              <p style="color: #9ca3af; margin: 0 0 15px 0; font-size: 14px;">
-                Premium Home Decor & Lifestyle Products
+            <div style="background-color: #1f2937; padding: 40px; text-align: center;">
+              <h3 style="color: #ffffff; margin: 0 0 16px 0; font-size: 18px;">ElanorraLiving</h3>
+              <p style="color: #94a3b8; margin: 0 0 16px 0; font-size: 14px;">
+                Premium Home Decor & Luxury Lifestyle
               </p>
-              <p style="color: #6b7280; margin: 0; font-size: 12px;">
-                If you have any questions about your shipment, please contact us at 
-                <a href="mailto:support@elanorra.com" style="color: #e11d48;">support@elanorra.com</a>
+              <p style="color: #64748b; margin: 0; font-size: 12px;">
+                Questions about your shipment? <a href="mailto:info@elanorraliving.in" style="color: #e11d48; text-decoration: none;">info@elanorraliving.in</a>
               </p>
             </div>
           </div>
@@ -1337,38 +1341,38 @@ The Elanorra Team
       `;
 
       const textContent = `
-Your Order Has Shipped - ${orderData.orderNumber}
+Your Order Has Shipped - ${ orderData.orderNumber }
 
-Dear ${customerName},
+Dear ${ customerName },
 
 Great news! Your order has been shipped and is on its way to you.
 
 Shipping Information:
-- Order Number: ${orderData.orderNumber}
-${orderData.trackingNumber ? `- Tracking Number: ${orderData.trackingNumber}` : ''}
-${orderData.carrier ? `- Carrier: ${orderData.carrier}` : ''}
-${orderData.estimatedDelivery ? `- Estimated Delivery: ${orderData.estimatedDelivery}` : '- Expected delivery: 3-7 business days'}
+      - Order Number: ${ orderData.orderNumber }
+${ orderData.trackingNumber ? `- Tracking Number: ${orderData.trackingNumber}` : '' }
+${ orderData.carrier ? `- Carrier: ${orderData.carrier}` : '' }
+${ orderData.estimatedDelivery ? `- Estimated Delivery: ${orderData.estimatedDelivery}` : '- Expected delivery: 3-7 business days' }
 
 Items Shipped:
-${orderData.items.map(item => `- ${item.name} (Qty: ${item.quantity})`).join('\n')}
+${ orderData.items.map(item => `- ${item.name} (Qty: ${item.quantity})`).join('\n') }
 
 Shipping Address:
-${orderData.shippingAddress.firstName} ${orderData.shippingAddress.lastName}
-${orderData.shippingAddress.address1}
-${orderData.shippingAddress.address2 ? orderData.shippingAddress.address2 + '\n' : ''}${orderData.shippingAddress.city}, ${orderData.shippingAddress.state} ${orderData.shippingAddress.zipCode}
-${orderData.shippingAddress.country}
+${ orderData.shippingAddress.firstName } ${ orderData.shippingAddress.lastName }
+${ orderData.shippingAddress.address1 }
+${ orderData.shippingAddress.address2 ? orderData.shippingAddress.address2 + '\n' : '' }${ orderData.shippingAddress.city }, ${ orderData.shippingAddress.state } ${ orderData.shippingAddress.zipCode }
+${ orderData.shippingAddress.country }
 
-${orderData.trackingNumber ? `Track your package: ${this.getTrackingUrl(orderData.carrier, orderData.trackingNumber)}` : ''}
+${ orderData.trackingNumber ? `Track your package: ${this.getTrackingUrl(orderData.carrier, orderData.trackingNumber)}` : '' }
 
 Thank you for choosing Elanorra!
 
 Best regards,
-The Elanorra Team
+          The ElanorraLiving Team
       `;
 
       return await this.sendEmail({
         to: orderData.email,
-        subject: `Your Order Has Shipped - ${orderData.orderNumber}`,
+        subject: `Your Order Has Shipped - ${ orderData.orderNumber } `,
         html: htmlContent,
         text: textContent
       });
@@ -1388,24 +1392,24 @@ The Elanorra Team
       case 'fedex':
         return `https://www.fedex.com/fedextrack/?trknbr=${trackingNumber}`;
       case 'ups':
-        return `https://www.ups.com/track?tracknum=${trackingNumber}`;
+      return `https://www.ups.com/track?tracknum=${trackingNumber}`;
       case 'dhl':
-        return `https://www.dhl.com/en/express/tracking.html?AWB=${trackingNumber}`;
+      return `https://www.dhl.com/en/express/tracking.html?AWB=${trackingNumber}`;
       case 'bluedart':
-        return `https://www.bluedart.com/web/guest/trackdartresult?trackFor=0&trackNo=${trackingNumber}`;
+      return `https://www.bluedart.com/web/guest/trackdartresult?trackFor=0&trackNo=${trackingNumber}`;
       case 'dtdc':
-        return `https://www.dtdc.in/tracking/tracking_results.asp?Ttype=awb_no&strTrkNo=${trackingNumber}`;
+      return `https://www.dtdc.in/tracking/tracking_results.asp?Ttype=awb_no&strTrkNo=${trackingNumber}`;
       default:
-        // Return a generic orders page when carrier-specific is unavailable
-        return `${baseUrl}/account/orders`;
+    // Return a generic orders page when carrier-specific is unavailable
+    return `${baseUrl}/account/orders`;
     }
   }
 
-  async sendNewsletterWelcomeEmail(data: NewsletterWelcomeData): Promise<boolean> {
-    const { email, firstName, lastName, unsubscribeUrl } = data;
-    const displayName = firstName ? (lastName ? `${firstName} ${lastName}` : firstName) : '';
+  async sendNewsletterWelcomeEmail(data: NewsletterWelcomeData): Promise < boolean > {
+  const { email, firstName, lastName, unsubscribeUrl } = data;
+  const displayName = firstName ? (lastName ? `${firstName} ${lastName}` : firstName) : '';
 
-    const html = `
+  const html = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -1582,7 +1586,7 @@ The Elanorra Team
           <!-- Footer -->
           <div style="background: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
             <p style="color: #94a3b8; font-size: 12px; margin: 0 0 10px 0; font-weight: 500;">
-              © 2024 ElanorraLiving. All rights reserved.
+              © 2026 ElanorraLiving. All rights reserved.
             </p>
             <p style="color: #64748b; font-size: 11px; margin: 0; line-height: 1.4;">
               ElanorraLiving - Premium Home Furniture & Décor<br>
@@ -1595,7 +1599,7 @@ The Elanorra Team
       </html>
     `;
 
-    const text = `
+  const text = `
       Welcome to ElanorraLiving Community!
       
       ${displayName ? `Hello ${displayName}! ` : ''}Your journey to luxury living begins now!
@@ -1639,60 +1643,60 @@ The Elanorra Team
       Unsubscribe: ${unsubscribeUrl}
       Update Preferences: ${process.env.NEXTAUTH_URL}/newsletter/preferences?email=${encodeURIComponent(email)}
       
-      © 2024 ElanorraLiving. All rights reserved.
+      © 2026 ElanorraLiving. All rights reserved.
       ElanorraLiving - Premium Home Furniture & Décor
       Transforming houses into luxury homes since 2024
       For support, visit: ${process.env.NEXTAUTH_URL}/contact
     `;
 
-    return this.sendEmail({
-      to: email,
-      subject: '🏡 Welcome to ElanorraLiving Community - Your 15% OFF Welcome Gift Inside!',
-      html,
-      text,
-    });
-  }
+  return this.sendEmail({
+    to: email,
+    subject: '🏡 Welcome to ElanorraLiving Community - Your 15% OFF Welcome Gift Inside!',
+    html,
+    text,
+  });
+}
 
   async sendNewsletterCampaign(
-    recipients: string[],
-    data: NewsletterCampaignData,
-    newsletterId?: string
-  ): Promise<{ sent: number; failed: number }> {
-    const { subject, htmlContent, textContent, unsubscribeUrl, variables = {} } = data;
-    let sent = 0;
-    let failed = 0;
+  recipients: string[],
+  data: NewsletterCampaignData,
+  newsletterId ?: string
+): Promise < { sent: number; failed: number } > {
+  const { subject, htmlContent, textContent, unsubscribeUrl, variables = {} } = data;
+  let sent = 0;
+  let failed = 0;
 
-    // Process template variables in subject and content
-    const processedSubject = replaceTemplateVariables(subject, variables);
-    const processedHtmlContent = replaceTemplateVariables(htmlContent, variables);
-    const processedTextContent = textContent ? replaceTemplateVariables(textContent, variables) : undefined;
+  // Process template variables in subject and content
+  const processedSubject = replaceTemplateVariables(subject, variables);
+  const processedHtmlContent = replaceTemplateVariables(htmlContent, variables);
+  const processedTextContent = textContent ? replaceTemplateVariables(textContent, variables) : undefined;
 
-    // Send emails in batches to avoid overwhelming the SMTP server
-    const batchSize = 10;
-    for (let i = 0; i < recipients.length; i += batchSize) {
-      const batch = recipients.slice(i, i + batchSize);
-      
-      const promises = batch.map(async (email) => {
-        try {
-          // Add tracking pixel and click tracking to HTML content
-          let htmlWithTracking = processedHtmlContent;
-          let textWithUnsubscribe = processedTextContent;
+  // Send emails in batches to avoid overwhelming the SMTP server
+  const batchSize = 10;
+  for(let i = 0; i <recipients.length; i += batchSize) {
+  const batch = recipients.slice(i, i + batchSize);
 
-          // Add tracking pixel for opens (only if newsletterId is provided)
-          if (newsletterId) {
-            const trackingPixel = `<img src="${process.env.NEXTAUTH_URL}/api/newsletter/analytics?newsletter=${newsletterId}&subscriber=${encodeURIComponent(email)}" width="1" height="1" style="display:none;" alt="" />`;
-            htmlWithTracking = htmlWithTracking.replace('</body>', `${trackingPixel}</body>`);
-            
-            // If no </body> tag, append at the end
-            if (!htmlWithTracking.includes('</body>')) {
-              htmlWithTracking += trackingPixel;
-            }
-          }
+  const promises = batch.map(async (email) => {
+    try {
+      // Add tracking pixel and click tracking to HTML content
+      let htmlWithTracking = processedHtmlContent;
+      let textWithUnsubscribe = processedTextContent;
 
-          // Add unsubscribe link to HTML content if not already present
-          const htmlWithUnsubscribe = htmlWithTracking.includes('{{UNSUBSCRIBE_URL}}') 
-            ? htmlWithTracking.replace(/{{UNSUBSCRIBE_URL}}/g, unsubscribeUrl)
-            : htmlWithTracking + `
+      // Add tracking pixel for opens (only if newsletterId is provided)
+      if (newsletterId) {
+        const trackingPixel = `<img src="${process.env.NEXTAUTH_URL}/api/newsletter/analytics?newsletter=${newsletterId}&subscriber=${encodeURIComponent(email)}" width="1" height="1" style="display:none;" alt="" />`;
+        htmlWithTracking = htmlWithTracking.replace('</body>', `${trackingPixel}</body>`);
+
+        // If no </body> tag, append at the end
+        if (!htmlWithTracking.includes('</body>')) {
+          htmlWithTracking += trackingPixel;
+        }
+      }
+
+      // Add unsubscribe link to HTML content if not already present
+      const htmlWithUnsubscribe = htmlWithTracking.includes('{{UNSUBSCRIBE_URL}}')
+        ? htmlWithTracking.replace(/{{UNSUBSCRIBE_URL}}/g, unsubscribeUrl)
+        : htmlWithTracking + `
         <div style="text-align: center; margin: 30px 0; padding: 20px; background: #f8fafc; border-radius: 8px;">
           <p style="color: #64748b; font-size: 12px; margin: 0;">
             <a href="${unsubscribeUrl}" style="color: #dc2626; text-decoration: none;">Unsubscribe</a> from these emails
@@ -1700,48 +1704,48 @@ The Elanorra Team
         </div>
       `;
 
-          textWithUnsubscribe = textWithUnsubscribe 
-            ? (textWithUnsubscribe.includes('{{UNSUBSCRIBE_URL}}') 
-                ? textWithUnsubscribe.replace(/{{UNSUBSCRIBE_URL}}/g, unsubscribeUrl)
-                : textWithUnsubscribe + `\n\nUnsubscribe: ${unsubscribeUrl}`)
-            : undefined;
-          
-          const success = await this.sendEmail({
-            to: email,
-            subject: processedSubject,
-            html: htmlWithUnsubscribe,
-            text: textWithUnsubscribe,
-          });
-          
-          if (success) {
-            sent++;
-          } else {
-            failed++;
-          }
-        } catch (error) {
-          console.error(`Failed to send newsletter to ${email}:`, error);
-          failed++;
-        }
+      textWithUnsubscribe = textWithUnsubscribe
+        ? (textWithUnsubscribe.includes('{{UNSUBSCRIBE_URL}}')
+          ? textWithUnsubscribe.replace(/{{UNSUBSCRIBE_URL}}/g, unsubscribeUrl)
+          : textWithUnsubscribe + `\n\nUnsubscribe: ${unsubscribeUrl}`)
+        : undefined;
+
+      const success = await this.sendEmail({
+        to: email,
+        subject: processedSubject,
+        html: htmlWithUnsubscribe,
+        text: textWithUnsubscribe,
       });
 
-      await Promise.all(promises);
-      
-      // Add a small delay between batches
-      if (i + batchSize < recipients.length) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      if (success) {
+        sent++;
+      } else {
+        failed++;
       }
+    } catch (error) {
+      console.error(`Failed to send newsletter to ${email}:`, error);
+      failed++;
     }
+  });
 
-    return { sent, failed };
+  await Promise.all(promises);
+
+  // Add a small delay between batches
+  if (i + batchSize < recipients.length) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+}
+
+return { sent, failed };
   }
 
-  async sendAbandonedCartEmail(data: AbandonedCartEmailData): Promise<boolean> {
-    const customerName = data.customerName || 'Valued Customer';
-    const storeName = process.env.NEXT_PUBLIC_STORE_NAME || 'ElanorraLiving';
-    const storeUrl = process.env.NEXTAUTH_URL || 'https://elanorraliving.in';
-    
-    // Generate cart items HTML
-    const cartItemsHtml = data.items.map(item => `
+  async sendAbandonedCartEmail(data: AbandonedCartEmailData): Promise < boolean > {
+  const customerName = data.customerName || 'Valued Customer';
+  const storeName = process.env.NEXT_PUBLIC_STORE_NAME || 'ElanorraLiving';
+  const storeUrl = process.env.NEXTAUTH_URL || 'https://elanorraliving.in';
+
+  // Generate cart items HTML
+  const cartItemsHtml = data.items.map(item => `
       <tr>
         <td style="padding: 15px; border-bottom: 1px solid #e2e8f0;">
           <div style="display: flex; align-items: center; gap: 15px;">
@@ -1760,7 +1764,7 @@ The Elanorra Team
       </tr>
     `).join('');
 
-    const html = `
+  const html = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -1878,7 +1882,7 @@ The Elanorra Team
       </html>
     `;
 
-    const text = `
+  const text = `
       Don't forget your items at ${storeName}!
       
       Hi ${customerName}!
@@ -1902,28 +1906,28 @@ The Elanorra Team
       © 2024 ${storeName}. All rights reserved.
     `;
 
-    return this.sendEmail({
-      to: data.email,
-      subject: `🛒 Don't forget your items at ${storeName}!`,
-      html,
-      text,
-    });
-  }
+  return this.sendEmail({
+    to: data.email,
+    subject: `🛒 Don't forget your items at ${storeName}!`,
+    html,
+    text,
+  });
+}
 
-  async sendPromotionalEmail(data: PromotionalEmailData): Promise<boolean> {
-    const customerName = data.customerName || 'Valued Customer';
-    const storeName = process.env.NEXT_PUBLIC_STORE_NAME || 'ElanorraLiving';
-    const storeUrl = process.env.NEXTAUTH_URL || 'https://elanorraliving.in';
-    
-    const {
-      offer = 'Special Offer',
-      message = 'Don\'t miss out on this amazing deal!',
-      ctaText = 'Shop Now',
-      ctaUrl = storeUrl,
-      discount_code
-    } = data.templateData;
+  async sendPromotionalEmail(data: PromotionalEmailData): Promise < boolean > {
+  const customerName = data.customerName || 'Valued Customer';
+  const storeName = process.env.NEXT_PUBLIC_STORE_NAME || 'ElanorraLiving';
+  const storeUrl = process.env.NEXTAUTH_URL || 'https://elanorraliving.in';
 
-    const html = `
+  const {
+    offer = 'Special Offer',
+    message = 'Don\'t miss out on this amazing deal!',
+    ctaText = 'Shop Now',
+    ctaUrl = storeUrl,
+    discount_code
+  } = data.templateData;
+
+  const html = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -2043,7 +2047,7 @@ The Elanorra Team
       </html>
     `;
 
-    const text = `
+  const text = `
       ${offer}
       
       Hi ${customerName}!
@@ -2067,22 +2071,22 @@ The Elanorra Team
       © 2024 ${storeName}. All rights reserved.
     `;
 
-    return this.sendEmail({
-      to: data.email,
-      subject: data.subject,
-      html,
-      text,
-    });
-  }
+  return this.sendEmail({
+    to: data.email,
+    subject: data.subject,
+    html,
+    text,
+  });
+}
 
-  async sendInvoiceEmail(data: InvoiceEmailData): Promise<boolean> {
-    try {
-      const storeName = 'Elanorra Living';
-      const storeUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://elanorraliving.in';
-      const customerName = data.customerName || 'Valued Customer';
-      const { formatPrice } = await import('./utils');
+  async sendInvoiceEmail(data: InvoiceEmailData): Promise < boolean > {
+  try {
+    const storeName = 'ElanorraLiving';
+    const storeUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://elanorraliving.in';
+    const customerName = data.customerName || 'Valued Customer';
+    const { formatPrice } = await import('./utils');
 
-      const html = `
+    const html = `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -2139,11 +2143,11 @@ The Elanorra Team
                 </div>
                 <div class="detail-row">
                   <span class="detail-label">Invoice Date:</span>
-                  <span class="detail-value">${new Date(data.createdAt).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}</span>
+                  <span class="detail-value">${new Date(data.createdAt).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })}</span>
                 </div>
               </div>
 
@@ -2187,7 +2191,7 @@ The Elanorra Team
         </html>
       `;
 
-      const text = `
+    const text = `
         ${storeName} - Invoice ${data.invoiceNumber}
         
         Hello ${customerName}!
@@ -2211,30 +2215,30 @@ The Elanorra Team
         © 2024 ${storeName}. All rights reserved.
       `;
 
-      // Send email with invoice attachment
-      const fs = await import('fs');
-      const path = await import('path');
-      
-      let attachments = [];
-      if (data.invoiceFilePath && fs.existsSync(data.invoiceFilePath)) {
-        attachments.push({
-          filename: `Invoice-${data.invoiceNumber}.pdf`,
-          path: data.invoiceFilePath,
-          contentType: 'application/pdf'
-        });
-      }
+    // Send email with invoice attachment
+    const fs = await import('fs');
+    const path = await import('path');
 
-      return this.sendEmail({
-        to: data.email,
-        subject: `Invoice ${data.invoiceNumber} - ${storeName}`,
-        html,
-        text,
-        attachments
-      });
+    let attachments =[];
+    if(data.invoiceFilePath && fs.existsSync(data.invoiceFilePath)) {
+  attachments.push({
+    filename: `Invoice-${data.invoiceNumber}.pdf`,
+    path: data.invoiceFilePath,
+    contentType: 'application/pdf'
+  });
+}
+
+return this.sendEmail({
+  to: data.email,
+  subject: `Invoice ${data.invoiceNumber} - ${storeName}`,
+  html,
+  text,
+  attachments
+});
     } catch (error) {
-      console.error('Error sending invoice email:', error);
-      return false;
-    }
+  console.error('Error sending invoice email:', error);
+  return false;
+}
   }
 }
 
@@ -2248,7 +2252,7 @@ export async function sendPasswordResetEmail(
   firstName?: string
 ): Promise<boolean> {
   const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}`;
-  
+
   return emailService.sendPasswordResetEmail({
     email,
     firstName,
@@ -2279,17 +2283,17 @@ export async function sendVerificationEmail(
               </a>
             </div>
   `;
-  
+
   return emailService.sendEmail({
     to: email,
-    subject: 'Welcome to Elanorra - Verify Your Email',
+    subject: 'Welcome to ElanorraLiving - Verify Your Email',
     html: `
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Verify Your Email - Elanorra</title>
+        <title>Verify Your Email - ElanorraLiving</title>
       </head>
       <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); min-height: 100vh;">
         <div style="max-width: 600px; margin: 0 auto; background: #ffffff; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); border-radius: 16px; overflow: hidden;">
@@ -2299,7 +2303,7 @@ export async function sendVerificationEmail(
             <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; display: inline-block;">
               ${logoBlock}
               <h1 style="color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); letter-spacing: -0.5px;">
-                Elanorra
+                ElanorraLiving
               </h1>
               <p style="color: rgba(255, 255, 255, 0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">
                 Luxury Living Redefined
@@ -2311,7 +2315,7 @@ export async function sendVerificationEmail(
           <div style="padding: 50px 40px;">
             <div style="text-align: center; margin-bottom: 40px;">
               <h2 style="color: #1e293b; font-size: 32px; font-weight: 700; margin: 0 0 16px 0; line-height: 1.2;">
-                Welcome to Elanorra!
+                Welcome to ElanorraLiving!
               </h2>
               <div style="width: 60px; height: 4px; background: linear-gradient(90deg, #f43f5e, #fb7185); margin: 0 auto; border-radius: 2px;"></div>
             </div>
@@ -2352,7 +2356,7 @@ export async function sendVerificationEmail(
             </div>
 
             <p style="color: #64748b; font-size: 14px; line-height: 1.5; margin: 30px 0 0 0; text-align: center;">
-              If you didn't create an account with Elanorra, you can safely ignore this email.
+              If you didn't create an account with ElanorraLiving, you can safely ignore this email.
             </p>
           </div>
 
@@ -2362,10 +2366,10 @@ export async function sendVerificationEmail(
               ${logoBlockSmall}
             </div>
             <p style="color: #94a3b8; font-size: 12px; margin: 0 0 10px 0; font-weight: 500;">
-              © 2024 Elanorra Living. All rights reserved.
+              © 2026 ElanorraLiving. All rights reserved.
             </p>
             <p style="color: #64748b; font-size: 11px; margin: 0; line-height: 1.4;">
-              This email was sent from Elanorra. Please do not reply to this email.<br>
+              This email was sent from ElanorraLiving. Please do not reply to this email.<br>
               For support, visit our website or contact our customer service team.
             </p>
           </div>
@@ -2374,9 +2378,9 @@ export async function sendVerificationEmail(
       </html>
     `,
     text: `
-      ELANORRA - LUXURY LIVING REDEFINED
+      ELANORRALIVING - LUXURY LIVING REDEFINED
       
-      Welcome to Elanorra!
+      Welcome to ElanorraLiving!
       
       Hello ${firstName || 'there'},
       
@@ -2387,11 +2391,11 @@ export async function sendVerificationEmail(
       
       SECURITY NOTICE: This verification link will expire in 24 hours for your security.
       
-      If you didn't create an account with Elanorra, you can safely ignore this email.
+      If you didn't create an account with ElanorraLiving, you can safely ignore this email.
       
       ---
-      © 2024 Elanorra Living. All rights reserved.
-      This email was sent from Elanorra. Please do not reply to this email.
+      © 2026 ElanorraLiving. All rights reserved.
+      This email was sent from ElanorraLiving. Please do not reply to this email.
     `,
   });
 }
@@ -2401,10 +2405,10 @@ export async function sendWelcomeEmail(
   firstName?: string,
   verificationToken?: string
 ): Promise<boolean> {
-  const verificationUrl = verificationToken 
+  const verificationUrl = verificationToken
     ? `${process.env.NEXTAUTH_URL}/auth/verify-email?token=${verificationToken}`
     : undefined;
-  
+
   return emailService.sendWelcomeEmail({
     email,
     firstName,
@@ -2464,7 +2468,7 @@ export async function sendPromotionalCampaign(
   const batchSize = 10;
   for (let i = 0; i < recipients.length; i += batchSize) {
     const batch = recipients.slice(i, i + batchSize);
-    
+
     const promises = batch.map(async (email) => {
       try {
         const success = await sendPromotionalEmail({
@@ -2473,7 +2477,7 @@ export async function sendPromotionalCampaign(
           templateData,
           campaignId,
         });
-        
+
         if (success) {
           sent++;
         } else {
@@ -2486,7 +2490,7 @@ export async function sendPromotionalCampaign(
     });
 
     await Promise.all(promises);
-    
+
     // Add a small delay between batches
     if (i + batchSize < recipients.length) {
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -2500,7 +2504,7 @@ export async function sendPromotionalCampaign(
 export async function trackCartAbandonment(data: AbandonedCartEmailData): Promise<void> {
   try {
     console.log(`Tracking cart abandonment for ${data.email}`);
-    
+
     // Send abandoned cart email immediately or schedule it
     // In a real implementation, you might want to schedule this with a delay
     await sendAbandonedCartEmail(data);

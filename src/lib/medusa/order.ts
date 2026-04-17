@@ -30,7 +30,7 @@ export async function placeOrder(cartId: string) {
 export async function getOrder(orderId: string) {
   const response = await medusaFetch<{ order: MedusaOrder }>(`/store/orders/${orderId}`, {
     query: {
-      fields: '*items,*shipping_address,*billing_address',
+      fields: '*items,*shipping_address,*billing_address,*fulfillments,*fulfillments.tracking_links',
     },
   });
   return response.order;
