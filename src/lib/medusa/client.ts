@@ -44,6 +44,13 @@ export async function medusaFetch<T>(
     requestHeaders.set('x-publishable-api-key', medusaConfig.publishableKey);
   }
 
+  // Medusa v2 pricing context via headers
+  if (medusaConfig.regionId) {
+    requestHeaders.set('x-region-id', medusaConfig.regionId);
+  }
+  requestHeaders.set('x-currency', 'inr');
+  requestHeaders.set('x-currency-code', 'inr');
+
   const response = await fetch(buildMedusaUrl(path, query), {
     ...fetchOptions,
     headers: requestHeaders,

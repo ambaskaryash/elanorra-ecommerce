@@ -170,8 +170,6 @@ export async function listMedusaProducts(params: MedusaProductListParams = {}) {
       category_id: params.category,
       collection_id: params.collection_id,
       handle: params.handle,
-      region_id: medusaConfig.regionId,
-      currency_code: 'inr',
       fields: '*variants.calculated_price,*images,*categories,*collection,*tags,*type',
     },
     next: {
@@ -191,33 +189,40 @@ export async function listMedusaProducts(params: MedusaProductListParams = {}) {
 }
 
 export async function listMedusaCollections(limit: number = 100) {
+  // 1. Fetch collections without nested products to avoid the pricing context error
   const response = await medusaFetch<ListMedusaCollectionsResponse>('/store/collections', {
     query: {
       limit,
-      region_id: medusaConfig.regionId,
-      currency_code: 'inr',
-      fields: '*products,*products.images,*products.variants.calculated_price',
     },
     next: {
       revalidate: 60,
     },
   });
 
-  return response.collections.map((collection) => ({
-    id: collection.id,
-    name: collection.title,
-    slug: collection.handle,
-    description: '',
-    image: collection.products?.[0]?.thumbnail || null,
-    featured: true,
-    productCount: collection.products?.length || 0,
-    sampleProducts: (collection.products || []).slice(0, 4).map((product) => ({
-      id: product.id,
-      name: product.title,
-      slug: product.handle,
-      price: getProductPrice(product),
-      image: product.thumbnail || null,
-    })),
+  // 2. Map collections and hydrate sample products using the working listMedusaProducts function
+  return Promise.all(response.collections.map(async (collection) => {
+    // Fetch top 4 products for this collection using the working method
+    const productsResponse = await listMedusaProducts({
+      collection_id: collection.id,
+      limit: 4
+    });
+
+    return {
+      id: collection.id,
+      name: collection.title,
+      slug: collection.handle,
+      description: '',
+      image: productsResponse.products[0]?.images[0]?.src || null,
+      featured: true,
+      productCount: productsResponse.pagination.total || 0,
+      sampleProducts: productsResponse.products.map(p => ({
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        price: p.price,
+        image: p.images[0]?.src || null,
+      })),
+    };
   }));
 }
 
