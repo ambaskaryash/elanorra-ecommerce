@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     images: ['/icon.svg'],
   },
   alternates: {
-    canonical: 'https://elanorraliving.in',
+    canonical: '/',
   },
   category: 'shopping',
   classification: 'Home Decor & Lifestyle E-commerce',
