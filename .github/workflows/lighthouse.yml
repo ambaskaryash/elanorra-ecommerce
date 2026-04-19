@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Lighthouse checks (elanorraliving.in)
-        uses: treosh/lighthouse-ci-action@v10
+        uses: treosh/lighthouse-ci-action@v12
         with:
           urls: |
             https://elanorraliving.in/
@@ -23,5 +23,3 @@ jobs:
           uploadArtifacts: true
           temporaryPublicStorage: true
           runs: 1
-          configPath: ''
-          thresholds: '{"performance":0.85,"pwa":0.8,"accessibility":0.9,"best-practices":0.9,"seo":0.9}'
