@@ -1130,21 +1130,6 @@ class EmailService {
         </html>
       `;
 
-            <!-- Footer -->
-            <div style="background-color: #1f2937; padding: 40px; text-align: center;">
-              <h3 style="color: #ffffff; margin: 0 0 16px 0; font-size: 18px;">ElanorraLiving</h3>
-              <p style="color: #94a3b8; margin: 0 0 16px 0; font-size: 14px;">
-                Premium Home Decor & Luxury Lifestyle
-              </p>
-              <p style="color: #64748b; margin: 0; font-size: 12px;">
-                Questions? Visit our <a href="${process.env.NEXTAUTH_URL}/contact" style="color: #e11d48; text-decoration: none;">contact page</a> or email <a href="mailto:info@elanorraliving.in" style="color: #e11d48; text-decoration: none;">info@elanorraliving.in</a>
-              </p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
-
       const textContent = `
 Order Confirmation - ${ orderData.orderNumber }
 
