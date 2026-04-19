@@ -55,7 +55,6 @@ model User {
   firstName              String?
   lastName               String?
   phone                  String?
-  odooId                 Int?            @unique
   isAdmin                Boolean         @default(false)
   roleId                 String?
   password               String?
@@ -79,7 +78,6 @@ model User {
 
 model Product {
   id             String              @id @default(cuid())
-  odooId         Int?                @unique
   name           String
   slug           String              @unique
   description    String
@@ -154,7 +152,6 @@ model ProductCollection {
 
 model Order {
   id                String          @id @default(cuid())
-  odooId            Int?            @unique
   orderNumber       String          @unique
   userId            String?
   email             String

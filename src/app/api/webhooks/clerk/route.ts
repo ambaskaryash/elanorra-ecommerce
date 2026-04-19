@@ -4,6 +4,8 @@ import { WebhookEvent } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { syncUserFromClerk } from '@/lib/rbac';
+import { syncCustomer } from '@/lib/medusa/customer';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
 
 export async function POST(req: Request) {
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
@@ -82,7 +84,27 @@ export async function POST(req: Request) {
         },
       });
       
-      console.log(`User ${id} synced successfully`);
+      console.log(`User ${id} synced successfully to Prisma`);
+
+      // Sync with Medusa if enabled
+      if (isMedusaCatalogEnabled()) {
+        try {
+          await syncCustomer({
+            email,
+            first_name: first_name || '',
+            last_name: last_name || '',
+            metadata: {
+              clerkId: id,
+              image: image_url || '',
+            },
+          });
+          console.log(`User ${id} synced successfully to Medusa`);
+        } catch (medusaError) {
+          console.error('Error syncing to Medusa:', medusaError);
+          // We don't fail the whole webhook if Medusa sync fails, 
+          // but we log it for audit.
+        }
+      }
     } catch (error) {
       console.error('Error syncing user:', error);
       return new Response('Error syncing user', { status: 500 });

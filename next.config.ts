@@ -24,13 +24,13 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'res.cloudinary.com',
+        hostname: '*.s3.*.amazonaws.com',
         port: '',
         pathname: '/**',
       },
       {
         protocol: 'https',
-        hostname: 'medusa-public-images.s3.eu-west-1.amazonaws.com',
+        hostname: '*.s3.amazonaws.com',
         port: '',
         pathname: '/**',
       },

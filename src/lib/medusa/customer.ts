@@ -78,3 +78,32 @@ export async function deleteAddress(customerId: string, addressId: string) {
   });
   return response;
 }
+
+export async function syncCustomer(data: {
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  metadata?: Record<string, any>;
+}) {
+  try {
+    const existing = await getCustomer(data.email);
+    if (existing) {
+      return await updateCustomer(existing.id, {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        phone: data.phone,
+        metadata: {
+          ...existing.metadata,
+          ...data.metadata,
+        },
+      });
+    } else {
+      return await createCustomer(data);
+    }
+  } catch (error) {
+    console.error('Error syncing Medusa customer:', error);
+    throw error;
+  }
+}
+
