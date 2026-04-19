@@ -406,7 +406,8 @@ export default function Header({ className }: HeaderProps) {
                   <SearchBar />
                   <button
                     onClick={() => setIsSearchOpen(false)}
-                    className="absolute top-2 right-2 p-2 text-gray-500 hover:text-gray-700"
+                    className="absolute top-2 right-2 p-3 text-gray-500 hover:text-gray-700"
+                    aria-label="Close search"
                   >
                     <XMarkIcon className="h-5 w-5" />
                   </button>
@@ -414,7 +415,8 @@ export default function Header({ className }: HeaderProps) {
               ) : (
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className="p-2 text-gray-700 hover:text-gray-900"
+                  className="p-3 text-gray-700 hover:text-gray-900"
+                  aria-label="Open search"
                 >
                   <MagnifyingGlassIcon className="h-6 w-6" />
                 </button>
@@ -428,6 +430,7 @@ export default function Header({ className }: HeaderProps) {
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center space-x-2 p-2 text-gray-700 hover:text-gray-900 rounded-md"
+                    aria-label="User account menu"
                   >
                     <div className="w-8 h-8 bg-[var(--accent)] text-white rounded-full flex items-center justify-center text-sm font-medium">
                       {user?.firstName?.[0] || user?.emailAddresses?.[0]?.emailAddress?.[0]?.toUpperCase()}
@@ -596,7 +599,8 @@ export default function Header({ className }: HeaderProps) {
             {/* Cart button for mobile (opens full cart) */}
             <button 
               onClick={toggleCart}
-              className="relative p-2 text-gray-700 hover:text-gray-900 sm:hidden"
+              className="relative p-3 text-gray-700 hover:text-gray-900 sm:hidden"
+              aria-label="Open cart menu"
             >
               <ShoppingBagIcon className="h-6 w-6" />
               {totalItems > 0 && (

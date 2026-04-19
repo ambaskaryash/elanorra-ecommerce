@@ -76,7 +76,7 @@ export default function HeroCarousel() {
 
   return (
     <section className="relative h-screen min-h-[600px] overflow-hidden bg-stone-50">
-      <AnimatePresence mode="wait">
+      <AnimatePresence initial={false} mode="wait">
         <motion.div
           key={currentSlide}
           initial={{ opacity: 0 }}
