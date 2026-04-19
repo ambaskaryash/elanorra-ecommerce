@@ -338,12 +338,16 @@ export default function ProductClient({ product, canonicalUrl }: ProductClientPr
                 </button>
               </div>
 
-              {/* Add to Cart */}
               <button
                 onClick={handleAddToCart}
-                className="flex-1 bg-rose-600 text-white px-6 py-3 rounded-lg hover:bg-rose-700 transition-colors"
+                disabled={!product.inStock}
+                className={`flex-1 px-6 py-3 rounded-lg transition-colors ${
+                  product.inStock
+                    ? 'bg-rose-600 text-white hover:bg-rose-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
               >
-                Add to Cart
+                {product.inStock ? 'Add to Cart' : 'Out of Stock'}
               </button>
 
               {/* Share */}
