@@ -387,6 +387,7 @@ export const orderAPI = {
   // Get orders with optional filters
   getOrders: async (params?: {
     userId?: string;
+    email?: string;
     status?: string;
     page?: number;
     limit?: number;

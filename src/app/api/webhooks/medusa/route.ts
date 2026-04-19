@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 import * as medusaOrder from '@/lib/medusa/order';
 import * as emailService from '@/lib/email';
 import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
+import crypto from 'crypto';
 
 /**
  * Medusa Webhook Handler
@@ -14,7 +15,27 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json();
+    const rawBody = await request.text();
+    const signature = request.headers.get('x-medusa-signature');
+
+    // Verify signature if secret is configured
+    if (process.env.MEDUSA_WEBHOOK_SECRET) {
+      if (!signature) {
+        logger.warn('Medusa Webhook rejected: missing signature');
+        return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
+      }
+
+      const hmac = crypto.createHmac('sha256', process.env.MEDUSA_WEBHOOK_SECRET);
+      hmac.update(rawBody, 'utf8');
+      const expectedSignature = hmac.digest('hex');
+
+      if (signature !== expectedSignature) {
+        logger.warn('Medusa Webhook rejected: invalid signature');
+        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+      }
+    }
+
+    const body = JSON.parse(rawBody);
     const { event_name, data } = body;
 
     logger.info('Received Medusa Webhook', { event_name, data });

@@ -5,8 +5,9 @@ import { auth } from '@clerk/nextjs/server';
 // GET /api/blog/[id] - Get a specific blog post by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   // Check if DATABASE_URL is available (for build-time safety)
   if (!process.env.DATABASE_URL) {
     console.warn('⚠️ DATABASE_URL not available, returning empty response for build');
@@ -15,7 +16,7 @@ export async function GET(
 
   try {
     const post = await prisma.blogPost.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         author: {
           select: { id: true, firstName: true, lastName: true }
@@ -37,8 +38,9 @@ export async function GET(
 // PUT /api/blog/[id] - Update a blog post (admin only)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   // Check if DATABASE_URL is available (for build-time safety)
   if (!process.env.DATABASE_URL) {
     console.warn('⚠️ DATABASE_URL not available, returning error for build');
@@ -64,7 +66,7 @@ export async function PUT(
       published,
     } = body;
 
-    const existing = await prisma.blogPost.findUnique({ where: { id: params.id } });
+    const existing = await prisma.blogPost.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
@@ -94,7 +96,7 @@ export async function PUT(
     }
 
     const post = await prisma.blogPost.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
     });
 
@@ -108,8 +110,9 @@ export async function PUT(
 // DELETE /api/blog/[id] - Delete a blog post (admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   // Check if DATABASE_URL is available (for build-time safety)
   if (!process.env.DATABASE_URL) {
     console.warn('⚠️ DATABASE_URL not available, returning error for build');
@@ -124,12 +127,12 @@ export async function DELETE(
 
     // TODO: Add admin role check for Clerk users
 
-    const existing = await prisma.blogPost.findUnique({ where: { id: params.id } });
+    const existing = await prisma.blogPost.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    await prisma.blogPost.delete({ where: { id: params.id } });
+    await prisma.blogPost.delete({ where: { id } });
 
     return NextResponse.json({ message: 'Post deleted successfully' });
   } catch (error) {

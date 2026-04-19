@@ -18,6 +18,7 @@ import {
   formatDeliveryDate,
   isValidPincode 
 } from '@/lib/services/pincode-delivery';
+import { api } from '@/lib/services/api';
 import { formatPrice } from '@/lib/utils';
 import {
   ArrowPathIcon,
@@ -28,7 +29,8 @@ import {
   ShieldCheckIcon,
   StarIcon,
   TruckIcon,
-  ClockIcon
+  ClockIcon,
+  MapPinIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
@@ -72,7 +74,7 @@ const paymentMethods: PaymentMethod[] = [
 export default function CheckoutContent() {
   const router = useRouter();
   const { user } = useAuth();
-  const { items, totalPrice, subtotalPrice, taxAmount, shippingAmount, appliedCoupon, clearCart, updateShipping } = useCartStore();
+  const { items, totalPrice, subtotalPrice, taxAmount, shippingAmount, appliedCoupon, applyCoupon, clearCart, updateShipping } = useCartStore();
   const { createOrder } = useOrderStore();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -80,6 +82,12 @@ export default function CheckoutContent() {
   const [isOrderSuccess, setIsOrderSuccess] = useState(false);
   const [shippingOptions, setShippingOptions] = useState<any[]>([]);
   const [selectedShippingOption, setSelectedShippingOption] = useState<string | null>(null);
+  
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
+  const [showAddressForm, setShowAddressForm] = useState(true);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+
   const [billingAddress, setBillingAddress] = useState<Address>({
     firstName: '',
     lastName: '',
@@ -118,7 +126,7 @@ export default function CheckoutContent() {
   }, [items.length, router]);
 
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       setBillingAddress(prev => ({
         ...prev,
         firstName: user.firstName || '',
@@ -126,8 +134,46 @@ export default function CheckoutContent() {
         email: user.email || '',
         phone: user.phone || '',
       }));
+
+      // Fetch saved addresses from profile
+      setIsLoadingAddresses(true);
+      api.addresses.getAddresses(user.id)
+        .then(res => {
+          if (res.addresses && res.addresses.length > 0) {
+            setSavedAddresses(res.addresses);
+            setShowAddressForm(false); // Hide manual entry initially
+            // Pre-select the default address, or the first one if no default exists
+            const defaultAddress = res.addresses.find((a: any) => a.isDefault) || res.addresses[0];
+            if (defaultAddress) {
+              handleSelectSavedAddress(defaultAddress);
+            }
+          }
+        })
+        .catch(err => console.error('Failed to load saved addresses:', err))
+        .finally(() => setIsLoadingAddresses(false));
     }
   }, [user]);
+
+  const handleSelectSavedAddress = (address: any) => {
+    setSelectedAddressId(address.id);
+    const formatted: Address = {
+      firstName: address.firstName,
+      lastName: address.lastName,
+      company: address.company || '',
+      address1: address.address1,
+      address2: address.address2 || '',
+      city: address.city,
+      state: address.state,
+      pincode: address.zipCode || address.pincode, 
+      phone: address.phone || user?.phone || '',
+      email: user?.email || '',
+    };
+    setBillingAddress(formatted);
+    if (sameAsBilling) {
+      setShippingAddress(formatted);
+    }
+    setShowAddressForm(false);
+  };
 
   // Update delivery estimate when pincode changes
   useEffect(() => {
@@ -367,11 +413,12 @@ export default function CheckoutContent() {
             setShippingOptions(options);
             
             if (options.length > 0) {
-              // If we have options, we should let the user select one
-              // but for now we'll auto-select the first one or the cheapest one
+              // Extract cheapest Medusa dynamically verified shipping option
               const cheapest = options.sort((a, b) => (a.amount || 0) - (b.amount || 0))[0];
               await medusaCart.addShippingMethod(cartId, cheapest.id);
               setSelectedShippingOption(cheapest.id);
+            } else {
+              console.warn('Medusa shipping missing — bypassing strict checkout guard for Prisma routing.');
             }
 
             await medusaCart.createPaymentSessions(cartId);
@@ -579,25 +626,89 @@ export default function CheckoutContent() {
                 </div>
               </div>
 
-              <div className="p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      id="firstName"
-                      value={billingAddress.firstName}
-                      onChange={(e) => handleAddressChange('firstName', e.target.value, 'billing')}
-                      className="peer w-full px-4 py-3 border border-gray-200 rounded-none focus:ring-0 focus:border-gray-900 placeholder-transparent"
-                      placeholder="First Name"
-                      required
-                    />
-                    <label
-                      htmlFor="firstName"
-                      className="absolute left-4 -top-2.5 bg-white px-2 uppercase tracking-widest text-[10px] text-gray-500 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-gray-900"
-                    >
-                      First Name *
-                    </label>
+              <div className="p-6">
+                
+                {/* --- SAVED ADDRESSES SECTION --- */}
+                {isLoadingAddresses ? (
+                  <div className="animate-pulse bg-stone-100 h-24 rounded-xl mb-6 flex items-center justify-center text-sm text-gray-500">Loading saved addresses...</div>
+                ) : savedAddresses.length > 0 ? (
+                  <div className="mb-8">
+                    <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-widest">Select Address</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {savedAddresses.map((addr) => {
+                        const isSelected = selectedAddressId === addr.id;
+                        return (
+                          <div 
+                            key={addr.id}
+                            onClick={() => handleSelectSavedAddress(addr)}
+                            className={`relative p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                              isSelected
+                                ? 'border-rose-500 bg-rose-50'
+                                : 'border-gray-200 hover:border-gray-300 bg-white'
+                            }`}
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                               <div className="flex items-center space-x-2">
+                                 <MapPinIcon className={`w-5 h-5 ${isSelected ? 'text-rose-600' : 'text-gray-400'}`} />
+                                 <span className="font-semibold text-sm text-gray-900">{addr.firstName} {addr.lastName}</span>
+                               </div>
+                               {addr.tag && (
+                                 <span className="text-[10px] uppercase tracking-widest bg-white shadow-sm border border-gray-100 px-2 py-1 rounded-md text-gray-600">
+                                   {addr.tag}
+                                 </span>
+                               )}
+                            </div>
+                            <div className="pl-7 space-y-1">
+                              <p className="text-xs text-gray-600 truncate">{addr.address1}</p>
+                              {addr.address2 && <p className="text-xs text-gray-600 truncate">{addr.address2}</p>}
+                              <p className="text-xs text-gray-600">{addr.city}, {addr.state} {addr.zipCode}</p>
+                              <p className="text-[10px] uppercase tracking-widest text-gray-500 mt-2">Phone: {addr.phone || 'N/A'}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      
+                      <div 
+                        onClick={() => {
+                          setShowAddressForm(true);
+                          setSelectedAddressId(null);
+                          setBillingAddress({
+                            firstName: user?.firstName || '', lastName: user?.lastName || '', company: '', address1: '', address2: '', city: '', state: '', pincode: '', phone: user?.phone || '', email: user?.email || '',
+                          });
+                        }}
+                        className={`relative p-4 border-2 border-dashed rounded-xl cursor-pointer flex flex-col items-center justify-center min-h-[120px] transition-all ${
+                          showAddressForm ? 'border-rose-500 bg-rose-50/50' : 'border-gray-300 hover:border-gray-400 bg-gray-50'
+                        }`}
+                      >
+                         <span className="text-xs uppercase tracking-widest font-bold text-gray-700">Add New Address +</span>
+                      </div>
+                    </div>
                   </div>
+                ) : null}
+                {/* ----------------------------- */}
+
+                {(showAddressForm || savedAddresses.length === 0) && (
+                <div className="space-y-6">
+                  {savedAddresses.length > 0 && <hr className="border-gray-200" />}
+                  {savedAddresses.length > 0 && <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-widest">New Address Details</h3>}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        id="firstName"
+                        value={billingAddress.firstName}
+                        onChange={(e) => handleAddressChange('firstName', e.target.value, 'billing')}
+                        className="peer w-full px-4 py-3 border border-gray-200 rounded-none focus:ring-0 focus:border-gray-900 placeholder-transparent"
+                        placeholder="First Name"
+                        required
+                      />
+                      <label
+                        htmlFor="firstName"
+                        className="absolute left-4 -top-2.5 bg-white px-2 uppercase tracking-widest text-[10px] text-gray-500 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-gray-900"
+                      >
+                        First Name *
+                      </label>
+                    </div>
 
                   <div className="relative">
                     <input
@@ -728,6 +839,8 @@ export default function CheckoutContent() {
                   </label>
                 </div>
               </div>
+              )}
+            </div>
             </motion.div>
 
             {/* Delivery Options */}
@@ -950,7 +1063,19 @@ export default function CheckoutContent() {
                         onChange={(e) => setCouponCode(e.target.value)}
                         className="flex-1 px-3 py-2 border border-gray-200 rounded-none text-[10px] uppercase tracking-widest focus:ring-0 focus:border-gray-900 focus:border-transparent"
                       />
-                      <button className="px-4 py-2 border border-gray-900 bg-gray-900 text-white rounded-none text-[10px] uppercase tracking-widest font-bold hover:bg-white hover:text-gray-900 transition-colors">
+                      <button
+                        onClick={async () => {
+                          if (!couponCode.trim()) return;
+                          const loadingToast = toast.loading('Applying coupon...');
+                          const result = await applyCoupon(couponCode.trim());
+                          toast.dismiss(loadingToast);
+                          if (result.success) {
+                            toast.success(result.message);
+                          } else {
+                            toast.error(result.message);
+                          }
+                        }}
+                        className="px-4 py-2 border border-gray-900 bg-gray-900 text-white rounded-none text-[10px] uppercase tracking-widest font-bold hover:bg-white hover:text-gray-900 transition-colors">
                         Apply
                       </button>
                     </div>

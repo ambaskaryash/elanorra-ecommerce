@@ -4,7 +4,8 @@ import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { rateLimit, rateLimitConfigs, createRateLimitResponse } from '@/lib/rate-limit';
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     const limiter = rateLimit(rateLimitConfigs.api);
     const rateResult = await limiter(request);
@@ -17,7 +18,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const reviewId = params.id;
+    const reviewId = id;
     const review = await prisma.review.findUnique({ where: { id: reviewId } });
     if (!review) {
       return NextResponse.json({ error: 'Review not found' }, { status: 404 });
@@ -73,7 +74,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 }
 
 // PATCH /api/reviews/[id] - Update a review (owner-only, admins allowed)
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     const limiter = rateLimit(rateLimitConfigs.api);
     const rateResult = await limiter(request);
@@ -86,7 +88,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const reviewId = params.id;
+    const reviewId = id;
     const existing = await prisma.review.findUnique({ where: { id: reviewId } });
     if (!existing) {
       return NextResponse.json({ error: 'Review not found' }, { status: 404 });

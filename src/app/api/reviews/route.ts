@@ -3,6 +3,10 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
 import { Review, User } from '@prisma/client';
+import { rateLimit, createRateLimitResponse } from '@/lib/rate-limit';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
+
+const rateLimitConfigs = { api: { windowMs: 60 * 1000, maxRequests: 10 } };
 
 // GET /api/reviews - Get reviews with optional filters
 export async function GET(request: NextRequest) {
@@ -16,27 +20,16 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sortBy') || 'createdAt';
     let sortOrder: 'asc' | 'desc' = (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc';
     if (sortOrder !== 'asc' && sortOrder !== 'desc') {
-      sortOrder = 'desc'; // Default to 'desc' if invalid
+      sortOrder = 'desc';
     }
 
     const skip = (page - 1) * limit;
 
-    // Build where clause
     const where: Record<string, unknown> = {};
-    
-    if (productId) {
-      where.productId = productId;
-    }
-    
-    if (userId) {
-      where.userId = userId;
-    }
-    
-    if (rating) {
-      where.rating = parseInt(rating);
-    }
+    if (productId) where.productId = productId;
+    if (userId) where.userId = userId;
+    if (rating) where.rating = parseInt(rating);
 
-    // Build orderBy clause
     const orderBy: Record<string, 'asc' | 'desc'> = {};
     orderBy[sortBy] = sortOrder;
 
@@ -45,22 +38,14 @@ export async function GET(request: NextRequest) {
         where,
         include: {
           user: {
-            select: {
-              id: true,
-              clerkId: true,
-              firstName: true,
-              lastName: true,
-            }
+            select: { id: true, clerkId: true, firstName: true, lastName: true }
           },
           product: {
             select: {
               id: true,
               name: true,
               slug: true,
-              images: {
-                take: 1,
-                orderBy: { position: 'asc' }
-              }
+              images: { take: 1, orderBy: { position: 'asc' } }
             }
           }
         },
@@ -71,29 +56,20 @@ export async function GET(request: NextRequest) {
       prisma.review.count({ where }),
     ]);
 
-    // Format reviews
     const formattedReviews = reviews.map((review: Review & { user?: User }) => ({
       ...review,
-      userName: review.user 
+      userName: review.user
         ? `${review.user.firstName} ${review.user.lastName}`
         : review.userName,
     }));
 
     return NextResponse.json({
       reviews: formattedReviews,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
     console.error('Error fetching reviews:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch reviews' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch reviews' }, { status: 500 });
   }
 }
 
@@ -108,23 +84,72 @@ const createReviewSchema = z.object({
   verified: z.boolean().default(false),
 });
 
+/**
+ * Resolve a product ID to a local Prisma Product record.
+ * Handles three cases:
+ *  1. productId is already a local Prisma UUID → return directly
+ *  2. productId is a Medusa `prod_xxx` ID → look up by slug or upsert a stub
+ *  3. productId is a slug string → look up by slug
+ */
+async function resolveLocalProduct(productId: string) {
+  // 1 — try direct match by Prisma primary key
+  const byId = await prisma.product.findUnique({ where: { id: productId } });
+  if (byId) return byId;
+
+  // 2 — try by slug (Medusa products are stored locally with slug = Medusa handle)
+  const bySlug = await prisma.product.findUnique({ where: { slug: productId } });
+  if (bySlug) return bySlug;
+
+  // 3 — For Medusa-sourced products (prod_xxx IDs), upsert a lightweight stub record
+  //     so the review can be persisted and displayed.
+  if (isMedusaCatalogEnabled() && productId.startsWith('prod_')) {
+    try {
+      const { getMedusaProductById } = await import('@/lib/medusa/catalog');
+      const medusaProduct = await getMedusaProductById(productId);
+      if (!medusaProduct) return null;
+
+      // Upsert by slug so subsequent reviews reuse the same record
+      const stub = await prisma.product.upsert({
+        where: { slug: medusaProduct.slug },
+        update: { name: medusaProduct.name },
+        create: {
+          id: productId,          // store Medusa ID as Prisma ID for direct linkage
+          slug: medusaProduct.slug,
+          name: medusaProduct.name,
+          description: medusaProduct.description || '',
+          price: medusaProduct.price ?? 0,
+          category: medusaProduct.category || 'general',
+          inStock: medusaProduct.inStock ?? true,
+          inventory: medusaProduct.inventory ?? 0,
+        },
+      });
+      return stub;
+    } catch (err) {
+      console.warn('Could not upsert Medusa product stub for review:', err);
+      return null;
+    }
+  }
+
+  return null;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    // Apply rate limiting for review submissions
     const limiter = rateLimit(rateLimitConfigs.api);
     const rateResult = await limiter(request);
     if (!rateResult.success) {
       return createRateLimitResponse(rateResult.error!, rateResult.resetTime!);
     }
 
-    const { userId } = await auth();
-    if (!userId) {
+    // auth() returns Clerk user ID
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user data for review
+    // ✅ FIX: look up by clerkId, not by prisma user id
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { clerkId: clerkUserId },
       select: { id: true, firstName: true, lastName: true }
     });
 
@@ -135,90 +160,65 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = createReviewSchema.parse(body);
 
-    // Check if product exists
-    const product = await prisma.product.findUnique({
-      where: { id: validatedData.productId },
-    });
-
+    // ✅ FIX: Medusa-aware product resolution
+    const product = await resolveLocalProduct(validatedData.productId);
     if (!product) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    // Ensure review is tied to the authenticated user
+    // Use the resolved local product ID for the review (important for Medusa stubs)
+    const localProductId = product.id;
+
+    // Tie review to authenticated user
     validatedData.userId = user.id;
     validatedData.userName = validatedData.userName || `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
 
-    // Check if user already reviewed this product
-    if (validatedData.userId) {
-      const existingReview = await prisma.review.findFirst({
-        where: {
-          productId: validatedData.productId,
-          userId: validatedData.userId,
-        },
-      });
-
-      if (existingReview) {
-        return NextResponse.json(
-          { error: 'You have already reviewed this product' },
-          { status: 400 }
-        );
-      }
+    // Prevent duplicate reviews
+    const existingReview = await prisma.review.findFirst({
+      where: { productId: localProductId, userId: user.id },
+    });
+    if (existingReview) {
+      return NextResponse.json({ error: 'You have already reviewed this product' }, { status: 400 });
     }
 
-    // Mark as verified purchase if the user has ordered this product before
-    if (dbUser) {
-      const hasPurchased = await prisma.order.findFirst({
-        where: {
-          userId: dbUser.id,
-          items: {
-            some: { productId: validatedData.productId },
-          },
-        },
-      });
-      validatedData.verified = !!hasPurchased;
-    }
+    // Mark as verified purchase
+    const hasPurchased = await prisma.order.findFirst({
+      where: {
+        userId: user.id,
+        items: { some: { productId: localProductId } },
+      },
+    });
+    validatedData.verified = !!hasPurchased;
 
-    // Create review
+    // Create review using resolved local product ID
     const review = await prisma.review.create({
-      data: validatedData,
+      data: { ...validatedData, productId: localProductId },
     });
 
-    // Recalculate and update product's average rating and review count
+    // Recalculate product average rating
     const productReviews = await prisma.review.findMany({
-      where: { productId: validatedData.productId },
+      where: { productId: localProductId },
       select: { rating: true },
     });
-
     const totalRating = productReviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0);
     const newReviewCount = productReviews.length;
     const newAvgRating = newReviewCount > 0 ? totalRating / newReviewCount : 0;
 
     await prisma.product.update({
-      where: { id: validatedData.productId },
-      data: {
-        avgRating: newAvgRating,
-        reviewCount: newReviewCount,
-      },
+      where: { id: localProductId },
+      data: { avgRating: newAvgRating, reviewCount: newReviewCount },
     });
 
     return NextResponse.json({ review }, { status: 201 });
   } catch (error: unknown) {
     console.error('Error creating review:', error);
-    
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.flatten().fieldErrors },
         { status: 400 }
       );
     }
-
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-    return NextResponse.json(
-      { error: errorMessage || 'Failed to create review' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

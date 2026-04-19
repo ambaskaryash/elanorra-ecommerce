@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useUser, useClerk } from '@clerk/nextjs';
+import { useUser, useClerk, UserProfile } from '@clerk/nextjs';
 import Link from 'next/link';
 import {
   ArrowRightOnRectangleIcon,
@@ -14,7 +14,8 @@ import {
   ShieldCheckIcon,
   ShoppingBagIcon,
   UserIcon,
-  HomeModernIcon
+  HomeModernIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -93,13 +94,7 @@ export default function AccountPage() {
     tag: '',
   });
 
-  // Security: change password state
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmNewPassword: '',
-  });
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
 
   const fetchOrders = useCallback(async () => {
     if (!sessionUser?.id) return;
@@ -300,31 +295,7 @@ export default function AccountPage() {
     }
   };
 
-  const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (passwordData.newPassword !== passwordData.confirmNewPassword) {
-      toast.error('New passwords do not match.');
-      return;
-    }
-    setIsChangingPassword(true);
-    try {
-      const result = await api.auth.changePassword({
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword,
-      });
-      if ('error' in result) {
-        throw new Error(result.error);
-      }
-      toast.success('Password changed successfully!');
-      setPasswordData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
-    } catch (error: unknown) {
-      console.error('Error changing password:', error);
-      const errorMessage = error instanceof ApiError ? error.message : 'An unknown error occurred.';
-      toast.error(errorMessage || 'Failed to change password.');
-    } finally {
-      setIsChangingPassword(false);
-    }
-  };
+
 
   if (!isLoaded) {
     return <div className="flex h-screen items-center justify-center">Loading your account...</div>;
@@ -611,7 +582,7 @@ export default function AccountPage() {
                           {address.phone && <p className="text-sm text-gray-600">Phone: {address.phone}</p>}
                           <div className="absolute top-4 right-4 flex space-x-2">
                             <button onClick={() => handleEditAddress(address)} className="text-indigo-600 hover:text-indigo-900"><PencilIcon className="h-5 w-5" /></button>
-                            <button onClick={() => handleDeleteAddress(address.id)} className="text-red-600 hover:text-red-900"><PencilIcon className="h-5 w-5" /></button>
+                            <button onClick={() => handleDeleteAddress(address.id)} className="text-red-600 hover:text-red-900"><TrashIcon className="h-5 w-5" /></button>
                           </div>
                         </div>
                       ))
@@ -623,81 +594,151 @@ export default function AccountPage() {
               )}
 
               {activeSection === 'security' && (
-                <form onSubmit={handlePasswordChange}>
-                  <div className="shadow sm:overflow-hidden sm:rounded-md">
-                    <div className="bg-white px-4 py-6 sm:p-6">
-                      <div>
-                        <h2 className="text-lg font-medium leading-6 text-gray-900">Change Password</h2>
-                        <p className="mt-1 text-sm text-gray-500">
-                          Update your password for enhanced security.
-                        </p>
-                      </div>
-                      <div className="mt-6 space-y-4">
-                        <div>
-                          <label
-                            htmlFor="currentPassword"
-                            className="block text-sm font-medium text-gray-700"
-                          >
-                            Current Password
-                          </label>
-                          <input
-                            type="password"
-                            name="currentPassword"
-                            id="currentPassword"
-                            value={passwordData.currentPassword}
-                            onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                            required
-                          />
+                <div className="shadow sm:overflow-hidden sm:rounded-md bg-white lg:-mx-6 sm:px-6 py-6 border border-gray-200">
+                  <div className="flex justify-center w-full">
+                    <UserProfile 
+                      routing="hash" 
+                      appearance={{
+                        elements: {
+                          rootBox: "w-full max-w-full m-0",
+                          cardBox: "w-full max-w-full shadow-none border-none",
+                          navbar: "hidden", // Hide clerk navbar since we have our own
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {activeSection === 'payments' && (
+                <div className="shadow sm:overflow-hidden sm:rounded-none border border-gray-200">
+                  <div className="bg-white px-6 py-8">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-1">Payment Methods</h2>
+                    <p className="text-sm text-gray-500 mb-8">Your payment is processed securely via Razorpay. Cards used at checkout can be saved during payment.</p>
+
+                    {/* Info card */}
+                    <div className="border border-gray-200 rounded-none p-6 mb-6 bg-stone-50">
+                      <div className="flex items-start space-x-4">
+                        <div className="w-10 h-10 bg-gray-900 flex items-center justify-center flex-shrink-0">
+                          <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
                         </div>
                         <div>
-                          <label
-                            htmlFor="newPassword"
-                            className="block text-sm font-medium text-gray-700"
-                          >
-                            New Password
-                          </label>
-                          <input
-                            type="password"
-                            name="newPassword"
-                            id="newPassword"
-                            value={passwordData.newPassword}
-                            onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label
-                            htmlFor="confirmNewPassword"
-                            className="block text-sm font-medium text-gray-700"
-                          >
-                            Confirm New Password
-                          </label>
-                          <input
-                            type="password"
-                            name="confirmNewPassword"
-                            id="confirmNewPassword"
-                            value={passwordData.confirmNewPassword}
-                            onChange={(e) => setPasswordData({ ...passwordData, confirmNewPassword: e.target.value })}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                            required
-                          />
+                          <p className="text-sm font-semibold text-gray-900">Secure Payments by Razorpay</p>
+                          <p className="text-sm text-gray-500 mt-1">We never store your full card details on our servers. All payment information is handled end-to-end by Razorpay, India's most trusted payment gateway. You can save a card securely during checkout.</p>
                         </div>
                       </div>
                     </div>
-                    <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
-                      <button
-                        type="submit"
-                        disabled={isChangingPassword}
-                        className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                      {['Visa', 'Mastercard', 'UPI', 'Net Banking', 'Wallets', 'EMI'].map(method => (
+                        <div key={method} className="border border-gray-100 p-4 text-center">
+                          <p className="text-xs uppercase tracking-widest font-bold text-gray-700">{method}</p>
+                          <p className="text-[10px] text-green-600 mt-1">✓ Accepted</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <a
+                      href="/account/orders"
+                      className="inline-flex items-center space-x-2 px-6 py-3 bg-gray-900 border border-gray-900 text-white text-[10px] uppercase tracking-widest font-bold hover:bg-white hover:text-gray-900 transition-all"
+                    >
+                      <span>View Order History & Payments →</span>
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {activeSection === 'notifications' && (
+                <div className="shadow sm:overflow-hidden sm:rounded-none border border-gray-200">
+                  <div className="bg-white px-6 py-8">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-1">Notification Preferences</h2>
+                    <p className="text-sm text-gray-500 mb-8">Choose which emails you'd like to receive from Elanorra Living.</p>
+
+                    <div className="space-y-4">
+                      {[
+                        { id: 'order-updates', label: 'Order Updates', desc: 'Shipping confirmations, delivery status, and order receipts', defaultOn: true },
+                        { id: 'promotions', label: 'Promotions & Offers', desc: 'Exclusive discounts, flash sales, and seasonal offers', defaultOn: false },
+                        { id: 'new-arrivals', label: 'New Arrivals', desc: 'Be the first to know when new products launch', defaultOn: false },
+                        { id: 'restock', label: 'Back In Stock Alerts', desc: 'Notify me when a wishlisted item is available again', defaultOn: true },
+                        { id: 'newsletter', label: 'Monthly Newsletter', desc: 'Design inspiration, tips, and curated editorials', defaultOn: false },
+                      ].map(item => (
+                        <div key={item.id} className="flex items-center justify-between py-4 border-b border-gray-100 last:border-b-0">
+                          <div className="flex-1 pr-8">
+                            <p className="text-sm font-medium text-gray-900">{item.label}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              defaultChecked={item.defaultOn}
+                              className="sr-only peer"
+                              onChange={() => toast.success(`${item.label} preference saved`)}
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-gray-100">
+                      <p className="text-xs text-gray-400">Transactional emails (order confirmations, shipping updates) are always sent regardless of your preferences.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSection === 'settings' && (
+                <div className="shadow sm:overflow-hidden sm:rounded-none border border-gray-200">
+                  <div className="bg-white px-6 py-8">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-1">Account Settings</h2>
+                    <p className="text-sm text-gray-500 mb-8">Manage your display preferences and account data.</p>
+
+                    {/* Currency */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Currency Display</label>
+                      <select
+                        defaultValue="INR"
+                        className="block w-full max-w-xs border border-gray-200 rounded-none px-3 py-2 text-sm focus:ring-0 focus:border-gray-900"
+                        onChange={() => toast.success('Currency preference saved')}
                       >
-                        {isChangingPassword ? 'Saving...' : 'Save Password'}
+                        <option value="INR">₹ Indian Rupee (INR)</option>
+                        <option value="USD">$ US Dollar (USD)</option>
+                        <option value="EUR">€ Euro (EUR)</option>
+                      </select>
+                    </div>
+
+                    {/* Language */}
+                    <div className="mb-8">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
+                      <select
+                        defaultValue="en"
+                        className="block w-full max-w-xs border border-gray-200 rounded-none px-3 py-2 text-sm focus:ring-0 focus:border-gray-900"
+                        onChange={() => toast.success('Language preference saved')}
+                      >
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                      </select>
+                    </div>
+
+                    {/* Danger Zone */}
+                    <div className="border border-red-100 rounded-none p-6 bg-red-50">
+                      <h3 className="text-sm font-semibold text-red-700 mb-2">Danger Zone</h3>
+                      <p className="text-xs text-red-600 mb-4">Once you delete your account, your order history and saved addresses will be permanently removed. This action cannot be undone.</p>
+                      <button
+                        onClick={() => {
+                          if (confirm('Are you absolutely sure? This will permanently delete your account and all associated data.')) {
+                            toast.error('Please contact support@elanorraliving.in to delete your account.');
+                          }
+                        }}
+                        className="px-4 py-2 border border-red-300 text-red-600 text-xs uppercase tracking-widest font-bold hover:bg-red-100 transition-colors"
+                      >
+                        Request Account Deletion
                       </button>
                     </div>
                   </div>
-                </form>
+                </div>
               )}
+
             </motion.div>
           </div>
         </div>

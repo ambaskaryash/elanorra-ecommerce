@@ -17,8 +17,9 @@ const updateSubscriberSchema = z.object({
 // GET endpoint to fetch a specific subscriber
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Temporarily bypass authentication for development
     // TODO: Implement proper admin authentication in production
@@ -39,7 +40,7 @@ export async function GET(
     }
 
     const subscriber = await prisma.newsletterSubscriber.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!subscriber) {
@@ -71,8 +72,9 @@ export async function GET(
 // PUT endpoint to update a specific subscriber
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Temporarily bypass authentication for development
     // TODO: Implement proper admin authentication in production
@@ -97,7 +99,7 @@ export async function PUT(
 
     // Check if subscriber exists
     const existingSubscriber = await prisma.newsletterSubscriber.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingSubscriber) {
@@ -123,7 +125,7 @@ export async function PUT(
 
     // Update subscriber
     const updatedSubscriber = await prisma.newsletterSubscriber.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...validatedData,
         updatedAt: new Date(),
@@ -161,8 +163,9 @@ export async function PUT(
 // DELETE endpoint to delete a specific subscriber
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Temporarily bypass authentication for development
     // TODO: Implement proper admin authentication in production
@@ -184,7 +187,7 @@ export async function DELETE(
 
     // Check if subscriber exists
     const existingSubscriber = await prisma.newsletterSubscriber.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingSubscriber) {
@@ -196,7 +199,7 @@ export async function DELETE(
 
     // Delete subscriber
     await prisma.newsletterSubscriber.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({

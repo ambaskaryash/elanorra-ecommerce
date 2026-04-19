@@ -101,7 +101,7 @@ async function renderInvoicePDF(order: any): Promise<Buffer> {
 
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -109,7 +109,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const orderId = context.params.id;
+    const { id: orderId } = await context.params;
     if (!orderId) {
       return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
     }
@@ -145,11 +145,11 @@ export async function GET(
     headers.set('Content-Type', 'application/pdf');
     headers.set('Content-Disposition', `attachment; filename=invoice-${invoiceNumber}.pdf`);
 
-    // Convert Node Buffer to ArrayBuffer for web Response compatibility
+    // Copy to a plain ArrayBuffer — safe regardless of Buffer's backing store
     const pdfArrayBuffer = pdfBuffer.buffer.slice(
       pdfBuffer.byteOffset,
       pdfBuffer.byteOffset + pdfBuffer.byteLength
-    );
+    ) as ArrayBuffer;
 
     return new NextResponse(pdfArrayBuffer, {
       status: 200,

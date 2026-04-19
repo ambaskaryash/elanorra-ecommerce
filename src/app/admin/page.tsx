@@ -40,6 +40,8 @@ import ImageUpload from '@/components/admin/ImageUpload';
 import { BulkProductUpload } from '@/components/admin/BulkProductUpload'; // Import the new component
 import NewsletterDashboard from '@/components/admin/NewsletterDashboard';
 import UserManagement from '@/components/admin/UserManagement';
+import CouponsManager from '@/components/admin/CouponsManager';
+
 
 interface StatCardProps {
   title: string;
@@ -448,13 +450,9 @@ export default function AdminDashboard() {
     );
   };
 
-  // Navigation items for sidebar
+  // Navigation items for sidebar — Medusa Admin handles: Products, Orders, Returns, Inventory
   const navigationItems = [
     { id: 'dashboard', name: 'Dashboard', icon: HomeIcon, color: 'blue' },
-    { id: 'orders', name: 'Orders', icon: ShoppingBagIcon, color: 'green' },
-    { id: 'products', name: 'Products', icon: CurrencyRupeeIcon, color: 'purple' },
-    { id: 'bulk-upload', name: 'Bulk Upload', icon: ArrowPathIcon, color: 'indigo' },
-    { id: 'returns', name: 'Returns', icon: ArrowPathIcon, color: 'orange' },
     { id: 'users', name: 'Users', icon: UsersIcon, color: 'cyan' },
     { id: 'blog', name: 'Blog', icon: DocumentTextIcon, color: 'pink' },
     { id: 'newsletter', name: 'Newsletter', icon: EnvelopeIcon, color: 'teal' },
@@ -529,8 +527,17 @@ export default function AdminDashboard() {
           ))}
         </nav>
 
-        {/* User Info */}
-        <div className="p-4 border-t border-gray-200">
+        {/* User Info + Medusa Admin Link */}
+        <div className="p-4 border-t border-gray-200 space-y-3">
+          <a
+            href="https://api.elanorraliving.in/app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-2 w-full px-4 py-3 bg-gray-900 text-white rounded-none text-[10px] uppercase tracking-widest font-bold hover:bg-white hover:text-gray-900 border border-gray-900 transition-all"
+          >
+            <ShoppingBagIcon className="h-4 w-4" />
+            <span>Medusa Admin →</span>
+          </a>
           <div className="flex items-center space-x-3 p-3 rounded-none border border-gray-200 bg-stone-50">
             <div className="w-10 h-10 bg-white border border-gray-200 rounded-none flex items-center justify-center">
               <span className="text-gray-900 font-bold text-lg">
@@ -853,425 +860,49 @@ export default function AdminDashboard() {
           </div>
         )}
 
-          {/* Orders Management */}
-           {activeTab === 'orders' && (
-             <motion.div
-               initial={{ opacity: 0, y: 20 }}
-               animate={{ opacity: 1, y: 0 }}
-               className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
-             >
-               <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50">
-                 <div className="flex items-center space-x-3">
-                   <div className="p-2 bg-green-500 rounded-lg">
-                     <ShoppingBagIcon className="h-6 w-6 text-white" />
-                   </div>
-                   <div>
-                     <h3 className="text-xl font-semibold text-gray-900">Orders Management</h3>
-                     <p className="text-sm text-gray-600">Manage customer orders and fulfillment</p>
-                   </div>
-                 </div>
-               </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Order
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Customer
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {orders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">#{order.orderNumber}</div>
-                          <div className="text-sm text-gray-500">{order.items.length} items</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{order.email}</div>
-                        <div className="text-sm text-gray-500">
-                          {order.shippingAddress.firstName} {order.shippingAddress.lastName}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(order.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex flex-col space-y-1">
-                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                            order.financialStatus === 'paid' 
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {order.financialStatus}
-                          </span>
-                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                            order.fulfillmentStatus === 'fulfilled' 
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {order.fulfillmentStatus}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {formatPrice(order.totalPrice)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button 
-                            onClick={() => router.push(`/admin/orders/${order.id}`)}
-                            className="text-blue-600 hover:text-blue-900"
-                            title="View Order"
-                          >
-                            <EyeIcon className="h-4 w-4" />
-                          </button>
-                          <button className="text-gray-600 hover:text-gray-900">
-                            <PencilIcon className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-        )}
-
-          {/* Products Management */}
-           {activeTab === 'products' && (
-             <motion.div
-               initial={{ opacity: 0, y: 20 }}
-               animate={{ opacity: 1, y: 0 }}
-               className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
-             >
-               <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-indigo-50">
-                 <div className="flex items-center justify-between">
-                   <div className="flex items-center space-x-3">
-                     <div className="p-2 bg-purple-500 rounded-lg">
-                       <CurrencyRupeeIcon className="h-6 w-6 text-white" />
-                     </div>
-                     <div>
-                       <h3 className="text-xl font-semibold text-gray-900">Products Management</h3>
-                       <p className="text-sm text-gray-600">Manage your product catalog</p>
-                     </div>
-                   </div>
-                   <motion.button
-                     whileHover={{ scale: 1.05 }}
-                     whileTap={{ scale: 0.95 }}
-                     onClick={handleAddProduct}
-                     className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
-                   >
-                     <span>Add Product</span>
-                   </motion.button>
-                 </div>
-               </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Product
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Category
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Price
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Stock
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {products.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="h-12 w-12 rounded-lg bg-gray-200 mr-4">
-                            <Image
-                              src={product.images[0]?.src || '/images/placeholder.svg'}
-                              alt={product.name}
-                              width={48}
-                              height={48}
-                              className="h-12 w-12 rounded-lg object-cover"
-                            />
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                            <div className="text-sm text-gray-500">{product.slug}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                        {product.category}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatPrice(product.price)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {product.inventory}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                          product.inStock 
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {product.inStock ? 'In Stock' : 'Out of Stock'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button 
-                            onClick={() => router.push(`/products/${product.slug}`)}
-                            className="text-blue-600 hover:text-blue-900"
-                            title="View Product"
-                          >
-                            <EyeIcon className="h-4 w-4" />
-                          </button>
-                          <button 
-                            onClick={() => handleEditProduct(product)}
-                            className="text-gray-600 hover:text-gray-900"
-                            title="Edit Product"
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteProduct(product)}
-                            className="text-red-600 hover:text-red-900"
-                            title="Delete Product"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-        )}
-
-          {/* Bulk Upload Section */}
-           {activeTab === 'bulk-upload' && (
-             <motion.div
-               initial={{ opacity: 0, y: 20 }}
-               animate={{ opacity: 1, y: 0 }}
-               transition={{ duration: 0.5 }}
-               className="bg-gradient-to-br from-white via-gray-50 to-white rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden"
-             >
-               {/* Header Section */}
-               <div className="relative bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-8">
-                 <div className="absolute inset-0 bg-black/10"></div>
-                 <div className="relative z-10 flex items-center space-x-4">
-                   <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                     <ArrowPathIcon className="h-6 w-6 text-white" />
-                   </div>
-                   <div>
-                     <h3 className="text-2xl font-bold text-white">Bulk Product Upload</h3>
-                     <p className="text-white/80 mt-1">Upload multiple products efficiently with CSV files</p>
-                   </div>
-                 </div>
-                 <div className="absolute top-4 right-4">
-                   <div className="w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
-                 </div>
-               </div>
-
-               <div className="p-8">
-                 <div className="max-w-4xl mx-auto">
-                   {/* Instructions Section */}
-                   <motion.div
-                     initial={{ opacity: 0, y: 20 }}
-                     animate={{ opacity: 1, y: 0 }}
-                     transition={{ duration: 0.5, delay: 0.1 }}
-                     className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/50 rounded-xl p-6 mb-8"
-                   >
-                     <div className="flex items-start space-x-4">
-                       <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                         <DocumentTextIcon className="h-4 w-4 text-white" />
-                       </div>
-                       <div className="flex-1">
-                         <h4 className="text-lg font-bold text-gray-900 mb-3">CSV Format Requirements</h4>
-                         <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-blue-200/30">
-                            <div className="flex items-center justify-between mb-2">
-                              <p className="text-sm font-medium text-gray-800">Required CSV columns (in order):</p>
-                              <a 
-                                href="/sample-products.csv" 
-                                download="sample-products.csv"
-                                className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full transition-colors duration-200 flex items-center space-x-1"
-                              >
-                                <DocumentTextIcon className="h-3 w-3" />
-                                <span>Download Sample</span>
-                              </a>
-                            </div>
-                            <div className="bg-gray-50 rounded-lg p-3 font-mono text-xs text-gray-700 overflow-x-auto">
-                              name,slug,description,price,compareAtPrice,category,tags,inStock,inventory,weight,dimensions
-                            </div>
-                          </div>
-                         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                           <div className="bg-white/60 rounded-lg p-3 border border-blue-200/30">
-                             <h5 className="font-semibold text-gray-800 text-sm mb-2">📋 Data Tips:</h5>
-                             <ul className="text-xs text-gray-600 space-y-1">
-                               <li>• Use TRUE/FALSE for inStock field</li>
-                               <li>• Separate tags with commas</li>
-                               <li>• Price should be numeric (e.g., 29.99)</li>
-                               <li>• Slug should be URL-friendly</li>
-                             </ul>
-                           </div>
-                           <div className="bg-white/60 rounded-lg p-3 border border-blue-200/30">
-                             <h5 className="font-semibold text-gray-800 text-sm mb-2">⚡ Processing:</h5>
-                             <ul className="text-xs text-gray-600 space-y-1">
-                               <li>• Existing products will be updated</li>
-                               <li>• New products will be created</li>
-                               <li>• Invalid rows will be skipped</li>
-                               <li>• Results will be shown after upload</li>
-                             </ul>
-                           </div>
-                         </div>
-                       </div>
-                     </div>
-                   </motion.div>
-
-                   {/* Upload Component */}
-                   <motion.div
-                     initial={{ opacity: 0, y: 20 }}
-                     animate={{ opacity: 1, y: 0 }}
-                     transition={{ duration: 0.5, delay: 0.2 }}
-                     className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-8"
-                   >
-                     <BulkProductUpload />
-                   </motion.div>
-                 </div>
-               </div>
-             </motion.div>
-           )}
-
-          {/* Returns Management */}
-          {activeTab === 'returns' && (
+          {/* Medusa Admin redirect — Orders, Products, Bulk Upload, Returns are all in Medusa */}
+          {(activeTab === 'orders' || activeTab === 'products' || activeTab === 'bulk-upload' || activeTab === 'returns') && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
+              className="bg-white rounded-none border border-gray-200 p-16 text-center"
             >
-              <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-red-50">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-orange-500 rounded-lg">
-                    <ArrowPathIcon className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900">Returns Management</h3>
-                    <p className="text-sm text-gray-600">Handle customer return requests</p>
-                  </div>
-                </div>
-              </div>
-            <div className="p-6">
-              <div className="space-y-6">
-                {returnRequests.length === 0 && (
-                  <p className="text-sm text-gray-500">No return requests yet.</p>
-                )}
-                {returnRequests.map((returnRequest) => (
-                  <div key={returnRequest.id} className="border border-gray-200 rounded-lg p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h4 className="font-medium text-gray-900">Return Request #{returnRequest.id.slice(-8)}</h4>
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            returnRequest.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            returnRequest.status === 'approved' ? 'bg-green-100 text-green-800' :
-                            returnRequest.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                            'bg-blue-100 text-blue-800'
-                          }`}>
-                            {returnRequest.status.charAt(0).toUpperCase() + returnRequest.status.slice(1)}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          Order: #{returnRequest.order.orderNumber} • Customer: {returnRequest.order.user?.firstName} {returnRequest.order.user?.lastName}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Email: {returnRequest.order.user?.email} • Created: {new Date(returnRequest.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-4">
-                      <h5 className="font-medium text-gray-900 mb-2">Reason:</h5>
-                      <p className="text-gray-700">{returnRequest.reason}</p>
-                    </div>
-                    
-                    <div className="mb-4">
-                      <h5 className="font-medium text-gray-900 mb-2">Items to Return:</h5>
-                      <div className="space-y-2">
-                        {returnRequest.items.map((item) => (
-                          <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                            <div className="flex-1">
-                              <p className="font-medium text-gray-900">{item.orderItem.product.name}</p>
-                              <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {returnRequest.status === 'pending' && (
-                      <div className="flex space-x-3">
-                        <button
-                          onClick={() => handleUpdateReturnStatus(returnRequest.id, 'approved')}
-                          className="px-4 py-2 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors"
-                        >
-                          Approve Return
-                        </button>
-                        <button
-                          onClick={() => handleUpdateReturnStatus(returnRequest.id, 'rejected', 'Return request rejected by admin')}
-                          className="px-4 py-2 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
-                        >
-                          Reject Return
-                        </button>
-                      </div>
-                    )}
-                    
-                    {returnRequest.status === 'approved' && (
-                      <div className="flex space-x-3">
-                        <button
-                          onClick={() => handleUpdateReturnStatus(returnRequest.id, 'processed', 'Refund processed')}
-                          className="px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
-                        >
-                          Mark as Processed
-                        </button>
-                      </div>
-                    )}
+              <ShoppingBagIcon className="h-16 w-16 text-gray-200 mx-auto mb-6" />
+              <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Managed in Medusa</p>
+              <h3 className="text-2xl font-serif uppercase tracking-widest text-gray-900 mb-4">
+                {activeTab === 'orders' && 'Orders Management'}
+                {activeTab === 'products' && 'Products Management'}
+                {activeTab === 'bulk-upload' && 'Bulk Upload'}
+                {activeTab === 'returns' && 'Returns Management'}
+              </h3>
+              <p className="text-sm text-gray-500 mb-8 max-w-lg mx-auto leading-relaxed">
+                Products, Orders, Returns, Inventory, Fulfillments, and Bulk Uploads are all managed through your dedicated <strong>Medusa Admin Portal</strong>. All commerce operations are centralised there for maximum reliability.
+              </p>
+              <a
+                href="https://api.elanorraliving.in/app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-2 px-10 py-4 bg-gray-900 border border-gray-900 text-white text-[10px] uppercase tracking-widest font-bold hover:bg-white hover:text-gray-900 transition-all"
+              >
+                <ShoppingBagIcon className="h-4 w-4" />
+                <span>Open Medusa Admin Portal →</span>
+              </a>
+              <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-xl mx-auto">
+                {[
+                  { label: 'Products', detail: 'Add, edit, delete' },
+                  { label: 'Orders', detail: 'View, fulfill, update' },
+                  { label: 'Returns', detail: 'Approve, refund' },
+                  { label: 'Inventory', detail: 'Stock & variants' },
+                ].map(item => (
+                  <div key={item.label} className="border border-gray-100 p-4 text-center">
+                    <p className="text-[10px] uppercase tracking-widest text-gray-900 font-bold">{item.label}</p>
+                    <p className="text-[10px] text-gray-400 mt-1">{item.detail}</p>
+                    <p className="text-xs font-bold text-green-600 mt-2">✓ Available</p>
                   </div>
                 ))}
               </div>
-            </div>
-          </motion.div>
-        )}
+            </motion.div>
+          )}
 
           {/* Users Management */}
           {activeTab === 'users' && (

@@ -365,6 +365,7 @@ export const useCartStore = create<CartState>()(
 
       clearCart: () => {
         set({
+          cartId: null,   // ← critical: reset so a fresh Medusa cart is created next time
           items: [],
           totalItems: 0,
           totalPrice: 0,

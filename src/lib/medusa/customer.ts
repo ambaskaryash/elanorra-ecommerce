@@ -69,7 +69,7 @@ export async function getAddresses(customerId: string) {
       fields: '*addresses',
     },
   });
-  return response.customer?.addresses || [];
+  return (response.customer as any)?.addresses || [];
 }
 
 export async function deleteAddress(customerId: string, addressId: string) {

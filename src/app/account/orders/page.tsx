@@ -48,7 +48,8 @@ export default function OrderHistoryPage() {
       if (!user?.id) return;
       setIsLoading(true);
       try {
-        const response = await api.orders.getOrders({ userId: user.id });
+        const userEmail = user.emailAddresses?.[0]?.emailAddress || '';
+        const response = await api.orders.getOrders({ userId: user.id, email: userEmail });
         if (response.orders) {
           setOrders(response.orders);
         } else {

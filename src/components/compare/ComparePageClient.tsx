@@ -97,7 +97,7 @@ export default function ComparePageClient() {
         return p.weight ? `${p.weight} kg` : '-';
       default:
         // Fallback for keys that map directly
-        // @ts-expect-error dynamic access
+        // @ts-ignore dynamic access
         return p[key] as string;
     }
   }

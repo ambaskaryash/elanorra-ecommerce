@@ -6,8 +6,9 @@ import { z } from 'zod';
 // Get coupon by id (Admin only)
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const admin = await verifyAdminAccess();
   if (!admin.success) {
     return NextResponse.json(
@@ -17,7 +18,7 @@ export async function GET(
   }
 
   try {
-    const coupon = await prisma.coupon.findUnique({ where: { id: params.id } });
+    const coupon = await prisma.coupon.findUnique({ where: { id } });
     if (!coupon) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
@@ -26,7 +27,7 @@ export async function GET(
       adminEmail: admin.user!.email,
       action: 'READ_COUPON',
       resource: 'coupon',
-      resourceId: params.id,
+      resourceId: id,
     });
     return NextResponse.json({ coupon });
   } catch (error) {
@@ -38,8 +39,9 @@ export async function GET(
 // Update coupon (Admin only)
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const admin = await verifyAdminAccess();
   if (!admin.success) {
     return NextResponse.json(
@@ -70,7 +72,7 @@ export async function PUT(
     const parsed = updateSchema.parse(body);
 
     const updated = await prisma.coupon.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(parsed.code ? { code: parsed.code } : {}),
         ...(parsed.type ? { type: parsed.type } : {}),
@@ -93,7 +95,7 @@ export async function PUT(
       adminEmail: admin.user!.email,
       action: 'UPDATE_COUPON',
       resource: 'coupon',
-      resourceId: params.id,
+      resourceId: id,
       details: { code: updated.code, type: updated.type, isActive: updated.isActive },
     });
 
@@ -113,8 +115,9 @@ export async function PUT(
 // Deactivate/Delete coupon (Admin only)
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const admin = await verifyAdminAccess();
   if (!admin.success) {
     return NextResponse.json(
@@ -126,7 +129,7 @@ export async function DELETE(
   try {
     // Soft delete: set isActive=false
     const updated = await prisma.coupon.update({
-      where: { id: params.id },
+      where: { id },
       data: { isActive: false },
     });
 
@@ -135,7 +138,7 @@ export async function DELETE(
       adminEmail: admin.user!.email,
       action: 'DEACTIVATE_COUPON',
       resource: 'coupon',
-      resourceId: params.id,
+      resourceId: id,
       details: { code: updated.code },
     });
     return NextResponse.json({ coupon: updated });

@@ -78,10 +78,19 @@ export async function addShippingAddress(cartId: string, address: any) {
 }
 
 export async function createPaymentSessions(cartId: string) {
-  const response = await medusaFetch<{ cart: MedusaCart }>(`/store/carts/${cartId}/payment-collections`, {
+  const collectionResponse = await medusaFetch<{ payment_collection: { id: string } }>(`/store/payment-collections`, {
     method: 'POST',
+    body: JSON.stringify({ cart_id: cartId }),
   });
-  return response.cart;
+  
+  if (collectionResponse.payment_collection?.id) {
+    await medusaFetch<any>(`/store/payment-collections/${collectionResponse.payment_collection.id}/payment-sessions`, {
+      method: 'POST',
+      body: JSON.stringify({ provider_id: 'pp_system_default' }),
+    }).catch(e => console.warn('Payment session creation override:', e));
+  }
+  
+  return collectionResponse;
 }
 
 export async function listShippingOptions(cartId: string) {

@@ -20,8 +20,9 @@ const updateTemplateSchema = z.object({
 // GET - Fetch specific email template
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Dev-friendly auth: allow access in non-production even without a Clerk user
     let isAuthorized = true;
@@ -43,8 +44,6 @@ export async function GET(
         { status: 401 }
       );
     }
-
-    const { id } = params;
 
     const template = await prisma.emailTemplate.findUnique({
       where: { id },
@@ -70,8 +69,9 @@ export async function GET(
 // PUT - Update specific email template
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Dev-friendly auth: allow updates in non-production even without a Clerk user
     let isAuthorized = true;
@@ -94,7 +94,6 @@ export async function PUT(
       );
     }
 
-    const { id } = params;
     const body = await request.json();
     const validatedData = updateTemplateSchema.parse(body);
 
@@ -148,8 +147,9 @@ export async function PUT(
 // DELETE - Delete specific email template
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Dev-friendly auth: allow deletes in non-production even without a Clerk user
     let isAuthorized = true;
@@ -172,7 +172,6 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
 
     // Check if template exists
     const existingTemplate = await prisma.emailTemplate.findUnique({
@@ -203,8 +202,9 @@ export async function DELETE(
 // PATCH - Duplicate email template
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Dev-friendly auth: allow actions in non-production even without a Clerk user
     let isAuthorized = true;
@@ -227,7 +227,6 @@ export async function PATCH(
       );
     }
 
-    const { id } = params;
     const { searchParams } = new URL(request.url);
     const action = searchParams.get("action");
 

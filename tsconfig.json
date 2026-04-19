@@ -40,6 +40,8 @@
   ],
   "exclude": [
     "node_modules",
-    "medusa-backend"
+    "medusa-backend",
+    "v4",
+    "test-checkout.ts"
   ]
 }

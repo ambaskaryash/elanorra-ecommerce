@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
+import { isMedusaCatalogEnabled } from '@/lib/medusa/config';
 
 // GET /api/wishlist - Get current user's wishlist products
 export async function GET(request: NextRequest) {
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ products: [] });
     }
 
-    const productIds = items.map((it) => it.productId);
+    const productIds = items.map((it: { productId: string }) => it.productId);
 
     // Medusa Integration: Fetch live product data
     if (isMedusaCatalogEnabled()) {
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
         if (medusaProducts.length > 0) {
           // Sort products to match the wishlist's "createdAt" order
           const sortedProducts = productIds
-            .map(id => medusaProducts.find(p => p.id === id))
+            .map((id: string) => medusaProducts.find(p => p.id === id))
             .filter(Boolean);
             
           return NextResponse.json({ products: sortedProducts });

@@ -5,6 +5,7 @@ import { Inter, Playfair_Display } from 'next/font/google';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Toaster } from 'sonner';
+import { Toaster as HotToaster } from 'react-hot-toast';
 import Script from 'next/script';
 import "./globals.css";
 import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
@@ -109,6 +110,7 @@ export default async function RootLayout({
           </ConditionalLayout>
           <ServiceWorkerRegistration />
           <Toaster />
+          <HotToaster position="top-center" />
           <ToastContainer
             position="bottom-right"
             autoClose={3000}

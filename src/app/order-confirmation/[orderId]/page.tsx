@@ -350,7 +350,7 @@ export default function OrderConfirmationPage({ params }: Props) {
               )}
               
               <a
-                href={`/api/invoices/${order.id}`}
+                href={`/api/invoices/download/${order.id}`}
                 download
                 className="w-full bg-white border border-gray-200 text-gray-700 py-4 px-4 rounded-none text-[10px] uppercase tracking-widest font-bold hover:border-gray-900 transition-all flex items-center justify-center"
               >

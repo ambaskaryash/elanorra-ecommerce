@@ -191,9 +191,45 @@ async function savePaymentToDatabase(paymentData: PaymentData, orderData: { id: 
       } catch (error) {
         logger.error('Failed to capture Medusa order payment', { error, orderId: orderData.id });
       }
+
+      // Medusa manages its own order records — skip Prisma update entirely.
+      // Send a confirmation email using the data we have from Razorpay directly.
+      try {
+        await emailService.sendOrderConfirmationEmail({
+          email: orderData.email,
+          orderNumber: orderData.id,
+          orderId: orderData.id,
+          customerName: paymentData.email || orderData.email,
+          totalPrice: orderData.amount,
+          subtotal: orderData.amount,
+          taxes: 0,
+          shipping: 0,
+          discount: 0,
+          currency: paymentData.currency || 'INR',
+          paymentMethod: 'Razorpay',
+          createdAt: new Date().toISOString(),
+          items: [],
+          shippingAddress: {
+            firstName: '',
+            lastName: '',
+            address1: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: 'India',
+          },
+        });
+        console.log(`Confirmation email sent for Medusa order ${orderData.id}`);
+      } catch (emailError) {
+        console.error('Failed to send confirmation email for Medusa order:', emailError);
+        // Non-fatal — continue
+      }
+
+      console.log(`Medusa order ${orderData.id} payment verified — skipping Prisma update.`);
+      return;
     }
 
-    // Update order with payment information and fetch details for email
+    // Update order with payment information and fetch details for email (Prisma/local orders)
     const updatedOrder = await prisma.order.update({
       where: {
         id: orderData.id,
@@ -274,3 +310,4 @@ async function savePaymentToDatabase(paymentData: PaymentData, orderData: { id: 
     throw new Error('Failed to update order with payment information');
   }
 }
+
